@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signup - Davilanco</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F;--grey:#f1f1f1}
+[data-theme=dark]{--bg:#000;--text:#fff;--grey:#222}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
+header{display:flex;justify-content:space-between;padding:12px;background:var(--bg);border-bottom:2px solid var(--gold)}
+#navDrawer{position:fixed;top:0;left:-100%;width:20%;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px}
+#navDrawer.open{left:0}
+main{padding:20px;max-width:400px;margin:auto}
+input{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid grey;background:var(--grey);color:var(--text)}
+button{width:100%;padding:12px;background:var(--gold);border:none;border-radius:8px;font-weight:bold;margin-top:10px}
+footer{padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+<a href="/"><img src="/images/logo.png" height="32" alt="Logo"></a>
+<button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button>
+</header>
+<nav id="navDrawer"><a href="/">Home</a><br><br><a href="/login.html">Login</a><br><br><a href="#" onclick="this.parentElement.classList.remove('open')">Close</a></nav>
+
+<main>
+<h2>Create Account</h2>
+<p>All accounts start as Customer</p>
+<form id="signupForm">
+<input id="firstname" placeholder="First Name *" required>
+<input id="lastname" placeholder="Last Name *" required>
+<input id="nickname" placeholder="Nickname (store name later) *" required>
+<input id="phone" placeholder="Phone Number *" required type="tel">
+<input id="email" placeholder="Email *" required type="email">
+<input id="password" placeholder="Password (min 8, uppercase, number, symbol) *" required type="password">
+<input id="password2" placeholder="Confirm Password *" required type="password">
+<button type="submit">Create Account</button>
+</form>
+<p id="msg"></p>
+<p>Already have account? <a href="/login.html">Login</a></p>
+</main>
+
+<footer>Davilanco © 2026</footer>
+
+<script>
+document.getElementById('signupForm').addEventListener('submit', async e=>{
+e.preventDefault()
+const p=document.getElementById('password').value
+if(p.length<8 || !/[A-Z]/.test(p) || !/[0-9]/.test(p) || !/[^A-Za-z0-9]/.test(p)){
+document.getElementById('msg').innerText='Strong password needed: 8+ chars, uppercase, number, symbol';return
+}
+if(p!==document.getElementById('password2').value){document.getElementById('msg').innerText='Passwords not match';return}
+document.getElementById('msg').innerText='Creating... (D1 connect next step)'
+// Later will POST to /api/signup
+})
+</script>
+</body>
+  </html>
