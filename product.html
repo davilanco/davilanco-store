@@ -22,7 +22,6 @@ footer{padding:20px;text-align:center}
 <body>
 <header>
 <a href="/"><img src="/images/logo.png" height="32" alt="Davilanco"></a>
-<nav style="font-size:13px"><a href="/">Home</a> > Product</nav>
 <input id="searchBar" placeholder="Search products..." >
 <button onclick="toggleTheme()">🌙/☀️</button>
 <button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button>
@@ -30,6 +29,10 @@ footer{padding:20px;text-align:center}
 
 <nav id="navDrawer">
 <h3>Menu - 25% Right</h3>
+  <nav style="font-size:13px">
+    <a href="/">Home</a>
+    <a href="/product.html"> Product</a>
+  </nav>
 <a href="/">Home / Products</a><br><br>
 <a href="/#categories">Categories</a><br><br>
 <a href="/cart.html">Cart</a><br><br>
