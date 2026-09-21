@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Davilanco</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F;--grey:#f5f5f5;--card:#fff}
+[data-theme=dark]{--bg:#000;--text:#fff;--grey:#111;--card:#1a1a1a}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
+header{display:flex;justify-content:space-between;padding:12px;position:sticky;top:0;background:var(--bg);border-bottom:2px solid var(--gold)}
+#navDrawer{position:fixed;top:0;left:-100%;width:20%;min-width:220px;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px}
+#navDrawer.open{left:0}
+main{padding:15px}
+.card{background:var(--card);border:1px solid #ddd3;padding:15px;border-radius:12px;margin:12px 0}
+table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ddd3;text-align:left;font-size:13px}
+input,select,textarea{padding:8px;margin:4px;border-radius:6px;border:1px solid grey;background:var(--grey);color:var(--text)}
+button{padding:6px 10px;background:var(--gold);border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin:2px}
+.pending{color:orange}.approved{color:green}
+footer{padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+<a href="/"><img src="/images/logo.png" height:32></a>
+<span>ADMIN PANEL</span>
+<button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button>
+</header>
+<nav id="navDrawer">
+<a href="/">Shop Home</a><br><br>
+<a href="/dashboard.html">User Dashboard</a><br><br>
+<a href="/seller/">Seller Panel</a><br><br>
+<a href="/admin/">Admin Panel</a><br><br>
+<a href="#" onclick="this.parentElement.classList.remove('open')">Close</a>
+</nav>
+
+<main>
+<h2>Admin Capabilities (All Functional via Worker API later)</h2>
+
+<div class="card">
+<h3>1. All Customers & Sellers</h3>
+<table><tr><th>Nickname</th><th>Email</th><th>Phone</th><th>Role</th><th>Action</th></tr>
+<tr><td>john23</td><td>john@test.com</td><td>0803...</td><td>customer</td><td><button onclick="promote(this)">Promote → Seller</button> <button>Suspend</button></td></tr>
+</table>
+</div>
+
+<div class="card">
+<h3>2. Seller Applications</h3>
+<div>Nickname: marketQueen - Products: Shoes - Address: Asaba - ID: 12345 <button>Approve</button> <button>Reject</button></div>
+</div>
+
+<div class="card">
+<h3>3. Change Order Status + Tracking</h3>
+<select id="orderStatus"><option>Pending</option><option>Approved</option><option>Shipping / In Transit</option><option>Delivered</option></select>
+<input id="trackingNo" placeholder="Tracking Number">
+<input id="logistics" placeholder="Logistics + ETA e.g DHL - 2 days">
+<button onclick="updateOrder()">Update Order</button>
+<p>Admin receives orders, verifies Paystack/Flutterwave payment, then releases to Seller</p>
+</div>
+
+<div class="card">
+<h3>4. Manually Add Product + Import</h3>
+<input id="p_name" placeholder="Product Name">
+<input id="p_price" placeholder="Price">
+<input id="p_cat" placeholder="Category">
+<input id="p_image" placeholder="Image path /images/shoe.jpg or AliExpress URL">
+<input id="p_source" placeholder="AliExpress URL for import">
+<button onclick="addProduct()">Add Product</button>
+<button onclick="importAli()">Import from AliExpress</button>
+</div>
+
+<div class="card">
+<h3>5. Approve/Reject Seller Products</h3>
+<p>Product: Seller Shoe - Pending <button>Approve</button> <button>Reject</button></p>
+</div>
+
+<div class="card">
+<h3>6. Messaging + Suspend</h3>
+<div id="adminMsgs" style="background:var(--grey);padding:10px;height:100px;overflow:auto">Customer: Where is my order?</div>
+<textarea placeholder="Reply to Customer/Seller"></textarea>
+<button>Send</button> <button>Suspend / Reactivate Account</button>
+</div>
+
+</main>
+<footer>Davilanco Admin</footer>
+<script>
+function promote(btn){btn.innerText='Promoted!'; alert('Will UPDATE users SET role=seller in D1')}
+function updateOrder(){alert('Will update order status + tracking in D1 and notify customer')}
+function addProduct(){alert('Will INSERT into D1 products')}
+function importAli(){const url=document.getElementById('p_source').value; alert('Will fetch AliExpress API: '+url+' and save to D1')}
+</script>
+</body>
+                       </html>
