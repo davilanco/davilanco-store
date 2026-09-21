@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Davilanco</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F;--grey:#f5f5f5;--card:#fff}
+[data-theme=dark]{--bg:#000;--text:#fff;--grey:#111;--card:#1a1a1a}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
+header{display:flex;justify-content:space-between;padding:12px;position:sticky;top:0;background:var(--bg);border-bottom:2px solid var(--gold);z-index:10}
+#navDrawer{position:fixed;top:0;left:-100%;width:20%;min-width:200px;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px;box-shadow:2px 0 10px #0003}
+#navDrawer.open{left:0}
+main{padding:15px;max-width:600px;margin:auto}
+.card{background:var(--card);border:1px solid #ddd3;padding:15px;border-radius:12px;margin:12px 0;box-shadow:0 2px 5px #0001}
+.card h3{margin:0 0 10px 0;color:var(--gold)}
+input,textarea,select{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid grey;background:var(--grey);color:var(--text)}
+button{padding:10px 15px;background:var(--gold);border:none;border-radius:8px;font-weight:bold;cursor:pointer}
+.status{padding:4px 8px;border-radius:20px;font-size:12px}
+.pending{background:orange;color:#000}.approved{background:var(--lemon);color:#000}.shipping{background:var(--navy);color:#fff}.delivered{background:green;color:#fff}
+footer{padding:20px;text-align:center}
+#backToTop{position:fixed;bottom:20px;right:20px;background:var(--gold);border:none;border-radius:50%;width:45px;height:45px}
+</style>
+</head>
+<body>
+<header>
+<a href="/"><img src="/images/logo.png" height:32 alt="Logo"></a>
+<div><span id="nicknameDisplay">Hi, User</span> <button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button></div>
+</header>
+
+<nav id="navDrawer">
+<a href="/">Home / Products</a><br><br>
+<a href="/cart.html">Cart</a><br><br>
+<a href="/dashboard.html">Dashboard</a><br><br>
+<a href="/seller/" id="sellerLink" style="display:none">Seller Panel</a>
+<a href="/admin/" id="adminLink" style="display:none">Admin Panel</a><br><br>
+<a href="#" id="logoutBtn">Logout</a><br><br>
+<a href="#" onclick="this.parentElement.classList.remove('open')">Close</a>
+</nav>
+
+<main>
+<h2>Dashboard</h2>
+
+<div class="card">
+<h3>👤 Details - <span id="nick">Nickname</span></h3>
+<p id="userDetails">Loading...</p>
+<button onclick="toggleEdit()">Edit</button>
+<div id="editForm" style="display:none">
+<input id="e_firstname" placeholder="First Name">
+<input id="e_lastname" placeholder="Last Name">
+<input id="e_phone" placeholder="Phone">
+<button onclick="saveEdit()">Save</button>
+</div>
+</div>
+
+<div class="card">
+<h3>🔒 Change Password</h3>
+<input id="oldPass" type="password" placeholder="Old Password">
+<input id="newPass" type="password" placeholder="New Password">
+<button onclick="changePass()">Update Password</button>
+</div>
+
+<div class="card">
+<h3>🛒 Cart</h3>
+<div id="cartCard">Cart empty - <a href="/">Shop now</a></div>
+</div>
+
+<div class="card">
+<h3>📦 Orders</h3>
+<div id="ordersCard">
+<span class="status pending">Pending</span> →
+<span class="status approved">Approved</span> →
+<span class="status shipping">Shipping / In Transit</span> →
+<span class="status delivered">Delivered</span>
+<p>Order #1234 - Status: Pending</p>
+</div>
+</div>
+
+<div class="card">
+<h3>🚚 Tracking</h3>
+<p>Logistics: <span id="courier">DHL</span> - Tracking: <span id="trackingNo">Not assigned</span></p>
+<p>Expected Arrival: <span id="eta">-</span></p>
+</div>
+
+<div class="card">
+<h3>💬 Messaging (All Roles)</h3>
+<div id="messages" style="max-height:150px;overflow:auto;background:var(--grey);padding:10px;border-radius:8px">No messages</div>
+<textarea id="msgInput" placeholder="Send message to Admin/Seller/Customer"></textarea>
+<select id="msgTo"><option value="admin">To Admin</option><option value="seller">To Seller</option></select>
+<button onclick="sendMsg()">Send Message</button>
+</div>
+
+<div class="card">
+<h3>🔔 Notifications</h3>
+<div id="notifs">No notifications</div>
+</div>
+
+<div class="card" style="border:2px dashed var(--gold)">
+<h3>🏪 Apply for Seller Account</h3>
+<p>Your Nickname will become Store Name if approved</p>
+<textarea id="s_products" placeholder="Products you plan to sell *"></textarea>
+<textarea id="s_address" placeholder="Full Address *"></textarea>
+<input id="s_idnumber" placeholder="ID Number *">
+<input id="s_idphoto" type="file" accept="image/*">
+<p style="font-size:12px">ID / Business Document Photo - will upload to /images when R2 is ready</p>
+<button onclick="applySeller()">Submit Application</button>
+</div>
+
+</main>
+
+<footer>Davilanco © 2026</footer>
+<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+function toggleEdit(){document.getElementById('editForm').style.display=document.getElementById('editForm').style.display==='none'?'block':'none'}
+function saveEdit(){alert('Will save to D1 via Worker')}
+function changePass(){alert('Will update password via Worker')}
+function sendMsg(){const m=document.getElementById('msgInput').value; document.getElementById('messages').innerHTML+=`<p>You: ${m}</p>`}
+function applySeller(){alert('Application sent - Admin will review in Admin Panel')}
+// Later: check session from KV, show nickname, show admin/seller links if role matches
+const user={nickname:'DavilancoUser', role:'customer'}; document.getElementById('nick').innerText=user.nickname; document.getElementById('nicknameDisplay').innerText='Hi, '+user.nickname;
+if(user.role==='seller' || user.role==='admin') document.getElementById('sellerLink').style.display='block';
+if(user.role==='admin') document.getElementById('adminLink').style.display='block';
+</script>
+</body>
+  </html>
