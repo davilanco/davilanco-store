@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout - Davilanco</title>
+<style>
+:root{--gold:#FFD700;--bg:#fff;--text:#001F3F;--grey:#f5f5f5;--card:#fff}
+[data-theme=dark]{--bg:#000;--text:#fff;--grey:#111;--card:#1a1a1a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
+header{display:flex;align-items:center;gap:10px;padding:12px;position:sticky;top:0;background:var(--bg);border-bottom:2px solid var(--gold)}
+header input{flex:1;padding:10px;border-radius:20px;border:1px solid #aaa;background:var(--grey);color:var(--text)}
+#navDrawer{position:fixed;top:0;right:-100%;width:25%;min-width:250px;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px}
+#navDrawer.open{right:0}
+main{padding:15px;max-width:600px;margin:auto}.card{background:var(--card);padding:15px;border-radius:12px;margin:12px 0;border:1px solid #ddd3}
+input,select,textarea{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid grey;background:var(--grey);color:var(--text)}
+button{padding:12px;background:var(--gold);border:none;border-radius:8px;font-weight:bold;cursor:pointer;width:100%;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+<a href="/"><img src="/images/logo.png" height="32"></a>
+<input placeholder="Search..." >
+<button onclick="toggleTheme()">🌙/☀️</button>
+<button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button>
+</header>
+<nav id="navDrawer"><a href="/">Home</a><br><br><a href="/cart.html">Cart</a><br><br><a href="#" onclick="this.parentElement.classList.remove('open')">Close</a></nav>
+
+<main>
+<h2>Checkout - Delivery Details</h2>
+<div class="card">
+<input id="firstname" placeholder="First Name *" required>
+<input id="lastname" placeholder="Last Name *" required>
+<input id="phone" placeholder="Phone Number *" required>
+<input id="altphone" placeholder="Alternative Phone">
+<input id="neighborphone" placeholder="Neighbor's Phone (for delivery)">
+<textarea id="address" placeholder="Full Address *"></textarea>
+<select id="state" onchange="loadLGAs()"><option value="">Select State *</option></select>
+<select id="lga" onchange="loadTowns()"><option value="">Select LGA *</option></select>
+<select id="town"><option value="">Select Town *</option></select>
+</div>
+
+<div class="card">
+<h3>Payment Method</h3>
+<select id="payMethod">
+<option value="bank">Bank Transfer</option>
+<option value="paystack">Paystack (Card, USSD, Bank)</option>
+<option value="flutterwave">Flutterwave</option>
+<option value="paypal">PayPal</option>
+</select>
+<div id="bankDetails" style="display:none;background:var(--grey);padding:10px;margin-top:10px;border-radius:8px">
+<p><b>Bank Transfer:</b><br>Bank: Access Bank<br>Account: 1234567890<br>Name: Davilanco Store<br>Send proof to WhatsApp after payment</p>
+</div>
+<button onclick="placeOrder()">Place Order - Pay & Checkout</button>
+<p style="font-size:12px">After payment, Admin verifies then forwards to Seller. Tracking added after approval.</p>
+</div>
+</main>
+
+<script>
+const saved=localStorage.getItem('theme'); const sys=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+document.documentElement.setAttribute('data-theme', saved||sys);
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme'); const n=c==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',n); localStorage.setItem('theme',n)}
+document.getElementById('payMethod').addEventListener('change',e=>{document.getElementById('bankDetails').style.display=e.target.value==='bank'?'block':'none'})
+
+const ngData={"Delta":["Aniocha North","Aniocha South","Ndokwa East","Ndokwa West","Oshimili North","Oshimili South","Ika North East","Ika South","Ughelli North","Ughelli South","Warri South","Warri North","Warri South West"],"Lagos":["Ikeja","Lekki","Alimosho","Surulere","Yaba","Ikorodu"],"FCT":["Abuja Municipal","Bwari","Gwagwalada","Kuje","Abaji","Kwali"]}
+const towns={"Oshimili South":["Asaba","Okwe"],"Aniocha North":["Issele-Uku","Issele-Mkpitime"],"Ikeja":["Ikeja","Ogba"],"Abuja Municipal":["Garki","Wuse","Maitama"]}
+
+const stateSel=document.getElementById('state');
+Object.keys(ngData).forEach(s=>{const o=document.createElement('option');o.value=s;o.text=s;stateSel.add(o)})
+function loadLGAs(){const s=stateSel.value; const l=document.getElementById('lga'); l.innerHTML='<option value="">Select LGA *</option>'; (ngData[s]||[]).forEach(v=>{const o=document.createElement('option');o.value=v;o.text=v;l.add(o)})}
+function loadTowns(){const l=document.getElementById('lga').value; const t=document.getElementById('town'); t.innerHTML='<option value="">Select Town *</option>'; (towns[l]||['Town1','Town2']).forEach(v=>{const o=document.createElement('option');o.value=v;o.text=v;t.add(o)})}
+function placeOrder(){alert('Order placed! Will POST to /api/orders + init Paystack/Flutterwave/Paypal/Bank')}
+</script>
+</body>
+</html>
