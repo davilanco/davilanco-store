@@ -9,8 +9,8 @@
 [data-theme=dark]{--bg:#000;--text:#fff;--grey:#111;--card:#1a1a1a}
 body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
 header{display:flex;justify-content:space-between;padding:12px;position:sticky;top:0;background:var(--bg);border-bottom:2px solid var(--gold);z-index:10}
-#navDrawer{position:fixed;top:0;left:-100%;width:20%;min-width:200px;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px;box-shadow:2px 0 10px #0003}
-#navDrawer.open{left:0}
+#navDrawer{position:fixed;top:0;right:-100%;width:25%;min-width:250px;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px;box-shadow:2px 0 10px #0003}
+#navDrawer.open{right:0}
 main{padding:15px;max-width:600px;margin:auto}
 .card{background:var(--card);border:1px solid #ddd3;padding:15px;border-radius:12px;margin:12px 0;box-shadow:0 2px 5px #0001}
 .card h3{margin:0 0 10px 0;color:var(--gold)}
@@ -112,6 +112,9 @@ footer{padding:20px;text-align:center}
 <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
 <script>
+  const saved=localStorage.getItem('theme'); const sys=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+document.documentElement.setAttribute('data-theme', saved||sys);
+function toggleTheme(){...}
 function toggleEdit(){document.getElementById('editForm').style.display=document.getElementById('editForm').style.display==='none'?'block':'none'}
 function saveEdit(){alert('Will save to D1 via Worker')}
 function changePass(){alert('Will update password via Worker')}
