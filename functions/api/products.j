@@ -1,4 +1,4 @@
-export async function onRequestGet({env}) {
+sexport async function onRequestGet({env}) {
   const {results}=await env.DB.prepare("SELECT * FROM products WHERE status='approved'").all();
   return Response.json(results);
 }
