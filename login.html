@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Login - Davilanco</title><style>
+:root{--gold:#FFD700;--bg:#fff;--text:#001F3F;--grey:#f1f1f1}[data-theme=dark]{--bg:#000;--text:#fff;--grey:#222}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}header{padding:12px;border-bottom:2px solid var(--gold)}main{padding:20px;max-width:400px;margin:auto}input{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid grey;background:var(--grey);color:var(--text)}button{width:100%;padding:12px;background:var(--gold);border:none;border-radius:8px;font-weight:bold}
+</style></head>
+<body>
+<header><a href="/"><img src="/images/logo.png" height="32"></a></header>
+<main>
+<h2>Login</h2>
+<p>Use Nickname / Email / Phone + Password</p>
+<form id="loginForm">
+<input id="login" placeholder="Nickname or Email or Phone *" required>
+<input id="password" placeholder="Password *" required type="password">
+<button type="submit">Login</button>
+</form>
+<p id="msg"></p>
+</main>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async e=>{
+e.preventDefault()
+const redirectTo=new URLSearchParams(window.location.search).get('redirect')||'/dashboard.html'
+document.getElementById('msg').innerText='Logging in... will redirect to '+redirectTo
+// Will check KV session and redirect to previous page
+})
+</script>
+</body>
+  </html>
