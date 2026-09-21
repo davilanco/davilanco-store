@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seller Panel - Davilanco</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F;--grey:#f5f5f5;--card:#fff}
+[data-theme=dark]{--bg:#000;--text:#fff;--grey:#111;--card:#1a1a1a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui;transition:0.3s}
+header{display:flex;align-items:center;gap:10px;padding:12px;position:sticky;top:0;background:var(--bg);border-bottom:2px solid var(--gold);z-index:10}
+header input#searchBar{flex:1;padding:10px;border-radius:20px;border:1px solid #aaa;background:var(--grey);color:var(--text)}
+#navDrawer{position:fixed;top:0;right:-100%;width:25%;min-width:250px;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px;box-shadow:-2px 0 10px #0003}
+#navDrawer.open{right:0}
+main{padding:15px;max-width:800px;margin:auto}
+.card{background:var(--card);border:1px solid #ddd3;padding:15px;border-radius:12px;margin:12px 0}
+input,select,textarea{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid grey;background:var(--grey);color:var(--text)}
+button{padding:10px 15px;background:var(--gold);border:none;border-radius:8px;font-weight:bold;cursor:pointer}
+footer{padding:20px;text-align:center;position:sticky;bottom:0;background:var(--bg)}
+#backToTop{position:fixed;bottom:20px;right:20px;background:var(--gold);border:none;border-radius:50%;width:45px;height:45px}
+</style>
+</head>
+<body>
+<header>
+<a href="/"><img src="/images/logo.png" height="32" alt="Davilanco"></a>
+<nav style="display:flex;gap:10px;font-size:13px"><a href="/">Home</a><a href="/#categories">Categories</a></nav>
+<input id="searchBar" placeholder="Search products..." oninput="searchProducts(this.value)">
+<button onclick="toggleTheme()">🌙/☀️</button>
+<button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button>
+</header>
+
+<nav id="navDrawer">
+<h3>Menu</h3>
+<a href="/">Home / Products</a><br><br>
+<a href="/cart.html">Cart</a><br><br>
+<a href="/dashboard.html">Dashboard</a><br><br>
+<a href="/seller/">Seller Panel</a><br><br>
+<a href="/admin/" id="adminLink" style="display:none">Admin Panel</a><br><br>
+<a href="/login.html" id="loginLink">Login</a>
+<a href="#" id="logoutLink" style="display:none">Logout</a><br><br>
+<hr>
+<p style="font-size:12px">Dark/Light auto + manual</p>
+<a href="#" onclick="document.getElementById('navDrawer').classList.remove('open')">Close ✕</a>
+</nav>
+
+<main>
+<h2>Seller Panel - <span id="storeName">Your Store (Nickname)</span></h2>
+
+<div class="card">
+<h3>➕ Add Your Product</h3>
+<input id="p_name" placeholder="Product Name *">
+<input id="p_price" placeholder="Price (NGN) *">
+<input id="p_cat" placeholder="Category *">
+<input id="p_stock" placeholder="Stock *">
+<textarea id="p_desc" placeholder="Description"></textarea>
+<input id="p_image" placeholder="Image path e.g /images/product1.jpg">
+<button onclick="addProduct()">Add Product (Pending Admin Approval)</button>
+</div>
+
+<div class="card">
+<h3>📦 Receive Orders For Your Products</h3>
+<table style="width:100%;font-size:13px"><tr><th>Order</th><th>Customer Info (Only from order)</th><th>Status</th></tr>
+<tr><td>#1001 - Shoe x1 - ₦15000</td><td>Name: John Doe<br>Phone: 0803...<br>Email: john@test.com<br>Address: Asaba, Delta</td><td><select><option>Approved</option><option>Shipping</option><option>Delivered</option></select> <button>Update</button></td></tr>
+</table>
+</div>
+
+<div class="card">
+<h3>🚚 Select Shipping + Add Tracking</h3>
+<select id="shipMethod"><option>DHL</option><option>GIG</option><option>Fez Delivery</option><option>Self Delivery</option></select>
+<input id="trackInput" placeholder="Tracking Number">
+<input id="etaInput" placeholder="Expected Arrival e.g 2 days">
+<button onclick="addTracking()">Add Tracking Details</button>
+</div>
+
+<div class="card">
+<h3>💬 Messages</h3>
+<p>Send/Receive with Customers + Admin</p>
+<div id="msgBox" style="background:var(--grey);padding:10px;height:120px;overflow:auto">Customer: Where is my order?</div>
+<textarea id="msgText" placeholder="Message"></textarea>
+<select id="msgTo"><option value="customer">To Customer</option><option value="admin">To Admin</option></select>
+<button onclick="sendMsg()">Send</button>
+</div>
+
+</main>
+
+<footer>Davilanco Seller © 2026</footer>
+<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// THEME with system preference
+const saved=localStorage.getItem('theme'); const sys=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+document.documentElement.setAttribute('data-theme', saved||sys);
+function toggleTheme(){const cur=document.documentElement.getAttribute('data-theme'); const nxt=cur==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',nxt); localStorage.setItem('theme',nxt)}
+function searchProducts(v){console.log('search',v)}
+function addProduct(){alert('Will POST to /api/seller/products -> D1 status=pending')}
+function addTracking(){alert('Will UPDATE orders SET tracking + ETA')}
+function sendMsg(){document.getElementById('msgBox').innerHTML+=`<p>You: ${document.getElementById('msgText').value}</p>`}
+</script>
+</body>
+  </html>
