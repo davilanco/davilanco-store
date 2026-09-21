@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Davilanco Shop - Modern Fashion</title>
+<meta name="description" content="Davilanco - Modern mobile-first fashion store">
+<meta property="og:title" content="Davilanco">
+<link rel="icon" href="/images/logo.png">
+<style>
+:root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F}
+[data-theme=dark]{--bg:#000;--text:#fff;--grey:#222}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
+header{display:flex;justify-content:space-between;padding:12px;position:sticky;top:0;background:var(--bg);z-index:10;border-bottom:2px solid var(--gold)}
+#navDrawer{position:fixed;top:0;left:-100%;width:20%;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px;box-shadow:2px 0 10px #0003}
+#navDrawer.open{left:0}
+footer{padding:20px;text-align:center;border-top:1px solid grey}
+#backToTop{position:fixed;bottom:20px;right:20px;background:var(--gold);border:none;border-radius:50%;width:45px;height:45px}
+</style>
+</head>
+<body>
+<header>
+<img src="/images/logo.png" height="32" alt="Davilanco Logo">
+<input id="search" placeholder="Search products..." style="flex:1;margin:0 10px;padding:8px;border-radius:20px">
+<button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button>
+<button onclick="toggleTheme()">🌙/☀️</button>
+</header>
+
+<nav id="navDrawer">
+<a href="/">Home</a><br><br>
+<a href="/login.html" id="loginLink">Login</a>
+<a href="/dashboard.html" id="dashLink" style="display:none">Dashboard</a>
+<a href="/admin/" id="adminLink" style="display:none">Admin</a>
+<a href="/seller/" id="sellerLink" style="display:none">Seller</a>
+<br><br><a href="#" onclick="this.parentElement.classList.remove('open')">Close</a>
+</nav>
+
+<main style="padding:15px;min-height:70vh">
+<h1>Products</h1>
+<div id="products" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
+</main>
+
+<footer>Davilanco © 2026 | shop.davilanco.com</footer>
+<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+function toggleTheme(){const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t)}
+// Load products from D1 later via Worker
+document.getElementById('products').innerHTML='<p>Products will load here after API connect</p>';
+</script>
+</body>
+  </html>
