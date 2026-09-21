@@ -1,0 +1,5 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><%= title %> | Davilanco</title><link rel="stylesheet" href="/css/style.css"></head><body>
+<header class="header"><div class="container header-inner"><a href="/" class="logo">DAVILANCO</a><nav class="nav-menu" id="navMenu"><a href="/">Home</a><a href="/dashboard">Dashboard</a></nav><button class="menu-toggle" onclick="document.getElementById('navMenu').classList.toggle('open')">☰</button><button class="theme-toggle" onclick="toggleTheme()">🌓</button></div></header>
+<main class="container main-content">
+<h2>Your Cart</h2><% if(items.length===0){ %><p>Empty</p><% } %><% items.forEach(i=>{ %><div class="card"><p><%= i.title %> x <%= i.qty %> = ₦<%= (i.price*i.qty).toFixed(2) %></p><form method="post" action="/cart/remove/<%= i.id %>"><button>Remove</button></form></div><% }) %><h3>Total: ₦<%= total.toFixed(2) %></h3><a href="/checkout" class="btn btn-primary">Proceed to Checkout</a>
+</main><footer class="footer"><p>&copy; 2026 Davilanco</p></footer><script src="/js/main.js"></script></body></html>
