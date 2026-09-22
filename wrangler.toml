@@ -1,4 +1,11 @@
+name = "davilanco-store"
+compatibility_date = "2024-10-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "."
+
 [[d1_databases]]
 binding = "DB"
 database_name = "davilanco_db"
 database_id = "fc5123dd-918f-4761-8b7a-7b0f1756b2be"
+
+
