@@ -1,3 +1,18 @@
+
+export async function onRequestGet({ env }) {
+  try {
+    const result = await env.DB.prepare("SELECT * FROM products LIMIT 10").all();
+    return new Response(JSON.stringify(result.results), {
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message, hint: "DB binding missing? Check Settings > Functions > D1 binding = DB" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
+
 export async function onRequest(context) {
   const {request, env} = context;
   await env.DB.exec(`CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, name TEXT, price INTEGER, category TEXT, image TEXT, description TEXT, seller_id TEXT, status TEXT DEFAULT 'pending')`);
