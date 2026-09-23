@@ -1,28 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Login - Davilanco</title><style>
-:root{--gold:#FFD700;--bg:#fff;--text:#001F3F;--grey:#f1f1f1}[data-theme=dark]{--bg:#000;--text:#fff;--grey:#222}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}header{padding:12px;border-bottom:2px solid var(--gold)}main{padding:20px;max-width:400px;margin:auto}input{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid grey;background:var(--grey);color:var(--text)}button{width:100%;padding:12px;background:var(--gold);border:none;border-radius:8px;font-weight:bold}
-</style></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Davilanco</title>
+  <meta name="robots" content="noindex">
+  <style>
+    :root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F;--grey:#f1f1f1}
+    [data-theme=dark]{--bg:#000;--text:#fff;--grey:#222}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
+    header{padding:12px;border-bottom:2px solid var(--gold)}
+    main{padding:20px;max-width:400px;margin:auto}
+    input{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #999;background:var(--grey);color:var(--text)}
+    button{width:100%;padding:13px;background:var(--gold);border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin-top:10px}
+    button:disabled{opacity:0.6}
+    #msg{margin-top:12px;font-size:14px}
+    .error{color:#e74c3c}.success{color:#27ae60}
+  </style>
+</head>
 <body>
-<header><a href="/"><img src="/images/logo.png" height="32"></a></header>
-<main>
-<h2>Login</h2>
-<p>Use Nickname / Email / Phone + Password</p>
-<form id="loginForm">
-<input id="login" placeholder="Nickname or Email or Phone *" required>
-<input id="password" placeholder="Password *" required type="password">
-<button type="submit">Login</button>
-</form>
-<p id="msg"></p>
-</main>
-<script>
-document.getElementById('loginForm').addEventListener('submit', async e=>{
-e.preventDefault()
-const redirectTo=new URLSearchParams(window.location.search).get('redirect')||'/dashboard.html'
-document.getElementById('msg').innerText='Logging in... will redirect to '+redirectTo
-// Will check KV session and redirect to previous page
-})
-</script>
+  <header>
+    <a href="/"><img src="/images/logo.png" height="32" alt="Davilanco"></a>
+  </header>
+
+  <main>
+    <h2>Login</h2>
+    <p style="font-size:14px;opacity:0.8">Use Nickname, Email or Phone + Password</p>
+
+    <form id="loginForm">
+      <input id="login" placeholder="Nickname or Email or Phone *" required>
+      <input id="password" placeholder="Password *" required type="password">
+      <button type="submit" id="btn">Login</button>
+    </form>
+
+    <p id="msg"></p>
+    <p>Don't have an account? <a href="/signup.html">Create one</a></p>
+  </main>
+
+  <script>
+    // Theme
+    const saved = localStorage.getItem('theme');
+    const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', saved || sys);
+
+    // Redirect target (from ?redirect=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectTo = urlParams.get('redirect') || '/dashboard.html';
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('msg');
+      const btn = document.getElementById('btn');
+
+      btn.disabled = true;
+      btn.innerText = 'Logging in...';
+      msg.innerText = '';
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            login: document.getElementById('login').value.trim(),
+            password: document.getElementById('password').value
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          // Save token and user info
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+
+          msg.className = 'success';
+          msg.innerText = 'Login successful! Redirecting...';
+
+          setTimeout(() => {
+            window.location.href = redirectTo;
+          }, 800);
+        } else {
+          msg.className = 'error';
+          msg.innerText = data.error || 'Login failed';
+          btn.disabled = false;
+          btn.innerText = 'Login';
+        }
+      } catch (err) {
+        msg.className = 'error';
+        msg.innerText = 'Network error. Please try again.';
+        btn.disabled = false;
+        btn.innerText = 'Login';
+      }
+    });
+  </script>
 </body>
   </html>
