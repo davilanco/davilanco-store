@@ -1,59 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Signup - Davilanco</title>
-<meta name="robots" content="noindex">
-<style>
-:root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F;--grey:#f1f1f1}
-[data-theme=dark]{--bg:#000;--text:#fff;--grey:#222}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
-header{display:flex;justify-content:space-between;padding:12px;background:var(--bg);border-bottom:2px solid var(--gold)}
-#navDrawer{position:fixed;top:0;left:-100%;width:20%;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px}
-#navDrawer.open{left:0}
-main{padding:20px;max-width:400px;margin:auto}
-input{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid grey;background:var(--grey);color:var(--text)}
-button{width:100%;padding:12px;background:var(--gold);border:none;border-radius:8px;font-weight:bold;margin-top:10px}
-footer{padding:20px;text-align:center}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup - Davilanco</title>
+  <meta name="robots" content="noindex">
+  <style>
+    :root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F;--grey:#f1f1f1}
+    [data-theme=dark]{--bg:#000;--text:#fff;--grey:#222}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
+    header{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg);border-bottom:2px solid var(--gold)}
+    #navDrawer{position:fixed;top:0;right:-100%;width:25%;min-width:220px;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px;box-shadow:-2px 0 10px #0003}
+    #navDrawer.open{right:0}
+    main{padding:20px;max-width:420px;margin:auto}
+    input{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #999;background:var(--grey);color:var(--text)}
+    button{width:100%;padding:13px;background:var(--gold);border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin-top:10px}
+    button:disabled{opacity:0.6}
+    #msg{margin-top:12px;font-size:14px}
+    .error{color:#e74c3c}.success{color:#27ae60}
+    footer{padding:20px;text-align:center;font-size:13px}
+  </style>
 </head>
 <body>
-<header>
-<a href="/"><img src="/images/logo.png" height="32" alt="Logo"></a>
-<button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button>
-</header>
-<nav id="navDrawer"><a href="/">Home</a><br><br><a href="/login.html">Login</a><br><br><a href="#" onclick="this.parentElement.classList.remove('open')">Close</a></nav>
+  <header>
+    <a href="/"><img src="/images/logo.png" height="32" alt="Davilanco"></a>
+    <button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button>
+  </header>
 
-<main>
-<h2>Create Account</h2>
-<p>All accounts start as Customer</p>
-<form id="signupForm">
-<input id="firstname" placeholder="First Name *" required>
-<input id="lastname" placeholder="Last Name *" required>
-<input id="nickname" placeholder="Nickname (store name later) *" required>
-<input id="phone" placeholder="Phone Number *" required type="tel">
-<input id="email" placeholder="Email *" required type="email">
-<input id="password" placeholder="Password (min 8, uppercase, number, symbol) *" required type="password">
-<input id="password2" placeholder="Confirm Password *" required type="password">
-<button type="submit">Create Account</button>
-</form>
-<p id="msg"></p>
-<p>Already have account? <a href="/login.html">Login</a></p>
-</main>
+  <nav id="navDrawer">
+    <a href="/">Home</a><br><br>
+    <a href="/login.html">Login</a><br><br>
+    <a href="#" onclick="this.parentElement.classList.remove('open')">Close ✕</a>
+  </nav>
 
-<footer>Davilanco © 2026</footer>
+  <main>
+    <h2>Create Account</h2>
+    <p style="font-size:14px;opacity:0.8">All new accounts start as Customer</p>
 
-<script>
-document.getElementById('signupForm').addEventListener('submit', async e=>{
-e.preventDefault()
-const p=document.getElementById('password').value
-if(p.length<8 || !/[A-Z]/.test(p) || !/[0-9]/.test(p) || !/[^A-Za-z0-9]/.test(p)){
-document.getElementById('msg').innerText='Strong password needed: 8+ chars, uppercase, number, symbol';return
-}
-if(p!==document.getElementById('password2').value){document.getElementById('msg').innerText='Passwords not match';return}
-document.getElementById('msg').innerText='Creating... (D1 connect next step)'
-// Later will POST to /api/signup
-})
-</script>
+    <form id="signupForm">
+      <input id="firstname" placeholder="First Name *" required>
+      <input id="lastname" placeholder="Last Name *" required>
+      <input id="nickname" placeholder="Nickname (can become store name) *" required>
+      <input id="phone" placeholder="Phone Number *" required type="tel">
+      <input id="email" placeholder="Email *" required type="email">
+      <input id="password" placeholder="Password (min 8, uppercase, number, symbol) *" required type="password">
+      <input id="password2" placeholder="Confirm Password *" required type="password">
+      <button type="submit" id="btn">Create Account</button>
+    </form>
+
+    <p id="msg"></p>
+    <p>Already have an account? <a href="/login.html">Login</a></p>
+  </main>
+
+  <footer>Davilanco © 2026</footer>
+
+  <script>
+    // Theme
+    const saved = localStorage.getItem('theme');
+    const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', saved || sys);
+
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('msg');
+      const btn = document.getElementById('btn');
+
+      const password = document.getElementById('password').value;
+      const password2 = document.getElementById('password2').value;
+
+      // Client-side password strength
+      if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+        msg.className = 'error';
+        msg.innerText = 'Password must be at least 8 characters with uppercase, number and symbol';
+        return;
+      }
+
+      if (password !== password2) {
+        msg.className = 'error';
+        msg.innerText = 'Passwords do not match';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = 'Creating account...';
+      msg.innerText = '';
+
+      try {
+        const res = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firstname: document.getElementById('firstname').value.trim(),
+            lastname: document.getElementById('lastname').value.trim(),
+            nickname: document.getElementById('nickname').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            password: password
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          msg.className = 'success';
+          msg.innerText = data.message || 'Account created! Redirecting to login...';
+          setTimeout(() => {
+            window.location.href = '/login.html';
+          }, 1500);
+        } else {
+          msg.className = 'error';
+          msg.innerText = data.error || 'Something went wrong';
+          btn.disabled = false;
+          btn.innerText = 'Create Account';
+        }
+      } catch (err) {
+        msg.className = 'error';
+        msg.innerText = 'Network error. Please try again.';
+        btn.disabled = false;
+        btn.innerText = 'Create Account';
+      }
+    });
+  </script>
 </body>
   </html>
