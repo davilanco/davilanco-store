@@ -85,4 +85,4 @@ async function verifyPassword(password, stored) {
     .join("");
 
   return newHash === hashHex;
-      }
+            }
