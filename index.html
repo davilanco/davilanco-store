@@ -18,19 +18,19 @@
       --gold: #FFD700;
       --lemon: #C4FF61;
       --navy: #001F3F;
-      --bg: #ffffff;
-      --text: #001F3F;
-      --grey: #f4f4f4;
-      --card: #ffffff;
-      --border: #e0e0e0;
-    }
-
-    [data-theme="dark"] {
       --bg: #000000;
       --text: #ffffff;
       --grey: #1a1a1a;
       --card: #111111;
       --border: #333333;
+    }
+
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --text: #001F3F;
+      --grey: #f4f4f4;
+      --card: #ffffff;
+      --border: #e0e0e0;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -105,7 +105,7 @@
       transition: right 0.3s ease;
       z-index: 100;
       overflow-y: auto;
-      box-shadow: -4px 0 25px rgba(0,0,0,0.18);
+      box-shadow: -4px 0 25px rgba(0,0,0,0.4);
     }
 
     #navDrawer.open { right: 0; }
@@ -216,7 +216,7 @@
 
     .product-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
     }
 
     .product-img {
@@ -298,7 +298,7 @@
       cursor: pointer;
       display: none;
       z-index: 40;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
     }
   </style>
 </head>
@@ -370,10 +370,10 @@
   <button id="backToTop" onclick="window.scrollTo({top:0, behavior:'smooth'})">↑</button>
 
   <script>
-    // ========== THEME ==========
+    // ========== THEME (Dark is default) ==========
     const savedTheme = localStorage.getItem('theme');
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme || systemTheme);
+    // If user has never chosen a theme → force dark
+    document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
 
     function toggleTheme() {
       const current = document.documentElement.getAttribute('data-theme');
@@ -433,7 +433,6 @@
         const res = await fetch('/api/products');
         const data = await res.json();
 
-        // Handle both array and {results: []} formats
         allProducts = Array.isArray(data) ? data : (data.results || []);
 
         if (allProducts.length === 0) {
