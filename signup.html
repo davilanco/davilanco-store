@@ -3,88 +3,307 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Signup - Davilanco</title>
-  <meta name="robots" content="noindex">
+  <title>Create Account – Davilanco</title>
+  <meta name="description" content="Create your Davilanco account">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/images/logo.png">
+
   <style>
-    :root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F;--grey:#f1f1f1}
-    [data-theme=dark]{--bg:#000;--text:#fff;--grey:#222}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
-    header{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg);border-bottom:2px solid var(--gold)}
-    #navDrawer{position:fixed;top:0;right:-100%;width:25%;min-width:220px;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px;box-shadow:-2px 0 10px #0003}
-    #navDrawer.open{right:0}
-    main{padding:20px;max-width:420px;margin:auto}
-    input{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #999;background:var(--grey);color:var(--text)}
-    button{width:100%;padding:13px;background:var(--gold);border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin-top:10px}
-    button:disabled{opacity:0.6}
-    #msg{margin-top:12px;font-size:14px}
-    .error{color:#e74c3c}.success{color:#27ae60}
-    footer{padding:20px;text-align:center;font-size:13px}
+    :root {
+      --gold: #FFD700;
+      --lemon: #C4FF61;
+      --navy: #001F3F;
+      --bg: #ffffff;
+      --text: #001F3F;
+      --grey: #f4f4f4;
+      --card: #ffffff;
+      --border: #e0e0e0;
+    }
+
+    [data-theme="dark"] {
+      --bg: #000000;
+      --text: #ffffff;
+      --grey: #1a1a1a;
+      --card: #111111;
+      --border: #333333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--gold);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 50;
+    }
+
+    header img { height: 32px; }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text);
+      padding: 6px;
+    }
+
+    /* Navigation Drawer */
+    #navDrawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 25%;
+      min-width: 260px;
+      max-width: 320px;
+      height: 100vh;
+      background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px;
+      transition: right 0.3s ease;
+      z-index: 100;
+      overflow-y: auto;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+    }
+
+    #navDrawer.open { right: 0; }
+
+    #navDrawer a {
+      display: block;
+      padding: 12px 0;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #navDrawer a:hover { color: var(--gold); }
+
+    /* Main */
+    main {
+      flex: 1;
+      padding: 24px 16px;
+      max-width: 440px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      opacity: 0.75;
+      margin-bottom: 24px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--grey);
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    input:focus {
+      outline: 2px solid var(--gold);
+      border-color: transparent;
+    }
+
+    button[type="submit"] {
+      margin-top: 8px;
+      padding: 15px;
+      background: var(--gold);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #msg {
+      margin-top: 16px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .error { color: #e74c3c; }
+    .success { color: #27ae60; }
+
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .login-link a { color: var(--gold); font-weight: 600; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+
+    /* Back to top */
+    #backToTop {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      display: none;
+      z-index: 40;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Header -->
   <header>
-    <a href="/"><img src="/images/logo.png" height="32" alt="Davilanco"></a>
-    <button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button>
+    <a href="/">
+      <img src="/images/logo.png" alt="Davilanco Logo">
+    </a>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
+      <button class="icon-btn" onclick="toggleNav()">☰</button>
+    </div>
   </header>
 
+  <!-- Navigation Drawer -->
   <nav id="navDrawer">
-    <a href="/">Home</a><br><br>
-    <a href="/login.html">Login</a><br><br>
-    <a href="#" onclick="this.parentElement.classList.remove('open')">Close ✕</a>
+    <a href="/">Home</a>
+    <a href="/categories.html">Categories</a>
+    <a href="/cart.html">Cart</a>
+    <a href="/login.html">Login</a>
+    <a href="/signup.html">Create Account</a>
+    <br>
+    <a href="#" onclick="toggleNav()">Close ✕</a>
   </nav>
 
+  <!-- Main Content -->
   <main>
-    <h2>Create Account</h2>
-    <p style="font-size:14px;opacity:0.8">All new accounts start as Customer</p>
+    <h1>Create Account</h1>
+    <p class="subtitle">All new accounts start as Customer</p>
 
     <form id="signupForm">
-      <input id="firstname" placeholder="First Name *" required>
-      <input id="lastname" placeholder="Last Name *" required>
-      <input id="nickname" placeholder="Nickname (can become store name) *" required>
-      <input id="phone" placeholder="Phone Number *" required type="tel">
-      <input id="email" placeholder="Email *" required type="email">
-      <input id="password" placeholder="Password (min 8, uppercase, number, symbol) *" required type="password">
-      <input id="password2" placeholder="Confirm Password *" required type="password">
-      <button type="submit" id="btn">Create Account</button>
+      <input type="text" id="firstname" placeholder="First Name *" required>
+      <input type="text" id="lastname" placeholder="Last Name *" required>
+      <input type="text" id="nickname" placeholder="Nickname (can become store name) *" required>
+      <input type="tel" id="phone" placeholder="Phone Number *" required>
+      <input type="email" id="email" placeholder="Email Address *" required>
+      <input type="password" id="password" placeholder="Password (min 8, uppercase, number, symbol) *" required>
+      <input type="password" id="password2" placeholder="Confirm Password *" required>
+
+      <button type="submit" id="submitBtn">Create Account</button>
     </form>
 
     <p id="msg"></p>
-    <p>Already have an account? <a href="/login.html">Login</a></p>
+
+    <p class="login-link">
+      Already have an account? <a href="/login.html">Login here</a>
+    </p>
   </main>
 
-  <footer>Davilanco © 2026</footer>
+  <footer>
+    Davilanco © 2026 · shop.davilanco.com
+  </footer>
+
+  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
   <script>
-    // Theme
-    const saved = localStorage.getItem('theme');
-    const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', saved || sys);
+    // ========== THEME ==========
+    const savedTheme = localStorage.getItem('theme');
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme || systemTheme);
 
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    // ========== NAV ==========
+    function toggleNav() {
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+
+    // ========== BACK TO TOP ==========
+    window.addEventListener('scroll', () => {
+      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+    });
+
+    // ========== SIGNUP FORM ==========
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const msg = document.getElementById('msg');
-      const btn = document.getElementById('btn');
 
+      const msg = document.getElementById('msg');
+      const btn = document.getElementById('submitBtn');
       const password = document.getElementById('password').value;
       const password2 = document.getElementById('password2').value;
 
       // Client-side password strength
       if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
         msg.className = 'error';
-        msg.innerText = 'Password must be at least 8 characters with uppercase, number and symbol';
+        msg.textContent = 'Password must be at least 8 characters and contain uppercase, number and symbol';
         return;
       }
 
       if (password !== password2) {
         msg.className = 'error';
-        msg.innerText = 'Passwords do not match';
+        msg.textContent = 'Passwords do not match';
         return;
       }
 
       btn.disabled = true;
-      btn.innerText = 'Creating account...';
-      msg.innerText = '';
+      btn.textContent = 'Creating account...';
+      msg.textContent = '';
 
       try {
         const res = await fetch('/api/signup', {
@@ -104,21 +323,21 @@
 
         if (data.ok) {
           msg.className = 'success';
-          msg.innerText = data.message || 'Account created! Redirecting to login...';
+          msg.textContent = data.message || 'Account created successfully!';
           setTimeout(() => {
             window.location.href = '/login.html';
           }, 1500);
         } else {
           msg.className = 'error';
-          msg.innerText = data.error || 'Something went wrong';
+          msg.textContent = data.error || 'Something went wrong';
           btn.disabled = false;
-          btn.innerText = 'Create Account';
+          btn.textContent = 'Create Account';
         }
       } catch (err) {
         msg.className = 'error';
-        msg.innerText = 'Network error. Please try again.';
+        msg.textContent = 'Network error. Please try again.';
         btn.disabled = false;
-        btn.innerText = 'Create Account';
+        btn.textContent = 'Create Account';
       }
     });
   </script>
