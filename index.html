@@ -1,52 +1,533 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Davilanco Shop - Modern Fashion</title>
-<meta name="description" content="Davilanco - Modern mobile-first fashion store">
-<meta property="og:title" content="Davilanco">
-<link rel="icon" href="/images/logo.png">
-<style>
-:root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F}
-[data-theme=dark]{--bg:#000;--text:#fff;--grey:#222}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
-header{display:flex;justify-content:space-between;padding:12px;position:sticky;top:0;background:var(--bg);z-index:10;border-bottom:2px solid var(--gold)}
-#navDrawer{position:fixed;top:0;left:-100%;width:20%;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px;box-shadow:2px 0 10px #0003}
-#navDrawer.open{left:0}
-footer{padding:20px;text-align:center;border-top:1px solid grey}
-#backToTop{position:fixed;bottom:20px;right:20px;background:var(--gold);border:none;border-radius:50%;width:45px;height:45px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Davilanco – Modern Fashion Store</title>
+  <meta name="description" content="Shop modern fashion, electronics and more at Davilanco. Fast delivery across Nigeria.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Davilanco – Modern Fashion Store">
+  <meta property="og:description" content="Shop modern fashion and more at Davilanco">
+  <meta property="og:image" content="/images/logo.png">
+  <meta property="og:url" content="https://shop.davilanco.com">
+  <link rel="icon" href="/images/logo.png">
+  <link rel="apple-touch-icon" href="/images/logo.png">
+
+  <style>
+    :root {
+      --gold: #FFD700;
+      --lemon: #C4FF61;
+      --navy: #001F3F;
+      --bg: #ffffff;
+      --text: #001F3F;
+      --grey: #f4f4f4;
+      --card: #ffffff;
+      --border: #e0e0e0;
+    }
+
+    [data-theme="dark"] {
+      --bg: #000000;
+      --text: #ffffff;
+      --grey: #1a1a1a;
+      --card: #111111;
+      --border: #333333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ========== HEADER ========== */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--gold);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 50;
+    }
+
+    header img { height: 34px; }
+
+    #searchBar {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 25px;
+      border: 1px solid var(--border);
+      background: var(--grey);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    #searchBar:focus {
+      outline: 2px solid var(--gold);
+      border-color: transparent;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text);
+      padding: 6px 8px;
+    }
+
+    /* ========== NAV DRAWER ========== */
+    #navDrawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 25%;
+      min-width: 260px;
+      max-width: 320px;
+      height: 100vh;
+      background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px;
+      transition: right 0.3s ease;
+      z-index: 100;
+      overflow-y: auto;
+      box-shadow: -4px 0 25px rgba(0,0,0,0.18);
+    }
+
+    #navDrawer.open { right: 0; }
+
+    #navDrawer a {
+      display: block;
+      padding: 13px 0;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #navDrawer a:hover { color: var(--gold); }
+
+    #navDrawer .nav-section {
+      margin-top: 18px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.6;
+    }
+
+    /* ========== CATEGORIES BAR ========== */
+    .categories-bar {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      scrollbar-width: none;
+    }
+
+    .categories-bar::-webkit-scrollbar { display: none; }
+
+    .cat-chip {
+      flex-shrink: 0;
+      padding: 8px 16px;
+      background: var(--grey);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .cat-chip:hover,
+    .cat-chip.active {
+      background: var(--gold);
+      color: #000;
+      border-color: var(--gold);
+    }
+
+    /* ========== MAIN ========== */
+    main {
+      flex: 1;
+      padding: 20px 16px;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-title span {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      font-weight: 400;
+    }
+
+    /* Product Grid */
+    #productsGrid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    @media (min-width: 640px) {
+      #productsGrid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 900px) {
+      #productsGrid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .product-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .product-img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      object-fit: cover;
+      background: var(--grey);
+    }
+
+    .product-info {
+      padding: 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .product-price {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-top: auto;
+    }
+
+    .product-price small {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      font-weight: 400;
+    }
+
+    /* Empty / Loading state */
+    .state-box {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      opacity: 0.7;
+    }
+
+    .state-box h3 {
+      margin-bottom: 8px;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 24px 16px;
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+
+    footer a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    /* Back to top */
+    #backToTop {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: #000;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      display: none;
+      z-index: 40;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+  </style>
 </head>
 <body>
-<header>
-<img src="/images/logo.png" height="32" alt="Davilanco Logo">
-<input id="search" placeholder="Search products..." style="flex:1;margin:0 10px;padding:8px;border-radius:20px">
-<button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button>
-<button onclick="toggleTheme()">🌙/☀️</button>
-</header>
 
-<nav id="navDrawer">
-<a href="/">Home</a><br><br>
-<a href="/login.html" id="loginLink">Login</a>
-<a href="/dashboard.html" id="dashLink" style="display:none">Dashboard</a>
-<a href="/admin/" id="adminLink" style="display:none">Admin</a>
-<a href="/seller/" id="sellerLink" style="display:none">Seller</a>
-<br><br><a href="#" onclick="this.parentElement.classList.remove('open')">Close</a>
-</nav>
+  <!-- HEADER -->
+  <header>
+    <a href="/">
+      <img src="/images/logo.png" alt="Davilanco Logo">
+    </a>
 
-<main style="padding:15px;min-height:70vh">
-<h1>Products</h1>
-<div id="products" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
-</main>
+    <input type="text" id="searchBar" placeholder="Search products..." oninput="filterProducts(this.value)">
 
-<footer>Davilanco © 2026 | shop.davilanco.com</footer>
-<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle dark/light mode">🌓</button>
+      <button class="icon-btn" onclick="toggleNav()" title="Menu">☰</button>
+    </div>
+  </header>
 
-<script>
-function toggleTheme(){const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t)}
-// Load products from D1 later via Worker
-document.getElementById('products').innerHTML='<p>Products will load here after API connect</p>';
-</script>
+  <!-- NAV DRAWER -->
+  <nav id="navDrawer">
+    <a href="/">Home</a>
+    <a href="/categories.html">Categories</a>
+    <a href="/cart.html">Cart</a>
+    <a href="/dashboard.html" id="dashLink">Dashboard</a>
+    <a href="/seller/" id="sellerLink" style="display:none">Seller Panel</a>
+    <a href="/admin/" id="adminLink" style="display:none">Admin Panel</a>
+
+    <div class="nav-section">Account</div>
+    <a href="/login.html" id="loginLink">Login</a>
+    <a href="/signup.html" id="signupLink">Create Account</a>
+    <a href="#" id="logoutLink" style="display:none">Logout</a>
+
+    <br>
+    <a href="#" onclick="toggleNav()">Close ✕</a>
+  </nav>
+
+  <!-- CATEGORIES -->
+  <div class="categories-bar" id="categoriesBar">
+    <a href="#" class="cat-chip active" data-cat="all">All</a>
+    <a href="#" class="cat-chip" data-cat="fashion">Fashion</a>
+    <a href="#" class="cat-chip" data-cat="electronics">Electronics</a>
+    <a href="#" class="cat-chip" data-cat="home">Home</a>
+    <a href="#" class="cat-chip" data-cat="beauty">Beauty</a>
+    <a href="#" class="cat-chip" data-cat="others">Others</a>
+  </div>
+
+  <!-- MAIN -->
+  <main>
+    <div class="section-title">
+      <h2>Products</h2>
+      <span id="productCount">Loading...</span>
+    </div>
+
+    <div id="productsGrid">
+      <div class="state-box">
+        <h3>Loading products...</h3>
+        <p>Please wait</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Davilanco © 2026 · <a href="https://shop.davilanco.com">shop.davilanco.com</a></p>
+    <p style="margin-top:6px;opacity:0.7">Modern Fashion & More</p>
+  </footer>
+
+  <button id="backToTop" onclick="window.scrollTo({top:0, behavior:'smooth'})">↑</button>
+
+  <script>
+    // ========== THEME ==========
+    const savedTheme = localStorage.getItem('theme');
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme || systemTheme);
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    // ========== NAV ==========
+    function toggleNav() {
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+
+    // ========== AUTH STATE ==========
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    let user = null;
+
+    if (token && userStr) {
+      try {
+        user = JSON.parse(userStr);
+        document.getElementById('loginLink').style.display = 'none';
+        document.getElementById('signupLink').style.display = 'none';
+        document.getElementById('logoutLink').style.display = 'block';
+
+        if (user.role === 'seller' || user.role === 'admin') {
+          document.getElementById('sellerLink').style.display = 'block';
+        }
+        if (user.role === 'admin') {
+          document.getElementById('adminLink').style.display = 'block';
+        }
+      } catch (e) {
+        localStorage.clear();
+      }
+    }
+
+    document.getElementById('logoutLink')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.reload();
+    });
+
+    // ========== BACK TO TOP ==========
+    window.addEventListener('scroll', () => {
+      document.getElementById('backToTop').style.display = window.scrollY > 400 ? 'block' : 'none';
+    });
+
+    // ========== PRODUCTS ==========
+    let allProducts = [];
+
+    async function loadProducts() {
+      const grid = document.getElementById('productsGrid');
+      const countEl = document.getElementById('productCount');
+
+      try {
+        const res = await fetch('/api/products');
+        const data = await res.json();
+
+        // Handle both array and {results: []} formats
+        allProducts = Array.isArray(data) ? data : (data.results || []);
+
+        if (allProducts.length === 0) {
+          grid.innerHTML = `
+            <div class="state-box">
+              <h3>No products yet</h3>
+              <p>Check back soon or ask the admin to add products.</p>
+            </div>
+          `;
+          countEl.textContent = '0 products';
+          return;
+        }
+
+        renderProducts(allProducts);
+        countEl.textContent = `\( {allProducts.length} product \){allProducts.length > 1 ? 's' : ''}`;
+
+      } catch (err) {
+        grid.innerHTML = `
+          <div class="state-box">
+            <h3>Could not load products</h3>
+            <p>Please refresh the page.</p>
+          </div>
+        `;
+        countEl.textContent = 'Error';
+      }
+    }
+
+    function renderProducts(products) {
+      const grid = document.getElementById('productsGrid');
+
+      if (products.length === 0) {
+        grid.innerHTML = `
+          <div class="state-box">
+            <h3>No products found</h3>
+            <p>Try a different search or category.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = products.map(p => `
+        <a href="/product.html?id=${p.id || ''}" class="product-card">
+          <img 
+            class="product-img" 
+            src="${p.image || '/images/placeholder.png'}" 
+            alt="${p.name || 'Product'}"
+            onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'"
+          >
+          <div class="product-info">
+            <div class="product-name">${p.name || 'Unnamed Product'}</div>
+            <div class="product-price">
+              ₦${Number(p.price || 0).toLocaleString()}
+              \( {p.old_price ? `<small><s>₦ \){Number(p.old_price).toLocaleString()}</s></small>` : ''}
+            </div>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    // Search
+    function filterProducts(query) {
+      const q = query.toLowerCase().trim();
+      if (!q) {
+        renderProducts(allProducts);
+        return;
+      }
+      const filtered = allProducts.filter(p => 
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.category || '').toLowerCase().includes(q)
+      );
+      renderProducts(filtered);
+    }
+
+    // Category filter
+    document.getElementById('categoriesBar').addEventListener('click', (e) => {
+      if (!e.target.classList.contains('cat-chip')) return;
+      e.preventDefault();
+
+      document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+      e.target.classList.add('active');
+
+      const cat = e.target.dataset.cat;
+      if (cat === 'all') {
+        renderProducts(allProducts);
+      } else {
+        const filtered = allProducts.filter(p => 
+          (p.category || '').toLowerCase() === cat
+        );
+        renderProducts(filtered);
+      }
+    });
+
+    // Load products when page opens
+    loadProducts();
+  </script>
 </body>
   </html>
