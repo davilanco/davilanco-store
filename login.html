@@ -3,59 +3,281 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Davilanco</title>
-  <meta name="robots" content="noindex">
+  <title>Login – Davilanco</title>
+  <meta name="description" content="Login to your Davilanco account">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/images/logo.png">
+
   <style>
-    :root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F;--grey:#f1f1f1}
-    [data-theme=dark]{--bg:#000;--text:#fff;--grey:#222}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
-    header{padding:12px;border-bottom:2px solid var(--gold)}
-    main{padding:20px;max-width:400px;margin:auto}
-    input{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #999;background:var(--grey);color:var(--text)}
-    button{width:100%;padding:13px;background:var(--gold);border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin-top:10px}
-    button:disabled{opacity:0.6}
-    #msg{margin-top:12px;font-size:14px}
-    .error{color:#e74c3c}.success{color:#27ae60}
+    :root {
+      --gold: #FFD700;
+      --lemon: #C4FF61;
+      --navy: #001F3F;
+      --bg: #ffffff;
+      --text: #001F3F;
+      --grey: #f4f4f4;
+      --card: #ffffff;
+      --border: #e0e0e0;
+    }
+
+    [data-theme="dark"] {
+      --bg: #000000;
+      --text: #ffffff;
+      --grey: #1a1a1a;
+      --card: #111111;
+      --border: #333333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--gold);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 50;
+    }
+
+    header img { height: 32px; }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text);
+      padding: 6px;
+    }
+
+    #navDrawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 25%;
+      min-width: 260px;
+      max-width: 320px;
+      height: 100vh;
+      background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px;
+      transition: right 0.3s ease;
+      z-index: 100;
+      overflow-y: auto;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+    }
+
+    #navDrawer.open { right: 0; }
+
+    #navDrawer a {
+      display: block;
+      padding: 12px 0;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #navDrawer a:hover { color: var(--gold); }
+
+    main {
+      flex: 1;
+      padding: 24px 16px;
+      max-width: 400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      opacity: 0.75;
+      margin-bottom: 24px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--grey);
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    input:focus {
+      outline: 2px solid var(--gold);
+      border-color: transparent;
+    }
+
+    button[type="submit"] {
+      margin-top: 8px;
+      padding: 15px;
+      background: var(--gold);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #msg {
+      margin-top: 16px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .error { color: #e74c3c; }
+    .success { color: #27ae60; }
+
+    .signup-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .signup-link a { color: var(--gold); font-weight: 600; }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+
+    #backToTop {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      display: none;
+      z-index: 40;
+    }
   </style>
 </head>
 <body>
+
   <header>
-    <a href="/"><img src="/images/logo.png" height="32" alt="Davilanco"></a>
+    <a href="/">
+      <img src="/images/logo.png" alt="Davilanco Logo">
+    </a>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+      <button class="icon-btn" onclick="toggleNav()">☰</button>
+    </div>
   </header>
 
+  <nav id="navDrawer">
+    <a href="/">Home</a>
+    <a href="/categories.html">Categories</a>
+    <a href="/cart.html">Cart</a>
+    <a href="/login.html">Login</a>
+    <a href="/signup.html">Create Account</a>
+    <br>
+    <a href="#" onclick="toggleNav()">Close ✕</a>
+  </nav>
+
   <main>
-    <h2>Login</h2>
-    <p style="font-size:14px;opacity:0.8">Use Nickname, Email or Phone + Password</p>
+    <h1>Login</h1>
+    <p class="subtitle">Use Nickname, Email or Phone + Password</p>
 
     <form id="loginForm">
-      <input id="login" placeholder="Nickname or Email or Phone *" required>
-      <input id="password" placeholder="Password *" required type="password">
-      <button type="submit" id="btn">Login</button>
+      <input type="text" id="login" placeholder="Nickname or Email or Phone *" required>
+      <input type="password" id="password" placeholder="Password *" required>
+
+      <button type="submit" id="submitBtn">Login</button>
     </form>
 
     <p id="msg"></p>
-    <p>Don't have an account? <a href="/signup.html">Create one</a></p>
+
+    <p class="signup-link">
+      Don't have an account? <a href="/signup.html">Create one</a>
+    </p>
   </main>
+
+  <footer>
+    Davilanco © 2026 · shop.davilanco.com
+  </footer>
+
+  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
   <script>
     // Theme
-    const saved = localStorage.getItem('theme');
-    const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', saved || sys);
+    const savedTheme = localStorage.getItem('theme');
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme || systemTheme);
 
-    // Redirect target (from ?redirect=...)
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    function toggleNav() {
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+
+    window.addEventListener('scroll', () => {
+      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+    });
+
+    // Get redirect URL (if any)
     const urlParams = new URLSearchParams(window.location.search);
     const redirectTo = urlParams.get('redirect') || '/dashboard.html';
 
+    // Login form
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const msg = document.getElementById('msg');
-      const btn = document.getElementById('btn');
+      const btn = document.getElementById('submitBtn');
 
       btn.disabled = true;
-      btn.innerText = 'Logging in...';
-      msg.innerText = '';
+      btn.textContent = 'Logging in...';
+      msg.textContent = '';
 
       try {
         const res = await fetch('/api/login', {
@@ -70,27 +292,27 @@
         const data = await res.json();
 
         if (data.ok) {
-          // Save token and user info
+          // Save token and user
           localStorage.setItem('token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
 
           msg.className = 'success';
-          msg.innerText = 'Login successful! Redirecting...';
+          msg.textContent = 'Login successful! Redirecting...';
 
           setTimeout(() => {
             window.location.href = redirectTo;
-          }, 800);
+          }, 700);
         } else {
           msg.className = 'error';
-          msg.innerText = data.error || 'Login failed';
+          msg.textContent = data.error || 'Login failed';
           btn.disabled = false;
-          btn.innerText = 'Login';
+          btn.textContent = 'Login';
         }
       } catch (err) {
         msg.className = 'error';
-        msg.innerText = 'Network error. Please try again.';
+        msg.textContent = 'Network error. Please try again.';
         btn.disabled = false;
-        btn.innerText = 'Login';
+        btn.textContent = 'Login';
       }
     });
   </script>
