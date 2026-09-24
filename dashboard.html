@@ -1,129 +1,542 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard - Davilanco</title>
-<meta name="robots" content="noindex">
-<style>
-:root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F;--grey:#f5f5f5;--card:#fff}
-[data-theme=dark]{--bg:#000;--text:#fff;--grey:#111;--card:#1a1a1a}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
-header{display:flex;justify-content:space-between;padding:12px;position:sticky;top:0;background:var(--bg);border-bottom:2px solid var(--gold);z-index:10}
-#navDrawer{position:fixed;top:0;right:-100%;width:25%;min-width:250px;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px;box-shadow:2px 0 10px #0003}
-#navDrawer.open{right:0}
-main{padding:15px;max-width:600px;margin:auto}
-.card{background:var(--card);border:1px solid #ddd3;padding:15px;border-radius:12px;margin:12px 0;box-shadow:0 2px 5px #0001}
-.card h3{margin:0 0 10px 0;color:var(--gold)}
-input,textarea,select{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid grey;background:var(--grey);color:var(--text)}
-button{padding:10px 15px;background:var(--gold);border:none;border-radius:8px;font-weight:bold;cursor:pointer}
-.status{padding:4px 8px;border-radius:20px;font-size:12px}
-.pending{background:orange;color:#000}.approved{background:var(--lemon);color:#000}.shipping{background:var(--navy);color:#fff}.delivered{background:green;color:#fff}
-footer{padding:20px;text-align:center}
-#backToTop{position:fixed;bottom:20px;right:20px;background:var(--gold);border:none;border-radius:50%;width:45px;height:45px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard – Davilanco</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/images/logo.png">
+
+  <style>
+    :root {
+      --gold: #FFD700;
+      --lemon: #C4FF61;
+      --navy: #001F3F;
+      --bg: #ffffff;
+      --text: #001F3F;
+      --grey: #f4f4f4;
+      --card: #ffffff;
+      --border: #e0e0e0;
+    }
+
+    [data-theme="dark"] {
+      --bg: #000000;
+      --text: #ffffff;
+      --grey: #1a1a1a;
+      --card: #111111;
+      --border: #333333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--gold);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 50;
+    }
+
+    header img { height: 32px; }
+
+    #searchBar {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--grey);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text);
+      padding: 6px;
+    }
+
+    /* Navigation Drawer */
+    #navDrawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 25%;
+      min-width: 260px;
+      max-width: 320px;
+      height: 100vh;
+      background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px;
+      transition: right 0.3s ease;
+      z-index: 100;
+      overflow-y: auto;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+    }
+
+    #navDrawer.open { right: 0; }
+
+    #navDrawer a {
+      display: block;
+      padding: 12px 0;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #navDrawer a:hover { color: var(--gold); }
+
+    /* Main */
+    main {
+      flex: 1;
+      padding: 20px 16px;
+      max-width: 680px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 4px;
+    }
+
+    .welcome {
+      font-size: 0.95rem;
+      opacity: 0.8;
+      margin-bottom: 20px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .card h3 {
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--grey);
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    textarea { min-height: 80px; resize: vertical; }
+
+    button {
+      padding: 10px 16px;
+      background: var(--gold);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    /* Status badges */
+    .status {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .pending { background: #f39c12; color: #000; }
+    .approved { background: var(--lemon); color: #000; }
+    .shipping { background: var(--navy); color: #fff; }
+    .delivered { background: #27ae60; color: #fff; }
+
+    .order-item {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .order-item:last-child { border-bottom: none; }
+
+    #messagesBox, #notifsBox {
+      background: var(--grey);
+      border-radius: 10px;
+      padding: 12px;
+      max-height: 160px;
+      overflow-y: auto;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .msg-line { margin-bottom: 6px; }
+    .msg-you { color: var(--gold); }
+    .msg-them { opacity: 0.85; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 18px;
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+
+    #backToTop {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      display: none;
+      z-index: 40;
+    }
+
+    .hidden { display: none !important; }
+  </style>
 </head>
 <body>
-<header>
-<a href="/"><img src="/images/logo.png" height:32 alt="Logo"></a>
-<div><span id="nicknameDisplay">Hi, User</span> <button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button></div>
-</header>
 
-<nav id="navDrawer">
-<a href="/">Home / Products</a><br><br>
-<a href="/cart.html">Cart</a><br><br>
-<a href="/dashboard.html">Dashboard</a><br><br>
-<a href="/seller/" id="sellerLink" style="display:none">Seller Panel</a>
-<a href="/admin/" id="adminLink" style="display:none">Admin Panel</a><br><br>
-<a href="#" id="logoutBtn">Logout</a><br><br>
-<a href="#" onclick="this.parentElement.classList.remove('open')">Close</a>
-</nav>
+  <!-- Header -->
+  <header>
+    <a href="/"><img src="/images/logo.png" alt="Davilanco"></a>
+    <input type="text" id="searchBar" placeholder="Search products...">
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleTheme()" title="Theme">🌓</button>
+      <button class="icon-btn" onclick="toggleNav()">☰</button>
+    </div>
+  </header>
 
-<main>
-<h2>Dashboard</h2>
+  <!-- Navigation -->
+  <nav id="navDrawer">
+    <a href="/">Home</a>
+    <a href="/categories.html">Categories</a>
+    <a href="/cart.html">Cart</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/seller/" id="sellerLink" class="hidden">Seller Panel</a>
+    <a href="/admin/" id="adminLink" class="hidden">Admin Panel</a>
+    <a href="#" id="logoutBtn">Logout</a>
+    <br>
+    <a href="#" onclick="toggleNav()">Close ✕</a>
+  </nav>
 
-<div class="card">
-<h3>👤 Details - <span id="nick">Nickname</span></h3>
-<p id="userDetails">Loading...</p>
-<button onclick="toggleEdit()">Edit</button>
-<div id="editForm" style="display:none">
-<input id="e_firstname" placeholder="First Name">
-<input id="e_lastname" placeholder="Last Name">
-<input id="e_phone" placeholder="Phone">
-<button onclick="saveEdit()">Save</button>
-</div>
-</div>
+  <!-- Main -->
+  <main>
+    <h1>Dashboard</h1>
+    <p class="welcome">Welcome back, <strong id="nicknameDisplay">User</strong></p>
 
-<div class="card">
-<h3>🔒 Change Password</h3>
-<input id="oldPass" type="password" placeholder="Old Password">
-<input id="newPass" type="password" placeholder="New Password">
-<button onclick="changePass()">Update Password</button>
-</div>
+    <!-- 1. Details Card -->
+    <div class="card">
+      <h3>👤 My Details</h3>
+      <div id="userDetails">
+        <p><strong>Name:</strong> <span id="fullName">–</span></p>
+        <p><strong>Nickname:</strong> <span id="nick">–</span></p>
+        <p><strong>Phone:</strong> <span id="phone">–</span></p>
+        <p><strong>Email:</strong> <span id="email">–</span></p>
+        <p><strong>Role:</strong> <span id="role">–</span></p>
+      </div>
 
-<div class="card">
-<h3>🛒 Cart</h3>
-<div id="cartCard">Cart empty - <a href="/">Shop now</a></div>
-</div>
+      <div class="btn-row">
+        <button onclick="toggleEdit()">Edit Details</button>
+      </div>
 
-<div class="card">
-<h3>📦 Orders</h3>
-<div id="ordersCard">
-<span class="status pending">Pending</span> →
-<span class="status approved">Approved</span> →
-<span class="status shipping">Shipping / In Transit</span> →
-<span class="status delivered">Delivered</span>
-<p>Order #1234 - Status: Pending</p>
-</div>
-</div>
+      <div id="editForm" class="hidden" style="margin-top:14px">
+        <input type="text" id="e_firstname" placeholder="First Name">
+        <input type="text" id="e_lastname" placeholder="Last Name">
+        <input type="tel" id="e_phone" placeholder="Phone">
+        <div class="btn-row">
+          <button onclick="saveDetails()">Save Changes</button>
+          <button class="secondary" onclick="toggleEdit()">Cancel</button>
+        </div>
+      </div>
+    </div>
 
-<div class="card">
-<h3>🚚 Tracking</h3>
-<p>Logistics: <span id="courier">DHL</span> - Tracking: <span id="trackingNo">Not assigned</span></p>
-<p>Expected Arrival: <span id="eta">-</span></p>
-</div>
+    <!-- 2. Change Password -->
+    <div class="card">
+      <h3>🔒 Change Password</h3>
+      <input type="password" id="oldPass" placeholder="Current Password">
+      <input type="password" id="newPass" placeholder="New Password">
+      <input type="password" id="newPass2" placeholder="Confirm New Password">
+      <button onclick="changePassword()">Update Password</button>
+      <p id="passMsg" style="font-size:13px;margin-top:8px"></p>
+    </div>
 
-<div class="card">
-<h3>💬 Messaging (All Roles)</h3>
-<div id="messages" style="max-height:150px;overflow:auto;background:var(--grey);padding:10px;border-radius:8px">No messages</div>
-<textarea id="msgInput" placeholder="Send message to Admin/Seller/Customer"></textarea>
-<select id="msgTo"><option value="admin">To Admin</option><option value="seller">To Seller</option></select>
-<button onclick="sendMsg()">Send Message</button>
-</div>
+    <!-- 3. Cart Card -->
+    <div class="card">
+      <h3>🛒 Cart</h3>
+      <div id="cartCard">
+        <p>Your cart is empty.</p>
+        <a href="/"><button style="margin-top:8px">Continue Shopping</button></a>
+      </div>
+    </div>
 
-<div class="card">
-<h3>🔔 Notifications</h3>
-<div id="notifs">No notifications</div>
-</div>
+    <!-- 4. Orders Card -->
+    <div class="card">
+      <h3>📦 My Orders</h3>
+      <p style="font-size:13px;margin-bottom:12px;opacity:0.8">
+        Status flow:
+        <span class="status pending">Pending</span> →
+        <span class="status approved">Approved</span> →
+        <span class="status shipping">Shipping / In Transit</span> →
+        <span class="status delivered">Delivered</span>
+      </p>
+      <div id="ordersList">
+        <p style="opacity:0.7">No orders yet.</p>
+      </div>
+    </div>
 
-<div class="card" style="border:2px dashed var(--gold)">
-<h3>🏪 Apply for Seller Account</h3>
-<p>Your Nickname will become Store Name if approved</p>
-<textarea id="s_products" placeholder="Products you plan to sell *"></textarea>
-<textarea id="s_address" placeholder="Full Address *"></textarea>
-<input id="s_idnumber" placeholder="ID Number *">
-<input id="s_idphoto" type="file" accept="image/*">
-<p style="font-size:12px">ID / Business Document Photo - will upload to /images when R2 is ready</p>
-<button onclick="applySeller()">Submit Application</button>
-</div>
+    <!-- 5. Tracking Card -->
+    <div class="card">
+      <h3>🚚 Tracking</h3>
+      <div id="trackingCard">
+        <p><strong>Courier:</strong> <span id="courier">–</span></p>
+        <p><strong>Tracking Number:</strong> <span id="trackingNo">–</span></p>
+        <p><strong>Expected Arrival:</strong> <span id="eta">–</span></p>
+      </div>
+    </div>
 
-</main>
+    <!-- 6. Messaging -->
+    <div class="card">
+      <h3>💬 Messages</h3>
+      <div id="messagesBox">
+        <p style="opacity:0.7">No messages yet.</p>
+      </div>
+      <textarea id="msgInput" placeholder="Type your message..."></textarea>
+      <select id="msgTo">
+        <option value="admin">Send to Admin</option>
+        <option value="seller">Send to Seller</option>
+      </select>
+      <button onclick="sendMessage()" style="margin-top:8px">Send Message</button>
+    </div>
 
-<footer>Davilanco © 2026</footer>
-<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+    <!-- 7. Notifications -->
+    <div class="card">
+      <h3>🔔 Notifications</h3>
+      <div id="notifsBox">
+        <p style="opacity:0.7">No notifications.</p>
+      </div>
+    </div>
 
-<script>
-  const saved=localStorage.getItem('theme'); const sys=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
-document.documentElement.setAttribute('data-theme', saved||sys);
-function toggleTheme(){...}
-function toggleEdit(){document.getElementById('editForm').style.display=document.getElementById('editForm').style.display==='none'?'block':'none'}
-function saveEdit(){alert('Will save to D1 via Worker')}
-function changePass(){alert('Will update password via Worker')}
-function sendMsg(){const m=document.getElementById('msgInput').value; document.getElementById('messages').innerHTML+=`<p>You: ${m}</p>`}
-function applySeller(){alert('Application sent - Admin will review in Admin Panel')}
-// Later: check session from KV, show nickname, show admin/seller links if role matches
-const user={nickname:'DavilancoUser', role:'customer'}; document.getElementById('nick').innerText=user.nickname; document.getElementById('nicknameDisplay').innerText='Hi, '+user.nickname;
-if(user.role==='seller' || user.role==='admin') document.getElementById('sellerLink').style.display='block';
-if(user.role==='admin') document.getElementById('adminLink').style.display='block';
-</script>
+    <!-- 8. Apply for Seller -->
+    <div class="card" style="border: 2px dashed var(--gold)">
+      <h3>🏪 Apply for Seller Account</h3>
+      <p style="font-size:13px;margin-bottom:12px;opacity:0.8">
+        Your Nickname will be used as your Store Name if approved.
+      </p>
+      <textarea id="s_products" placeholder="Products you plan to sell *"></textarea>
+      <textarea id="s_address" placeholder="Full Address *"></textarea>
+      <input type="text" id="s_idnumber" placeholder="ID Number *">
+      <input type="file" id="s_idphoto" accept="image/*">
+      <p style="font-size:12px;opacity:0.7;margin:6px 0 10px">
+        Upload ID / Business document photo (temporary – will improve when storage is ready)
+      </p>
+      <button onclick="applySeller()">Submit Application</button>
+      <p id="sellerMsg" style="font-size:13px;margin-top:8px"></p>
+    </div>
+  </main>
+
+  <footer>
+    Davilanco © 2026 · shop.davilanco.com
+  </footer>
+
+  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script>
+    // ========== AUTH CHECK ==========
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+
+    if (!token || !userStr) {
+      // Not logged in → redirect to login with return url
+      window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+    }
+
+    let user = {};
+    try {
+      user = JSON.parse(userStr);
+    } catch (e) {
+      localStorage.clear();
+      window.location.href = '/login.html';
+    }
+
+    // ========== THEME ==========
+    const savedTheme = localStorage.getItem('theme');
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme || systemTheme);
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    // ========== NAV ==========
+    function toggleNav() {
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+
+    // Show role-based links
+    if (user.role === 'seller' || user.role === 'admin') {
+      document.getElementById('sellerLink').classList.remove('hidden');
+    }
+    if (user.role === 'admin') {
+      document.getElementById('adminLink').classList.remove('hidden');
+    }
+
+    // ========== LOGOUT ==========
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
+    });
+
+    // ========== BACK TO TOP ==========
+    window.addEventListener('scroll', () => {
+      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+    });
+
+    // ========== FILL USER DATA ==========
+    document.getElementById('nicknameDisplay').textContent = user.nickname || 'User';
+    document.getElementById('fullName').textContent = `${user.firstname || ''} ${user.lastname || ''}`.trim();
+    document.getElementById('nick').textContent = user.nickname || '–';
+    document.getElementById('phone').textContent = user.phone || '–';
+    document.getElementById('email').textContent = user.email || '–';
+    document.getElementById('role').textContent = (user.role || 'customer').toUpperCase();
+
+    // ========== EDIT DETAILS ==========
+    function toggleEdit() {
+      const form = document.getElementById('editForm');
+      form.classList.toggle('hidden');
+      if (!form.classList.contains('hidden')) {
+        document.getElementById('e_firstname').value = user.firstname || '';
+        document.getElementById('e_lastname').value = user.lastname || '';
+        document.getElementById('e_phone').value = user.phone || '';
+      }
+    }
+
+    function saveDetails() {
+      // Placeholder – will connect to API later
+      alert('Details will be saved to the database in the next step.');
+      toggleEdit();
+    }
+
+    // ========== CHANGE PASSWORD ==========
+    function changePassword() {
+      const oldP = document.getElementById('oldPass').value;
+      const newP = document.getElementById('newPass').value;
+      const newP2 = document.getElementById('newPass2').value;
+      const msg = document.getElementById('passMsg');
+
+      if (!oldP || !newP || !newP2) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = 'Please fill all password fields';
+        return;
+      }
+      if (newP !== newP2) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = 'New passwords do not match';
+        return;
+      }
+      if (newP.length < 8 || !/[A-Z]/.test(newP) || !/[0-9]/.test(newP) || !/[^A-Za-z0-9]/.test(newP)) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = 'New password is too weak';
+        return;
+      }
+
+      // Placeholder
+      msg.style.color = '#27ae60';
+      msg.textContent = 'Password change will be connected to API next.';
+    }
+
+    // ========== MESSAGING ==========
+    function sendMessage() {
+      const text = document.getElementById('msgInput').value.trim();
+      const to = document.getElementById('msgTo').value;
+      if (!text) return;
+
+      const box = document.getElementById('messagesBox');
+      if (box.querySelector('p')) box.innerHTML = '';
+
+      const line = document.createElement('div');
+      line.className = 'msg-line msg-you';
+      line.textContent = `You → ${to}: ${text}`;
+      box.appendChild(line);
+
+      document.getElementById('msgInput').value = '';
+      // Later: POST to /api/messages
+    }
+
+    // ========== APPLY SELLER ==========
+    function applySeller() {
+      const products = document.getElementById('s_products').value.trim();
+      const address = document.getElementById('s_address').value.trim();
+      const idnumber = document.getElementById('s_idnumber').value.trim();
+      const msg = document.getElementById('sellerMsg');
+
+      if (!products || !address || !idnumber) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = 'Please fill all required fields';
+        return;
+      }
+
+      msg.style.color = '#27ae60';
+      msg.textContent = 'Application submitted! Admin will review it soon.';
+      // Later: POST to /api/seller-application
+    }
+  </script>
 </body>
   </html>
