@@ -1,0 +1,27 @@
+{
+  "name": "davilanco-store",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "typecheck": "astro check",
+    "deploy": "npm run build && wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply davilanco_store --local",
+    "db:migrate:remote": "wrangler d1 migrations apply davilanco_store --remote",
+    "db:seed:local": "wrangler d1 execute davilanco_store --local --file=./db/seed.sql",
+    "db:seed:remote": "wrangler d1 execute davilanco_store --remote --file=./db/seed.sql"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.6.0",
+    "astro": "^5.14.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "typescript": "^5.9.2",
+    "wrangler": "^4.38.0"
+  }
+}
