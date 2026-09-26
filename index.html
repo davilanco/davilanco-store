@@ -464,7 +464,7 @@
             <div class="product-name">${p.name || 'Unnamed Product'}</div>
             <div class="product-price">
               ₦${Number(p.price || 0).toLocaleString()}
-              \( {p.old_price ? `<small><s>₦ \){Number(p.old_price).toLocaleString()}</s></small>` : ''}
+              ${p.old_price ? `<small><s>₦${Number(p.old_price).toLocaleString()}</s></small>` : ''}
             </div>
           </div>
         </a>
@@ -505,4 +505,4 @@
     loadProducts();
   </script>
 </body>
-  </html>
+                                           </html>
