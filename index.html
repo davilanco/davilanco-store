@@ -45,7 +45,7 @@
       transition: background 0.3s, color 0.3s;
     }
 
-    /* ========== HEADER ========== */
+    /* HEADER */
     header {
       display: flex;
       align-items: center;
@@ -90,7 +90,7 @@
       padding: 6px 8px;
     }
 
-    /* ========== NAV DRAWER ========== */
+    /* NAV DRAWER */
     #navDrawer {
       position: fixed;
       top: 0;
@@ -129,7 +129,7 @@
       opacity: 0.6;
     }
 
-    /* ========== CATEGORIES BAR ========== */
+    /* CATEGORIES */
     .categories-bar {
       display: flex;
       gap: 10px;
@@ -160,7 +160,7 @@
       border-color: var(--gold);
     }
 
-    /* ========== MAIN ========== */
+    /* MAIN */
     main {
       flex: 1;
       padding: 20px 16px;
@@ -183,7 +183,6 @@
       font-weight: 400;
     }
 
-    /* Product Grid */
     #productsGrid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -191,15 +190,11 @@
     }
 
     @media (min-width: 640px) {
-      #productsGrid {
-        grid-template-columns: repeat(3, 1fr);
-      }
+      #productsGrid { grid-template-columns: repeat(3, 1fr); }
     }
 
     @media (min-width: 900px) {
-      #productsGrid {
-        grid-template-columns: repeat(4, 1fr);
-      }
+      #productsGrid { grid-template-columns: repeat(4, 1fr); }
     }
 
     .product-card {
@@ -257,7 +252,6 @@
       font-weight: 400;
     }
 
-    /* Empty / Loading state */
     .state-box {
       grid-column: 1 / -1;
       text-align: center;
@@ -265,11 +259,8 @@
       opacity: 0.7;
     }
 
-    .state-box h3 {
-      margin-bottom: 8px;
-    }
+    .state-box h3 { margin-bottom: 8px; }
 
-    /* Footer */
     footer {
       text-align: center;
       padding: 24px 16px;
@@ -278,12 +269,8 @@
       margin-top: auto;
     }
 
-    footer a {
-      color: var(--gold);
-      text-decoration: none;
-    }
+    footer a { color: var(--gold); text-decoration: none; }
 
-    /* Back to top */
     #backToTop {
       position: fixed;
       bottom: 24px;
@@ -304,26 +291,22 @@
 </head>
 <body>
 
-  <!-- HEADER -->
   <header>
     <a href="/">
       <img src="/images/logo.png" alt="Davilanco Logo">
     </a>
-
     <input type="text" id="searchBar" placeholder="Search products..." oninput="filterProducts(this.value)">
-
     <div class="header-actions">
       <button class="icon-btn" onclick="toggleTheme()" title="Toggle dark/light mode">🌓</button>
       <button class="icon-btn" onclick="toggleNav()" title="Menu">☰</button>
     </div>
   </header>
 
-  <!-- NAV DRAWER -->
   <nav id="navDrawer">
     <a href="/">Home</a>
     <a href="/categories.html">Categories</a>
     <a href="/cart.html">Cart</a>
-    <a href="/dashboard.html" id="dashLink">Dashboard</a>
+    <a href="/dashboard.html">Dashboard</a>
     <a href="/seller/" id="sellerLink" style="display:none">Seller Panel</a>
     <a href="/admin/" id="adminLink" style="display:none">Admin Panel</a>
 
@@ -336,7 +319,6 @@
     <a href="#" onclick="toggleNav()">Close ✕</a>
   </nav>
 
-  <!-- CATEGORIES -->
   <div class="categories-bar" id="categoriesBar">
     <a href="#" class="cat-chip active" data-cat="all">All</a>
     <a href="#" class="cat-chip" data-cat="fashion">Fashion</a>
@@ -346,7 +328,6 @@
     <a href="#" class="cat-chip" data-cat="others">Others</a>
   </div>
 
-  <!-- MAIN -->
   <main>
     <div class="section-title">
       <h2>Products</h2>
@@ -361,7 +342,6 @@
     </div>
   </main>
 
-  <!-- FOOTER -->
   <footer>
     <p>Davilanco © 2026 · <a href="https://shop.davilanco.com">shop.davilanco.com</a></p>
     <p style="margin-top:6px;opacity:0.7">Modern Fashion & More</p>
@@ -372,7 +352,6 @@
   <script>
     // ========== THEME (Dark is default) ==========
     const savedTheme = localStorage.getItem('theme');
-    // If user has never chosen a theme → force dark
     document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
 
     function toggleTheme() {
@@ -447,7 +426,7 @@
         }
 
         renderProducts(allProducts);
-        countEl.textContent = `\( {allProducts.length} product \){allProducts.length > 1 ? 's' : ''}`;
+        countEl.textContent = allProducts.length + ' product' + (allProducts.length > 1 ? 's' : '');
 
       } catch (err) {
         grid.innerHTML = `
@@ -492,7 +471,6 @@
       `).join('');
     }
 
-    // Search
     function filterProducts(query) {
       const q = query.toLowerCase().trim();
       if (!q) {
@@ -506,7 +484,6 @@
       renderProducts(filtered);
     }
 
-    // Category filter
     document.getElementById('categoriesBar').addEventListener('click', (e) => {
       if (!e.target.classList.contains('cat-chip')) return;
       e.preventDefault();
@@ -525,7 +502,6 @@
       }
     });
 
-    // Load products when page opens
     loadProducts();
   </script>
 </body>
