@@ -2,7 +2,7 @@ export async function onRequestGet(context) {
   const { env } = context;
 
   try {
-    // Make sure products table exists
+    // Ensure table exists
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS products (
         id TEXT PRIMARY KEY,
@@ -14,19 +14,20 @@ export async function onRequestGet(context) {
         old_price REAL,
         category TEXT,
         image TEXT,
+        images TEXT,
         stock INTEGER DEFAULT 0,
         status TEXT DEFAULT 'pending',
+        source TEXT,
+        source_url TEXT,
         created_at TEXT DEFAULT (datetime('now')),
         updated_at TEXT DEFAULT (datetime('now'))
       )
     `).run();
 
-    // Sample products
     const products = [
       {
-        id: crypto.randomUUID(),
         name: "Classic White Sneakers",
-        description: "Comfortable and stylish white sneakers perfect for everyday wear. Available in multiple sizes.",
+        description: "Comfortable and stylish white sneakers perfect for everyday wear.",
         price: 18500,
         old_price: 22000,
         category: "fashion",
@@ -35,7 +36,6 @@ export async function onRequestGet(context) {
         status: "approved"
       },
       {
-        id: crypto.randomUUID(),
         name: "Wireless Bluetooth Earbuds",
         description: "High quality wireless earbuds with noise cancellation and long battery life.",
         price: 12500,
@@ -46,18 +46,16 @@ export async function onRequestGet(context) {
         status: "approved"
       },
       {
-        id: crypto.randomUUID(),
         name: "Minimalist Wrist Watch",
         description: "Elegant minimalist watch with leather strap. Perfect gift for any occasion.",
         price: 9800,
-        old_price: null,
+        old_price: 0,
         category: "fashion",
         image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500",
         stock: 15,
         status: "approved"
       },
       {
-        id: crypto.randomUUID(),
         name: "Organic Face Cream",
         description: "Natural organic face cream for glowing skin. Suitable for all skin types.",
         price: 6500,
@@ -68,7 +66,6 @@ export async function onRequestGet(context) {
         status: "approved"
       },
       {
-        id: crypto.randomUUID(),
         name: "Smart LED Desk Lamp",
         description: "Adjustable LED desk lamp with multiple brightness levels and USB charging port.",
         price: 14500,
@@ -79,7 +76,6 @@ export async function onRequestGet(context) {
         status: "approved"
       },
       {
-        id: crypto.randomUUID(),
         name: "Leather Crossbody Bag",
         description: "Premium quality leather crossbody bag. Stylish and spacious.",
         price: 22000,
@@ -94,15 +90,18 @@ export async function onRequestGet(context) {
     let inserted = 0;
 
     for (const p of products) {
+      const id = crypto.randomUUID();
+
       await env.DB.prepare(`
-        INSERT INTO products (id, name, description, price, old_price, category, image, stock, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO products (
+          id, name, description, price, old_price, category, image, stock, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
-        p.id,
+        id,
         p.name,
         p.description,
         p.price,
-        p.old_price,
+        p.old_price || 0,
         p.category,
         p.image,
         p.stock,
@@ -123,4 +122,4 @@ export async function onRequestGet(context) {
       error: err.message
     }, { status: 500 });
   }
-}
+      }
