@@ -1,101 +1,458 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Seller Panel - Davilanco</title>
-<meta name="robots" content="noindex">
-<style>
-:root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F;--grey:#f5f5f5;--card:#fff}
-[data-theme=dark]{--bg:#000;--text:#fff;--grey:#111;--card:#1a1a1a}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui;transition:0.3s}
-header{display:flex;align-items:center;gap:10px;padding:12px;position:sticky;top:0;background:var(--bg);border-bottom:2px solid var(--gold);z-index:10}
-header input#searchBar{flex:1;padding:10px;border-radius:20px;border:1px solid #aaa;background:var(--grey);color:var(--text)}
-#navDrawer{position:fixed;top:0;right:-100%;width:25%;min-width:250px;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px;box-shadow:-2px 0 10px #0003}
-#navDrawer.open{right:0}
-main{padding:15px;max-width:800px;margin:auto}
-.card{background:var(--card);border:1px solid #ddd3;padding:15px;border-radius:12px;margin:12px 0}
-input,select,textarea{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid grey;background:var(--grey);color:var(--text)}
-button{padding:10px 15px;background:var(--gold);border:none;border-radius:8px;font-weight:bold;cursor:pointer}
-footer{padding:20px;text-align:center;position:sticky;bottom:0;background:var(--bg)}
-#backToTop{position:fixed;bottom:20px;right:20px;background:var(--gold);border:none;border-radius:50%;width:45px;height:45px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seller Panel – Davilanco</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/images/logo.png">
+
+  <style>
+    :root {
+      --gold: #FFD700;
+      --lemon: #C4FF61;
+      --navy: #001F3F;
+      --bg: #000000;
+      --text: #ffffff;
+      --grey: #1a1a1a;
+      --card: #111111;
+      --border: #333333;
+    }
+
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --text: #001F3F;
+      --grey: #f4f4f4;
+      --card: #ffffff;
+      --border: #e0e0e0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--gold);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 50;
+    }
+
+    header img { height: 32px; }
+
+    #searchBar {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--grey);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text);
+      padding: 6px;
+    }
+
+    /* Nav Drawer */
+    #navDrawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 25%;
+      min-width: 260px;
+      max-width: 320px;
+      height: 100vh;
+      background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px;
+      transition: right 0.3s ease;
+      z-index: 100;
+      overflow-y: auto;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+    }
+
+    #navDrawer.open { right: 0; }
+
+    #navDrawer a {
+      display: block;
+      padding: 12px 0;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #navDrawer a:hover { color: var(--gold); }
+
+    /* Main */
+    main {
+      flex: 1;
+      padding: 20px 16px;
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      opacity: 0.75;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card h3 {
+      font-size: 1.05rem;
+      margin-bottom: 14px;
+      color: var(--gold);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--grey);
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    textarea { min-height: 80px; resize: vertical; }
+
+    button {
+      padding: 10px 16px;
+      background: var(--gold);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      margin: 4px 4px 4px 0;
+    }
+
+    button.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { opacity: 0.7; font-weight: 600; }
+
+    .status {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .pending { background: #f39c12; color: #000; }
+    .approved { background: var(--lemon); color: #000; }
+    .shipping { background: var(--navy); color: #fff; }
+    .delivered { background: #27ae60; color: #fff; }
+
+    .msg-box {
+      background: var(--grey);
+      border-radius: 10px;
+      padding: 12px;
+      max-height: 150px;
+      overflow-y: auto;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 18px;
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+
+    #backToTop {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      display: none;
+      z-index: 40;
+    }
+  </style>
 </head>
 <body>
-<header>
-<a href="/"><img src="/images/logo.png" height="32" alt="Davilanco"></a>
-<input id="searchBar" placeholder="Search products..." oninput="searchProducts(this.value)">
-<button onclick="toggleTheme()">🌙/☀️</button>
-<button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button>
-</header>
 
-<nav id="navDrawer">
-<h3>Menu</h3>
-  <div style="display:flex;gap:10px;font-size:13px"><a href="/">Home</a><a href="/#categories">Categories</a></div>
-<a href="/">Home / Products</a><br><br>
-<a href="/cart.html">Cart</a><br><br>
-<a href="/dashboard.html">Dashboard</a><br><br>
-<a href="/seller/">Seller Panel</a><br><br>
-<a href="/admin/" id="adminLink" style="display:none">Admin Panel</a><br><br>
-<a href="/login.html" id="loginLink">Login</a>
-<a href="#" id="logoutLink" style="display:none">Logout</a><br><br>
-<hr>
-<p style="font-size:12px">Dark/Light auto + manual</p>
-<a href="#" onclick="document.getElementById('navDrawer').classList.remove('open')">Close ✕</a>
-</nav>
+  <header>
+    <a href="/"><img src="/images/logo.png" alt="Davilanco"></a>
+    <input type="text" id="searchBar" placeholder="Search products...">
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+      <button class="icon-btn" onclick="toggleNav()">☰</button>
+    </div>
+  </header>
 
-<main>
-<h2>Seller Panel - <span id="storeName">Your Store (Nickname)</span></h2>
+  <nav id="navDrawer">
+    <a href="/">Home</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/seller/">Seller Panel</a>
+    <a href="/admin/" id="adminLink" style="display:none">Admin Panel</a>
+    <br>
+    <a href="#" id="logoutBtn">Logout</a>
+    <a href="#" onclick="toggleNav()">Close ✕</a>
+  </nav>
 
-<div class="card">
-<h3>➕ Add Your Product</h3>
-<input id="p_name" placeholder="Product Name *">
-<input id="p_price" placeholder="Price (NGN) *">
-<input id="p_cat" placeholder="Category *">
-<input id="p_stock" placeholder="Stock *">
-<textarea id="p_desc" placeholder="Description"></textarea>
-<input id="p_image" placeholder="Image path e.g /images/product1.jpg">
-<button onclick="addProduct()">Add Product (Pending Admin Approval)</button>
-</div>
+  <main>
+    <h1>Seller Panel</h1>
+    <p class="subtitle">Store: <strong id="storeName">Your Store</strong></p>
 
-<div class="card">
-<h3>📦 Receive Orders For Your Products</h3>
-<table style="width:100%;font-size:13px"><tr><th>Order</th><th>Customer Info (Only from order)</th><th>Status</th></tr>
-<tr><td>#1001 - Shoe x1 - ₦15000</td><td>Name: John Doe<br>Phone: 0803...<br>Email: john@test.com<br>Address: Asaba, Delta</td><td><select><option>Approved</option><option>Shipping</option><option>Delivered</option></select> <button>Update</button></td></tr>
-</table>
-</div>
+    <!-- 1. Add Product -->
+    <div class="card">
+      <h3>1. Add Your Product</h3>
+      <input type="text" id="p_name" placeholder="Product Name *">
+      <input type="number" id="p_price" placeholder="Price (NGN) *">
+      <input type="text" id="p_category" placeholder="Category *">
+      <input type="number" id="p_stock" placeholder="Stock quantity *">
+      <textarea id="p_desc" placeholder="Product description"></textarea>
+      <input type="text" id="p_image" placeholder="Image URL">
+      <button onclick="addProduct()">Add Product (Pending Admin Approval)</button>
+      <p id="addMsg" style="font-size:13px;margin-top:8px"></p>
+    </div>
 
-<div class="card">
-<h3>🚚 Select Shipping + Add Tracking</h3>
-<select id="shipMethod"><option>DHL</option><option>GIG</option><option>Fez Delivery</option><option>Self Delivery</option></select>
-<input id="trackInput" placeholder="Tracking Number">
-<input id="etaInput" placeholder="Expected Arrival e.g 2 days">
-<button onclick="addTracking()">Add Tracking Details</button>
-</div>
+    <!-- 2. Orders for your products -->
+    <div class="card">
+      <h3>2. Orders for Your Products</h3>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Order</th>
+              <th>Customer Info</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTable">
+            <tr>
+              <td colspan="4" style="opacity:0.7">No orders yet</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-<div class="card">
-<h3>💬 Messages</h3>
-<p>Send/Receive with Customers + Admin</p>
-<div id="msgBox" style="background:var(--grey);padding:10px;height:120px;overflow:auto">Customer: Where is my order?</div>
-<textarea id="msgText" placeholder="Message"></textarea>
-<select id="msgTo"><option value="customer">To Customer</option><option value="admin">To Admin</option></select>
-<button onclick="sendMsg()">Send</button>
-</div>
+    <!-- 3. Shipping + Tracking -->
+    <div class="card">
+      <h3>3. Shipping Method + Tracking</h3>
+      <select id="shipMethod">
+        <option value="">Select shipping method</option>
+        <option value="DHL">DHL</option>
+        <option value="GIG">GIG Logistics</option>
+        <option value="Fez">Fez Delivery</option>
+        <option value="Self">Self Delivery</option>
+      </select>
+      <input type="text" id="trackInput" placeholder="Tracking Number">
+      <input type="text" id="etaInput" placeholder="Expected Arrival (e.g. 2-3 days)">
+      <button onclick="addTracking()">Add Tracking Details</button>
+      <p id="trackMsg" style="font-size:13px;margin-top:8px"></p>
+    </div>
 
-</main>
+    <!-- 4. Messages -->
+    <div class="card">
+      <h3>4. Messages</h3>
+      <p style="font-size:13px;opacity:0.75;margin-bottom:10px">
+        Chat with Customers and Admin
+      </p>
+      <div class="msg-box" id="msgBox">
+        <p style="opacity:0.7">No messages yet</p>
+      </div>
+      <textarea id="msgText" placeholder="Type your message..."></textarea>
+      <select id="msgTo">
+        <option value="customer">To Customer</option>
+        <option value="admin">To Admin</option>
+      </select>
+      <button onclick="sendMessage()">Send Message</button>
+    </div>
 
-<footer>Davilanco Seller © 2026</footer>
-<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+  </main>
 
-<script>
-// THEME with system preference
-const saved=localStorage.getItem('theme'); const sys=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
-document.documentElement.setAttribute('data-theme', saved||sys);
-function toggleTheme(){const cur=document.documentElement.getAttribute('data-theme'); const nxt=cur==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',nxt); localStorage.setItem('theme',nxt)}
-function searchProducts(v){console.log('search',v)}
-function addProduct(){alert('Will POST to /api/seller/products -> D1 status=pending')}
-function addTracking(){alert('Will UPDATE orders SET tracking + ETA')}
-function sendMsg(){document.getElementById('msgBox').innerHTML+=`<p>You: ${document.getElementById('msgText').value}</p>`}
-</script>
+  <footer>
+    Davilanco Seller © 2026
+  </footer>
+
+  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script>
+    // ========== THEME (Dark default) ==========
+    const savedTheme = localStorage.getItem('theme');
+    document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    // ========== NAV ==========
+    function toggleNav() {
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+
+    // ========== AUTH CHECK ==========
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+
+    if (!token || !userStr) {
+      window.location.href = '/login.html?redirect=' + encodeURIComponent('/seller/');
+    }
+
+    let user = {};
+    try {
+      user = JSON.parse(userStr);
+    } catch (e) {
+      localStorage.clear();
+      window.location.href = '/login.html';
+    }
+
+    // Only seller or admin can access
+    if (user.role !== 'seller' && user.role !== 'admin') {
+      alert('Access denied. Seller account required.');
+      window.location.href = '/dashboard.html';
+    }
+
+    // Show admin link if user is admin
+    if (user.role === 'admin') {
+      document.getElementById('adminLink').style.display = 'block';
+    }
+
+    // Display store name (nickname)
+    document.getElementById('storeName').textContent = user.nickname || 'Your Store';
+
+    // ========== LOGOUT ==========
+    document.getElementById('logoutBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
+    });
+
+    // ========== BACK TO TOP ==========
+    window.addEventListener('scroll', function() {
+      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+    });
+
+    // ========== ADD PRODUCT ==========
+    function addProduct() {
+      const name = document.getElementById('p_name').value.trim();
+      const price = document.getElementById('p_price').value;
+      const category = document.getElementById('p_category').value.trim();
+      const stock = document.getElementById('p_stock').value;
+      const msg = document.getElementById('addMsg');
+
+      if (!name || !price || !category || !stock) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = 'Please fill all required fields';
+        return;
+      }
+
+      msg.style.color = '#27ae60';
+      msg.textContent = 'Product submitted! Waiting for admin approval.';
+      // Will connect to API later
+    }
+
+    // ========== TRACKING ==========
+    function addTracking() {
+      const method = document.getElementById('shipMethod').value;
+      const tracking = document.getElementById('trackInput').value.trim();
+      const eta = document.getElementById('etaInput').value.trim();
+      const msg = document.getElementById('trackMsg');
+
+      if (!method || !tracking) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = 'Please select shipping method and enter tracking number';
+        return;
+      }
+
+      msg.style.color = '#27ae60';
+      msg.textContent = 'Tracking details saved: ' + method + ' - ' + tracking;
+      // Will connect to API later
+    }
+
+    // ========== MESSAGES ==========
+    function sendMessage() {
+      const text = document.getElementById('msgText').value.trim();
+      const to = document.getElementById('msgTo').value;
+
+      if (!text) return;
+
+      const box = document.getElementById('msgBox');
+      if (box.querySelector('p')) box.innerHTML = '';
+
+      const line = document.createElement('div');
+      line.textContent = 'You → ' + to + ': ' + text;
+      line.style.marginBottom = '6px';
+      box.appendChild(line);
+
+      document.getElementById('msgText').value = '';
+      // Will connect to API later
+    }
+  </script>
 </body>
   </html>
