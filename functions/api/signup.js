@@ -2,36 +2,19 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    // Ensure users table exists
-    await env.DB.prepare(`
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        firstname TEXT NOT NULL,
-        lastname TEXT NOT NULL,
-        nickname TEXT UNIQUE NOT NULL,
-        phone TEXT UNIQUE NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT DEFAULT 'customer',
-        status TEXT DEFAULT 'active',
-        verified INTEGER DEFAULT 0,
-        created_at TEXT DEFAULT (datetime('now'))
-      )
-    `).run();
-
     const body = await request.json();
-    const firstname = (body.firstname || '').trim();
-    const lastname = (body.lastname || '').trim();
-    const nickname = (body.nickname || '').trim();
-    const phone = (body.phone || '').trim();
-    const email = (body.email || '').trim().toLowerCase();
-    const password = body.password || '';
+
+    const firstname = String(body.firstname || '').trim();
+    const lastname = String(body.lastname || '').trim();
+    const nickname = String(body.nickname || '').trim();
+    const phone = String(body.phone || '').trim();
+    const email = String(body.email || '').trim().toLowerCase();
+    const password = String(body.password || '');
 
     if (!firstname || !lastname || !nickname || !phone || !email || !password) {
       return Response.json({ error: 'All fields are required' }, { status: 400 });
     }
 
-    // Strong password check
     if (
       password.length < 8 ||
       !/[A-Z]/.test(password) ||
@@ -47,9 +30,20 @@ export async function onRequestPost(context) {
     const id = crypto.randomUUID();
 
     await env.DB.prepare(`
-      INSERT INTO users (id, firstname, lastname, nickname, phone, email, password, role)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'customer')
-    `).bind(id, firstname, lastname, nickname, phone, email, hashedPassword).run();
+      INSERT INTO users (id, firstname, lastname, nickname, phone, email, password, role, status, verified)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      firstname,
+      lastname,
+      nickname,
+      phone,
+      email,
+      hashedPassword,
+      'customer',
+      'active',
+      0
+    ).run();
 
     return Response.json({
       ok: true,
@@ -87,15 +81,13 @@ async function hashPassword(password) {
     256
   );
 
-  const hashArray = Array.from(new Uint8Array(derivedBits));
-  const hashHex = hashArray.map(function(b) {
+  const hashHex = Array.from(new Uint8Array(derivedBits)).map(function(b) {
     return b.toString(16).padStart(2, '0');
   }).join('');
 
-  const saltArray = Array.from(salt);
-  const saltHex = saltArray.map(function(b) {
+  const saltHex = Array.from(salt).map(function(b) {
     return b.toString(16).padStart(2, '0');
   }).join('');
 
   return saltHex + ':' + hashHex;
-        }
+                           }
