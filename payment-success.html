@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Status – Davilanco</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/images/logo.png">
+  <style>
+    :root {
+      --gold: #FFD700;
+      --bg: #000;
+      --text: #fff;
+      --grey: #1a1a1a;
+      --card: #111;
+      --border: #333;
+    }
+    [data-theme="light"] {
+      --bg: #fff;
+      --text: #001F3F;
+      --grey: #f4f4f4;
+      --card: #fff;
+      --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 24px;
+      max-width: 420px;
+      width: 100%;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 12px; }
+    p { opacity: 0.85; margin-bottom: 10px; line-height: 1.5; }
+    .ref { color: var(--gold); font-weight: 700; word-break: break-all; }
+    a.btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 24px;
+      background: var(--gold);
+      color: #000;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+    .error { color: #e74c3c; }
+    .success { color: #27ae60; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 id="title">Verifying payment...</h1>
+    <p id="message">Please wait</p>
+    <p class="ref" id="ref"></p>
+    <a class="btn" href="/dashboard.html">Go to Dashboard</a>
+    <br>
+    <a class="btn" href="/" style="margin-top:10px;background:transparent;border:1px solid var(--border);color:var(--text)">Continue Shopping</a>
+  </div>
+
+  <script>
+    const savedTheme = localStorage.getItem('theme');
+    document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
+
+    const params = new URLSearchParams(window.location.search);
+    const reference = params.get('reference') || params.get('trxref');
+
+    async function verify() {
+      const title = document.getElementById('title');
+      const message = document.getElementById('message');
+      const refEl = document.getElementById('ref');
+
+      if (!reference) {
+        title.textContent = 'No payment reference';
+        message.className = 'error';
+        message.textContent = 'We could not find a payment reference.';
+        return;
+      }
+
+      refEl.textContent = 'Ref: ' + reference;
+
+      try {
+        const res = await fetch('/api/paystack/verify?reference=' + encodeURIComponent(reference));
+        const data = await res.json();
+
+        if (data.ok && data.paid) {
+          title.textContent = 'Payment Successful';
+          message.className = 'success';
+          message.textContent = 'Your order has been paid. Thank you!';
+          localStorage.removeItem('cart');
+        } else {
+          title.textContent = 'Payment Not Completed';
+          message.className = 'error';
+          message.textContent = data.error || 'Payment was not successful. You can try again from checkout.';
+        }
+      } catch (e) {
+        title.textContent = 'Verification Error';
+        message.className = 'error';
+        message.textContent = 'Could not verify payment. Contact support with your reference.';
+      }
+    }
+
+    verify();
+  </script>
+</body>
+  </html>
