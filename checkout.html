@@ -6,39 +6,31 @@
   <title>Checkout – Davilanco</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/images/logo.jpg">
-
   <style>
     :root {
       --gold: #FFD700;
-      --lemon: #C4FF61;
-      --navy: #001F3F;
-      --bg: #000000;
-      --text: #ffffff;
+      --bg: #000;
+      --text: #fff;
       --grey: #1a1a1a;
-      --card: #111111;
-      --border: #333333;
+      --card: #111;
+      --border: #333;
     }
-
     [data-theme="light"] {
-      --bg: #ffffff;
+      --bg: #fff;
       --text: #001F3F;
       --grey: #f4f4f4;
-      --card: #ffffff;
+      --card: #fff;
       --border: #e0e0e0;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      transition: background 0.3s, color 0.3s;
     }
-
     header {
       display: flex;
       align-items: center;
@@ -50,48 +42,15 @@
       background: var(--bg);
       z-index: 50;
     }
-
     header img { height: 32px; }
-
     .icon-btn {
       background: none;
       border: none;
       font-size: 20px;
-      cursor: pointer;
       color: var(--text);
+      cursor: pointer;
       padding: 6px;
     }
-
-    #navDrawer {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: 25%;
-      min-width: 260px;
-      max-width: 320px;
-      height: 100vh;
-      background: var(--bg);
-      border-left: 2px solid var(--gold);
-      padding: 24px 20px;
-      transition: right 0.3s ease;
-      z-index: 100;
-      overflow-y: auto;
-      box-shadow: -4px 0 20px rgba(0,0,0,0.4);
-    }
-
-    #navDrawer.open { right: 0; }
-
-    #navDrawer a {
-      display: block;
-      padding: 12px 0;
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 500;
-      border-bottom: 1px solid var(--border);
-    }
-
-    #navDrawer a:hover { color: var(--gold); }
-
     main {
       flex: 1;
       padding: 20px 16px;
@@ -99,39 +58,17 @@
       margin: 0 auto;
       width: 100%;
     }
-
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 8px;
-    }
-
-    .subtitle {
-      font-size: 0.9rem;
-      opacity: 0.75;
-      margin-bottom: 24px;
-    }
-
+    h1 { font-size: 1.5rem; margin-bottom: 8px; }
+    .subtitle { font-size: 0.9rem; opacity: 0.75; margin-bottom: 20px; }
     .card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 18px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
-
-    .card h3 {
-      font-size: 1.05rem;
-      margin-bottom: 14px;
-      color: var(--gold);
-    }
-
-    label {
-      display: block;
-      font-size: 0.85rem;
-      margin-bottom: 4px;
-      opacity: 0.85;
-    }
-
+    .card h3 { color: var(--gold); margin-bottom: 14px; font-size: 1.05rem; }
+    label { display: block; font-size: 0.85rem; margin-bottom: 4px; opacity: 0.85; }
     input, select, textarea {
       width: 100%;
       padding: 12px 14px;
@@ -142,25 +79,9 @@
       font-size: 15px;
       margin-bottom: 12px;
     }
-
     textarea { min-height: 80px; resize: vertical; }
-
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    @media (max-width: 500px) {
-      .row { grid-template-columns: 1fr; }
-    }
-
-    .payment-options {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 500px) { .row { grid-template-columns: 1fr; } }
     .payment-option {
       display: flex;
       align-items: center;
@@ -168,26 +89,20 @@
       padding: 12px;
       border: 1px solid var(--border);
       border-radius: 10px;
+      margin-bottom: 8px;
       cursor: pointer;
     }
-
-    .payment-option input {
-      width: auto;
-      margin: 0;
-    }
-
     .payment-option.selected {
       border-color: var(--gold);
-      background: rgba(255, 215, 0, 0.08);
+      background: rgba(255,215,0,0.08);
     }
-
+    .payment-option input { width: auto; margin: 0; }
     .summary-row {
       display: flex;
       justify-content: space-between;
       margin-bottom: 8px;
       font-size: 15px;
     }
-
     .summary-row.total {
       font-size: 1.2rem;
       font-weight: 700;
@@ -196,7 +111,6 @@
       padding-top: 12px;
       margin-top: 12px;
     }
-
     button[type="submit"] {
       width: 100%;
       padding: 15px;
@@ -207,19 +121,9 @@
       font-weight: 700;
       font-size: 16px;
       cursor: pointer;
-      margin-top: 10px;
     }
-
-    button[type="submit"]:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .empty {
-      text-align: center;
-      padding: 50px 20px;
-    }
-
+    button[type="submit"]:disabled { opacity: 0.6; cursor: not-allowed; }
+    .empty { text-align: center; padding: 50px 20px; }
     .empty a {
       display: inline-block;
       margin-top: 16px;
@@ -230,72 +134,41 @@
       border-radius: 10px;
       font-weight: 600;
     }
-
+    #bankDetails {
+      display: none;
+      background: var(--grey);
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    #msg { margin-top: 12px; text-align: center; font-size: 14px; }
+    .error { color: #e74c3c; }
+    .success { color: #27ae60; }
     footer {
       text-align: center;
       padding: 18px;
       font-size: 13px;
       border-top: 1px solid var(--border);
-      margin-top: auto;
     }
-
-    #backToTop {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: var(--gold);
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      display: none;
-      z-index: 40;
-    }
-
-    #msg {
-      margin-top: 12px;
-      font-size: 14px;
-      text-align: center;
-    }
-    .error { color: #e74c3c; }
-    .success { color: #27ae60; }
   </style>
 </head>
 <body>
-
   <header>
     <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
-    <div>
-      <button class="icon-btn" onclick="toggleTheme()">🌓</button>
-      <button class="icon-btn" onclick="toggleNav()">☰</button>
-    </div>
+    <button class="icon-btn" onclick="toggleTheme()">🌓</button>
   </header>
-
-  <nav id="navDrawer">
-    <a href="/">Home</a>
-    <a href="/cart.html">Cart</a>
-    <a href="/dashboard.html">Dashboard</a>
-    <br>
-    <a href="#" onclick="toggleNav()">Close ✕</a>
-  </nav>
 
   <main>
     <h1>Checkout</h1>
     <p class="subtitle">Complete your order</p>
-
     <div id="checkoutContent"></div>
   </main>
 
-  <footer>
-    Davilanco © 2026
-  </footer>
-
-  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+  <footer>Davilanco © 2026</footer>
 
   <script>
-    // Theme
     const savedTheme = localStorage.getItem('theme');
     document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
 
@@ -306,168 +179,108 @@
       localStorage.setItem('theme', next);
     }
 
-    function toggleNav() {
-      document.getElementById('navDrawer').classList.toggle('open');
-    }
-
-    window.addEventListener('scroll', function() {
-      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
-    });
-
-    // Nigerian States
     const states = [
-      "Abia","Adamawa","Akwa Ibom","Anambra","Bauchi","Bayelsa","Benue","Borno",
-      "Cross River","Delta","Ebonyi","Edo","Ekiti","Enugu","FCT","Gombe","Imo",
-      "Jigawa","Kaduna","Kano","Katsina","Kebbi","Kogi","Kwara","Lagos","Nasarawa",
-      "Niger","Ogun","Ondo","Osun","Oyo","Plateau","Rivers","Sokoto","Taraba","Yobe","Zamfara"
+      'Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno',
+      'Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT','Gombe','Imo',
+      'Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa',
+      'Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara'
     ];
 
+    // === EDIT YOUR BANK DETAILS HERE ===
+    const BANK = {
+      name: 'Davilanco',
+      bank: 'Palmpay',
+      number: '2981312023',
+      note: 'Use your Order Reference as payment description'
+    };
+
     function getCart() {
-      try {
-        return JSON.parse(localStorage.getItem('cart') || '[]');
-      } catch (e) {
-        return [];
-      }
+      try { return JSON.parse(localStorage.getItem('cart') || '[]'); }
+      catch (e) { return []; }
+    }
+
+    function getUser() {
+      try { return JSON.parse(localStorage.getItem('user') || 'null'); }
+      catch (e) { return null; }
     }
 
     function renderCheckout() {
       const cart = getCart();
       const container = document.getElementById('checkoutContent');
 
-      if (cart.length === 0) {
-        container.innerHTML = `
-          <div class="empty">
-            <h2>Your cart is empty</h2>
-            <p>Add some products before checking out.</p>
-            <a href="/">Continue Shopping</a>
-          </div>
-        `;
+      if (!cart.length) {
+        container.innerHTML = '<div class="empty"><h2>Your cart is empty</h2><a href="/">Continue Shopping</a></div>';
         return;
       }
 
       let total = 0;
-      cart.forEach(function(item) {
-        total += item.price * item.quantity;
+      cart.forEach(function(item) { total += item.price * item.quantity; });
+
+      let stateOptions = '<option value="">Select State</option>';
+      states.forEach(function(s) {
+        stateOptions += '<option value="' + s + '">' + s + '</option>';
       });
 
-      let stateOptions = states.map(function(s) {
-        return '<option value="' + s + '">' + s + '</option>';
-      }).join('');
-
-      container.innerHTML = `
-        <form id="checkoutForm">
-          <!-- Delivery Details -->
-          <div class="card">
-            <h3>Delivery Details</h3>
-
-            <div class="row">
-              <div>
-                <label>First Name *</label>
-                <input type="text" id="firstname" required>
-              </div>
-              <div>
-                <label>Last Name *</label>
-                <input type="text" id="lastname" required>
-              </div>
-            </div>
-
-            <label>Phone Number *</label>
-            <input type="tel" id="phone" required>
-
-            <label>Alternative Phone</label>
-            <input type="tel" id="alt_phone">
-
-            <label>Neighbor’s Phone</label>
-            <input type="tel" id="neighbor_phone">
-
-            <label>Full Address *</label>
-            <textarea id="address" required placeholder="Street, house number, landmark"></textarea>
-
-            <label>Town *</label>
-            <input type="text" id="town" required>
-
-            <label>Local Government Area *</label>
-            <input type="text" id="lga" required placeholder="e.g. Ikeja, Eti-Osa, Chikun">
-
-            <label>State *</label>
-            <select id="state" required>
-              <option value="">Select State</option>
-              ${stateOptions}
-            </select>
-          </div>
-
-          <!-- Payment Method -->
-          <div class="card">
-            <h3>Payment Method</h3>
-            <div class="payment-options">
-              <label class="payment-option">
-                <input type="radio" name="payment" value="bank_transfer" checked>
-                <span>Bank Transfer</span>
-              </label>
-              <label class="payment-option">
-                <input type="radio" name="payment" value="paystack">
-                <span>Paystack</span>
-              </label>
-              <label class="payment-option">
-                <input type="radio" name="payment" value="flutterwave">
-                <span>Flutterwave</span>
-              </label>
-              <label class="payment-option">
-                <input type="radio" name="payment" value="paypal">
-                <span>PayPal</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Order Summary -->
-          <div class="card">
-            <h3>Order Summary</h3>
-            <div id="orderItems"></div>
-            <div class="summary-row total">
-              <span>Total</span>
-              <span>₦${total.toLocaleString()}</span>
-            </div>
-          </div>
-
-          <button type="submit" id="submitBtn">Place Order</button>
-          <p id="msg"></p>
-        </form>
-      `;
-
-      // Show items in summary
       let itemsHtml = '';
       cart.forEach(function(item) {
-        itemsHtml += `
-          <div class="summary-row">
-            <span>${item.name} × ${item.quantity}</span>
-            <span>₦${(item.price * item.quantity).toLocaleString()}</span>
-          </div>
-        `;
+        itemsHtml += '<div class="summary-row"><span>' + item.name + ' × ' + item.quantity + '</span><span>₦' + (item.price * item.quantity).toLocaleString() + '</span></div>';
       });
-      document.getElementById('orderItems').innerHTML = itemsHtml;
 
-      // Highlight selected payment
+      container.innerHTML =
+        '<form id="checkoutForm">' +
+          '<div class="card"><h3>Delivery Details</h3>' +
+            '<div class="row"><div><label>First Name *</label><input id="firstname" required></div>' +
+            '<div><label>Last Name *</label><input id="lastname" required></div></div>' +
+            '<label>Phone *</label><input type="tel" id="phone" required>' +
+            '<label>Alternative Phone</label><input type="tel" id="alt_phone">' +
+            '<label>Neighbor\'s Phone</label><input type="tel" id="neighbor_phone">' +
+            '<label>Full Address *</label><textarea id="address" required></textarea>' +
+            '<label>Town *</label><input id="town" required>' +
+            '<label>LGA *</label><input id="lga" required>' +
+            '<label>State *</label><select id="state" required>' + stateOptions + '</select>' +
+          '</div>' +
+
+          '<div class="card"><h3>Payment Method</h3>' +
+            '<label class="payment-option selected"><input type="radio" name="payment" value="paystack" checked> Paystack (Card / Bank / USSD)</label>' +
+            '<label class="payment-option"><input type="radio" name="payment" value="bank_transfer"> Bank Transfer</label>' +
+            '<div id="bankDetails">' +
+              '<strong>Bank Transfer Details</strong><br>' +
+              'Account Name: ' + BANK.name + '<br>' +
+              'Bank: ' + BANK.bank + '<br>' +
+              'Account Number: ' + BANK.number + '<br>' +
+              BANK.note +
+            '</div>' +
+          '</div>' +
+
+          '<div class="card"><h3>Order Summary</h3>' +
+            itemsHtml +
+            '<div class="summary-row total"><span>Total</span><span>₦' + total.toLocaleString() + '</span></div>' +
+          '</div>' +
+
+          '<button type="submit" id="submitBtn">Place Order</button>' +
+          '<p id="msg"></p>' +
+        '</form>';
+
+      // Payment option UI
       document.querySelectorAll('.payment-option').forEach(function(opt) {
         opt.addEventListener('click', function() {
-          document.querySelectorAll('.payment-option').forEach(function(o) {
-            o.classList.remove('selected');
-          });
+          document.querySelectorAll('.payment-option').forEach(function(o) { o.classList.remove('selected'); });
           opt.classList.add('selected');
           opt.querySelector('input').checked = true;
+          const method = opt.querySelector('input').value;
+          document.getElementById('bankDetails').style.display = method === 'bank_transfer' ? 'block' : 'none';
         });
       });
-      document.querySelector('.payment-option').classList.add('selected');
 
-      // Form submit
       document.getElementById('checkoutForm').addEventListener('submit', handleCheckout);
     }
 
-    function handleCheckout(e) {
+    async function handleCheckout(e) {
       e.preventDefault();
-
       const msg = document.getElementById('msg');
       const btn = document.getElementById('submitBtn');
       const cart = getCart();
+      const user = getUser();
 
       const firstname = document.getElementById('firstname').value.trim();
       const lastname = document.getElementById('lastname').value.trim();
@@ -484,53 +297,94 @@
         return;
       }
 
+      let total = 0;
+      cart.forEach(function(item) { total += item.price * item.quantity; });
+
+      const reference = 'DAV-' + Date.now();
+
       btn.disabled = true;
       btn.textContent = 'Processing...';
       msg.textContent = '';
 
-      // Calculate total
-      let total = 0;
-      cart.forEach(function(item) {
-        total += item.price * item.quantity;
-      });
+      try {
+        // 1. Create order
+        const orderRes = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: user ? user.id : null,
+            firstname: firstname,
+            lastname: lastname,
+            phone: phone,
+            alt_phone: document.getElementById('alt_phone').value.trim(),
+            neighbor_phone: document.getElementById('neighbor_phone').value.trim(),
+            address: address,
+            town: town,
+            lga: lga,
+            state: state,
+            payment_method: payment,
+            payment_reference: reference,
+            items: cart,
+            total: total
+          })
+        });
 
-      // For now we simulate success (API will be connected later)
-      const orderData = {
-        firstname: firstname,
-        lastname: lastname,
-        phone: phone,
-        alt_phone: document.getElementById('alt_phone').value.trim(),
-        neighbor_phone: document.getElementById('neighbor_phone').value.trim(),
-        address: address,
-        town: town,
-        lga: lga,
-        state: state,
-        payment_method: payment,
-        items: cart,
-        total: total
-      };
+        const orderData = await orderRes.json();
+        if (!orderData.ok) {
+          throw new Error(orderData.error || 'Could not create order');
+        }
 
-      // Save order reference locally for now
-      const orderRef = 'DAV-' + Date.now();
-      localStorage.setItem('lastOrder', JSON.stringify({
-        reference: orderRef,
-        ...orderData,
-        status: 'Pending',
-        created_at: new Date().toISOString()
-      }));
+        // Save last order locally
+        localStorage.setItem('lastOrder', JSON.stringify({
+          reference: orderData.order_id,
+          total: total,
+          payment_method: payment,
+          status: 'Pending'
+        }));
 
-      // Clear cart
-      localStorage.removeItem('cart');
+        if (payment === 'paystack') {
+          // 2. Initialize Paystack
+          const email = (user && user.email) ? user.email : (phone + '@davilanco.customer');
+          const initRes = await fetch('/api/paystack/initialize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: email,
+              amount: total,
+              reference: orderData.order_id,
+              order_id: orderData.order_id,
+              callback_url: 'https://shop.davilanco.com/payment-success.html'
+            })
+          });
 
-      msg.className = 'success';
-      msg.textContent = 'Order placed successfully! Reference: ' + orderRef;
+          const initData = await initRes.json();
+          if (!initData.ok || !initData.authorization_url) {
+            throw new Error(initData.error || 'Paystack initialization failed');
+          }
 
-      setTimeout(function() {
-        window.location.href = '/dashboard.html';
-      }, 2000);
+          // Redirect to Paystack
+          window.location.href = initData.authorization_url;
+          return;
+        }
+
+        // Bank transfer
+        localStorage.removeItem('cart');
+        msg.className = 'success';
+        msg.innerHTML = 'Order placed!<br>Reference: <strong>' + orderData.order_id + '</strong><br>Transfer the exact amount and use this reference as description. Admin will confirm payment.';
+        btn.textContent = 'Order Placed';
+
+        setTimeout(function() {
+          window.location.href = '/dashboard.html';
+        }, 3500);
+
+      } catch (err) {
+        msg.className = 'error';
+        msg.textContent = err.message || 'Something went wrong';
+        btn.disabled = false;
+        btn.textContent = 'Place Order';
+      }
     }
 
-    // Start
     renderCheckout();
   </script>
 </body>
