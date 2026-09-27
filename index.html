@@ -8,9 +8,9 @@
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Davilanco – Modern Fashion Store">
   <meta property="og:description" content="Shop modern fashion and more at Davilanco">
-  <meta property="og:image" content="/images/logo.png">
+  <meta property="og:image" content="/images/logo.jpg">
   <meta property="og:url" content="https://shop.davilanco.com">
-  <link rel="icon" href="/images/logo.png">
+  <link rel="icon" href="/images/logo.jpg">
 
   <style>
     :root {
@@ -347,7 +347,7 @@
 
   <header>
     <a href="/">
-      <img src="/images/logo.png" alt="Davilanco Logo">
+      <img src="/images/logo.jpg" alt="Davilanco Logo">
     </a>
 
     <input type="text" id="searchBar" placeholder="Search products..." oninput="filterProducts(this.value)">
@@ -559,44 +559,45 @@
     }
 
     function renderProducts(products) {
-      const grid = document.getElementById('productsGrid');
+  const grid = document.getElementById('productsGrid');
 
-      if (!products || products.length === 0) {
-        grid.innerHTML = '<div class="state-box"><h3>No products found</h3><p>Try a different category or search.</p></div>';
-        return;
-      }
+  if (!products || products.length === 0) {
+    grid.innerHTML = '<div class="state-box"><h3>No products found</h3><p>Try a different category or search.</p></div>';
+    return;
+  }
 
-      let html = '';
+  let html = '';
 
-      products.forEach(function(p) {
-        const id = p.id || '';
-        const name = (p.name || 'Unnamed Product').replace(/"/g, '&quot;');
-        const price = Number(p.price || 0);
-        const oldPrice = Number(p.old_price || 0);
-        const image = p.image || 'https://via.placeholder.com/300x300?text=No+Image';
-        const safeName = name.replace(/'/g, "\\'");
+  for (let i = 0; i < products.length; i++) {
+    const p = products[i];
+    const id = p.id || '';
+    const name = p.name || 'Unnamed Product';
+    const price = Number(p.price || 0);
+    const oldPrice = Number(p.old_price || 0);
+    const image = p.image || 'https://via.placeholder.com/300x300?text=No+Image';
 
-        html += `
-          <div class="product-card">
-            <a href="/product.html?id=${id}" class="product-img-link">
-              <img class="product-img" src="\( {image}" alt=" \){name}" onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
-            </a>
-            <div class="product-info">
-              <a href="/product.html?id=\( {id}" class="product-name"> \){p.name || 'Unnamed Product'}</a>
-              <div class="product-price">
-                ₦${price.toLocaleString()}
-                ${oldPrice > 0 ? '<small><s>₦' + oldPrice.toLocaleString() + '</s></small>' : ''}
-              </div>
-              <button class="add-btn" onclick="addToCart('\( {id}', ' \){safeName}', \( {price}, ' \){image}')">
-                Add to Cart
-              </button>
-            </div>
-          </div>
-        `;
-      });
+    // Escape single quotes for the onclick
+    const safeName = name.replace(/'/g, "\\'");
 
-      grid.innerHTML = html;
+    html += '<div class="product-card">';
+    html +=   '<a href="/product.html?id=' + id + '" class="product-img-link">';
+    html +=     '<img class="product-img" src="' + image + '" alt="' + name + '" onerror="this.src=\'https://via.placeholder.com/300x300?text=No+Image\'">';
+    html +=   '</a>';
+    html +=   '<div class="product-info">';
+    html +=     '<a href="/product.html?id=' + id + '" class="product-name">' + name + '</a>';
+    html +=     '<div class="product-price">₦' + price.toLocaleString();
+    if (oldPrice > 0) {
+      html += ' <small><s>₦' + oldPrice.toLocaleString() + '</s></small>';
     }
+    html +=     '</div>';
+    html +=     '<button class="add-btn" onclick="addToCart(\'' + id + '\', \'' + safeName + '\', ' + price + ', \'' + image + '\')">Add to Cart</button>';
+    html +=   '</div>';
+    html += '</div>';
+  }
+
+  grid.innerHTML = html;
+    }
+
 
     function filterProducts(query) {
       const q = query.toLowerCase().trim();
