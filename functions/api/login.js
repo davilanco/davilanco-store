@@ -2,31 +2,32 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    const { login, password } = await request.json();
+    const body = await request.json();
+    const login = (body.login || '').trim();
+    const password = body.password || '';
 
     if (!login || !password) {
-      return Response.json({ error: "Login and password are required" }, { status: 400 });
+      return Response.json({ error: 'Login and password are required' }, { status: 400 });
     }
 
     const user = await env.DB.prepare(`
-      SELECT * FROM users 
+      SELECT * FROM users
       WHERE nickname = ? OR email = ? OR phone = ?
-    `).bind(login.trim(), login.trim(), login.trim()).first();
+    `).bind(login, login, login).first();
 
     if (!user) {
-      return Response.json({ error: "Invalid login or password" }, { status: 401 });
+      return Response.json({ error: 'Invalid login or password' }, { status: 401 });
     }
 
-    if (user.status === "suspended") {
-      return Response.json({ error: "Your account has been suspended" }, { status: 403 });
+    if (user.status === 'suspended') {
+      return Response.json({ error: 'Your account has been suspended' }, { status: 403 });
     }
 
     const valid = await verifyPassword(password, user.password);
     if (!valid) {
-      return Response.json({ error: "Invalid login or password" }, { status: 401 });
+      return Response.json({ error: 'Invalid login or password' }, { status: 401 });
     }
 
-    // Simple token (valid for 7 days)
     const tokenPayload = {
       id: user.id,
       nickname: user.nickname,
@@ -37,7 +38,7 @@ export async function onRequestPost(context) {
 
     return Response.json({
       ok: true,
-      token,
+      token: token,
       user: {
         id: user.id,
         firstname: user.firstname,
@@ -55,34 +56,42 @@ export async function onRequestPost(context) {
 }
 
 async function verifyPassword(password, stored) {
-  const [saltHex, hashHex] = stored.split(":");
+  if (!stored || stored.indexOf(':') === -1) return false;
+
+  const parts = stored.split(':');
+  const saltHex = parts[0];
+  const hashHex = parts[1];
+
   if (!saltHex || !hashHex) return false;
 
-  const salt = new Uint8Array(saltHex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+  const salt = new Uint8Array(saltHex.match(/.{1,2}/g).map(function(byte) {
+    return parseInt(byte, 16);
+  }));
+
   const encoder = new TextEncoder();
 
   const keyMaterial = await crypto.subtle.importKey(
-    "raw",
+    'raw',
     encoder.encode(password),
-    "PBKDF2",
+    'PBKDF2',
     false,
-    ["deriveBits"]
+    ['deriveBits']
   );
 
   const derivedBits = await crypto.subtle.deriveBits(
     {
-      name: "PBKDF2",
-      salt,
+      name: 'PBKDF2',
+      salt: salt,
       iterations: 100000,
-      hash: "SHA-256"
+      hash: 'SHA-256'
     },
     keyMaterial,
     256
   );
 
-  const newHash = Array.from(new Uint8Array(derivedBits))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
+  const newHash = Array.from(new Uint8Array(derivedBits)).map(function(b) {
+    return b.toString(16).padStart(2, '0');
+  }).join('');
 
   return newHash === hashHex;
-            }
+}
