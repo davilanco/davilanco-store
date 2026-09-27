@@ -8,10 +8,9 @@
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Davilanco – Modern Fashion Store">
   <meta property="og:description" content="Shop modern fashion and more at Davilanco">
-  <meta property="og:image" content="/images/logo.jpg">
+  <meta property="og:image" content="/images/logo.png">
   <meta property="og:url" content="https://shop.davilanco.com">
-  <link rel="icon" href="/images/logo.jpg">
-  <link rel="apple-touch-icon" href="/images/logo.jpg">
+  <link rel="icon" href="/images/logo.png">
 
   <style>
     :root {
@@ -88,6 +87,23 @@
       cursor: pointer;
       color: var(--text);
       padding: 6px 8px;
+      position: relative;
+    }
+
+    .cart-count {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--gold);
+      color: #000;
+      font-size: 11px;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* NAV DRAWER */
@@ -151,6 +167,7 @@
       text-decoration: none;
       color: var(--text);
       border: 1px solid var(--border);
+      cursor: pointer;
     }
 
     .cat-chip:hover,
@@ -202,16 +219,19 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       overflow: hidden;
-      transition: transform 0.2s, box-shadow 0.2s;
-      text-decoration: none;
-      color: var(--text);
       display: flex;
       flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .product-card:hover {
       transform: translateY(-4px);
       box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+    }
+
+    .product-img-link {
+      display: block;
+      text-decoration: none;
     }
 
     .product-img {
@@ -233,6 +253,8 @@
       font-weight: 600;
       margin-bottom: 6px;
       line-height: 1.3;
+      color: var(--text);
+      text-decoration: none;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -243,13 +265,31 @@
       font-size: 1.05rem;
       font-weight: 700;
       color: var(--gold);
-      margin-top: auto;
+      margin-bottom: 10px;
     }
 
     .product-price small {
       font-size: 0.75rem;
       opacity: 0.7;
       font-weight: 400;
+      margin-left: 4px;
+    }
+
+    .add-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--gold);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: auto;
+    }
+
+    .add-btn:active {
+      opacity: 0.8;
     }
 
     .state-box {
@@ -258,8 +298,6 @@
       padding: 60px 20px;
       opacity: 0.7;
     }
-
-    .state-box h3 { margin-bottom: 8px; }
 
     footer {
       text-align: center;
@@ -287,17 +325,39 @@
       z-index: 40;
       box-shadow: 0 4px 12px rgba(0,0,0,0.35);
     }
+
+    #toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gold);
+      color: #000;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 14px;
+      display: none;
+      z-index: 60;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
 
   <header>
     <a href="/">
-      <img src="/images/logo.jpg" alt="Davilanco Logo">
+      <img src="/images/logo.png" alt="Davilanco Logo">
     </a>
+
     <input type="text" id="searchBar" placeholder="Search products..." oninput="filterProducts(this.value)">
+
     <div class="header-actions">
-      <button class="icon-btn" onclick="toggleTheme()" title="Toggle dark/light mode">🌓</button>
+      <a href="/cart.html" class="icon-btn" title="Cart" style="text-decoration:none">
+        🛒
+        <span class="cart-count" id="cartCount">0</span>
+      </a>
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
       <button class="icon-btn" onclick="toggleNav()" title="Menu">☰</button>
     </div>
   </header>
@@ -320,12 +380,12 @@
   </nav>
 
   <div class="categories-bar" id="categoriesBar">
-    <a href="#" class="cat-chip active" data-cat="all">All</a>
-    <a href="#" class="cat-chip" data-cat="fashion">Fashion</a>
-    <a href="#" class="cat-chip" data-cat="electronics">Electronics</a>
-    <a href="#" class="cat-chip" data-cat="home">Home</a>
-    <a href="#" class="cat-chip" data-cat="beauty">Beauty</a>
-    <a href="#" class="cat-chip" data-cat="others">Others</a>
+    <button class="cat-chip active" data-cat="all">All</button>
+    <button class="cat-chip" data-cat="fashion">Fashion</button>
+    <button class="cat-chip" data-cat="electronics">Electronics</button>
+    <button class="cat-chip" data-cat="home">Home</button>
+    <button class="cat-chip" data-cat="beauty">Beauty</button>
+    <button class="cat-chip" data-cat="others">Others</button>
   </div>
 
   <main>
@@ -348,9 +408,10 @@
   </footer>
 
   <button id="backToTop" onclick="window.scrollTo({top:0, behavior:'smooth'})">↑</button>
+  <div id="toast">Added to cart</div>
 
   <script>
-    // ========== THEME (Dark is default) ==========
+    // ========== THEME ==========
     const savedTheme = localStorage.getItem('theme');
     document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
 
@@ -366,7 +427,7 @@
       document.getElementById('navDrawer').classList.toggle('open');
     }
 
-    // ========== AUTH STATE ==========
+    // ========== AUTH ==========
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
     let user = null;
@@ -389,7 +450,7 @@
       }
     }
 
-    document.getElementById('logoutLink')?.addEventListener('click', (e) => {
+    document.getElementById('logoutLink').addEventListener('click', function(e) {
       e.preventDefault();
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -397,9 +458,60 @@
     });
 
     // ========== BACK TO TOP ==========
-    window.addEventListener('scroll', () => {
+    window.addEventListener('scroll', function() {
       document.getElementById('backToTop').style.display = window.scrollY > 400 ? 'block' : 'none';
     });
+
+    // ========== CART ==========
+    function getCart() {
+      try {
+        return JSON.parse(localStorage.getItem('cart') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCart(cart) {
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartCount();
+    }
+
+    function updateCartCount() {
+      const cart = getCart();
+      let total = 0;
+      cart.forEach(function(item) {
+        total += item.quantity;
+      });
+      document.getElementById('cartCount').textContent = total;
+    }
+
+    function addToCart(id, name, price, image) {
+      const cart = getCart();
+      const existing = cart.find(function(item) {
+        return item.id === id;
+      });
+
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({
+          id: id,
+          name: name,
+          price: price,
+          image: image,
+          quantity: 1
+        });
+      }
+
+      saveCart(cart);
+
+      // Show toast
+      const toast = document.getElementById('toast');
+      toast.style.display = 'block';
+      setTimeout(function() {
+        toast.style.display = 'none';
+      }, 1800);
+    }
 
     // ========== PRODUCTS ==========
     let allProducts = [];
@@ -414,27 +526,34 @@
 
         allProducts = Array.isArray(data) ? data : (data.results || []);
 
-        if (allProducts.length === 0) {
-          grid.innerHTML = `
-            <div class="state-box">
-              <h3>No products yet</h3>
-              <p>Check back soon or ask the admin to add products.</p>
-            </div>
-          `;
-          countEl.textContent = '0 products';
-          return;
+        // Check URL category
+        const urlParams = new URLSearchParams(window.location.search);
+        const catFromUrl = urlParams.get('cat');
+
+        if (catFromUrl && catFromUrl !== 'all') {
+          document.querySelectorAll('.cat-chip').forEach(function(chip) {
+            chip.classList.remove('active');
+            if (chip.getAttribute('data-cat') === catFromUrl) {
+              chip.classList.add('active');
+            }
+          });
+
+          const filtered = allProducts.filter(function(p) {
+            return (p.category || '').toLowerCase() === catFromUrl.toLowerCase();
+          });
+          renderProducts(filtered);
+          countEl.textContent = filtered.length + ' product' + (filtered.length !== 1 ? 's' : '');
+        } else {
+          renderProducts(allProducts);
+          countEl.textContent = allProducts.length + ' product' + (allProducts.length !== 1 ? 's' : '');
         }
 
-        renderProducts(allProducts);
-        countEl.textContent = allProducts.length + ' product' + (allProducts.length > 1 ? 's' : '');
+        if (allProducts.length === 0) {
+          grid.innerHTML = '<div class="state-box"><h3>No products yet</h3><p>Check back soon.</p></div>';
+        }
 
       } catch (err) {
-        grid.innerHTML = `
-          <div class="state-box">
-            <h3>Could not load products</h3>
-            <p>Please refresh the page.</p>
-          </div>
-        `;
+        grid.innerHTML = '<div class="state-box"><h3>Could not load products</h3><p>Please refresh the page.</p></div>';
         countEl.textContent = 'Error';
       }
     }
@@ -442,33 +561,41 @@
     function renderProducts(products) {
       const grid = document.getElementById('productsGrid');
 
-      if (products.length === 0) {
-        grid.innerHTML = `
-          <div class="state-box">
-            <h3>No products found</h3>
-            <p>Try a different search or category.</p>
-          </div>
-        `;
+      if (!products || products.length === 0) {
+        grid.innerHTML = '<div class="state-box"><h3>No products found</h3><p>Try a different category or search.</p></div>';
         return;
       }
 
-      grid.innerHTML = products.map(p => `
-        <a href="/product.html?id=${p.id || ''}" class="product-card">
-          <img 
-            class="product-img" 
-            src="${p.image || '/images/placeholder.png'}" 
-            alt="${p.name || 'Product'}"
-            onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'"
-          >
-          <div class="product-info">
-            <div class="product-name">${p.name || 'Unnamed Product'}</div>
-            <div class="product-price">
-              ₦${Number(p.price || 0).toLocaleString()}
-              ${p.old_price ? `<small><s>₦${Number(p.old_price).toLocaleString()}</s></small>` : ''}
+      let html = '';
+
+      products.forEach(function(p) {
+        const id = p.id || '';
+        const name = (p.name || 'Unnamed Product').replace(/"/g, '&quot;');
+        const price = Number(p.price || 0);
+        const oldPrice = Number(p.old_price || 0);
+        const image = p.image || 'https://via.placeholder.com/300x300?text=No+Image';
+        const safeName = name.replace(/'/g, "\\'");
+
+        html += `
+          <div class="product-card">
+            <a href="/product.html?id=${id}" class="product-img-link">
+              <img class="product-img" src="\( {image}" alt=" \){name}" onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+            </a>
+            <div class="product-info">
+              <a href="/product.html?id=\( {id}" class="product-name"> \){p.name || 'Unnamed Product'}</a>
+              <div class="product-price">
+                ₦${price.toLocaleString()}
+                ${oldPrice > 0 ? '<small><s>₦' + oldPrice.toLocaleString() + '</s></small>' : ''}
+              </div>
+              <button class="add-btn" onclick="addToCart('\( {id}', ' \){safeName}', \( {price}, ' \){image}')">
+                Add to Cart
+              </button>
             </div>
           </div>
-        </a>
-      `).join('');
+        `;
+      });
+
+      grid.innerHTML = html;
     }
 
     function filterProducts(query) {
@@ -477,32 +604,43 @@
         renderProducts(allProducts);
         return;
       }
-      const filtered = allProducts.filter(p => 
-        (p.name || '').toLowerCase().includes(q) ||
-        (p.category || '').toLowerCase().includes(q)
-      );
+      const filtered = allProducts.filter(function(p) {
+        return (p.name || '').toLowerCase().includes(q) ||
+               (p.category || '').toLowerCase().includes(q);
+      });
       renderProducts(filtered);
     }
 
-    document.getElementById('categoriesBar').addEventListener('click', (e) => {
+    // Category chips
+    document.getElementById('categoriesBar').addEventListener('click', function(e) {
       if (!e.target.classList.contains('cat-chip')) return;
-      e.preventDefault();
 
-      document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.cat-chip').forEach(function(c) {
+        c.classList.remove('active');
+      });
       e.target.classList.add('active');
 
-      const cat = e.target.dataset.cat;
+      const cat = e.target.getAttribute('data-cat');
+
+      // Update URL
+      const newUrl = cat === 'all' ? '/' : '/?cat=' + cat;
+      window.history.replaceState({}, '', newUrl);
+
       if (cat === 'all') {
         renderProducts(allProducts);
+        document.getElementById('productCount').textContent = allProducts.length + ' product' + (allProducts.length !== 1 ? 's' : '');
       } else {
-        const filtered = allProducts.filter(p => 
-          (p.category || '').toLowerCase() === cat
-        );
+        const filtered = allProducts.filter(function(p) {
+          return (p.category || '').toLowerCase() === cat.toLowerCase();
+        });
         renderProducts(filtered);
+        document.getElementById('productCount').textContent = filtered.length + ' product' + (filtered.length !== 1 ? 's' : '');
       }
     });
 
+    // Start
+    updateCartCount();
     loadProducts();
   </script>
 </body>
-                                           </html>
+  </html>
