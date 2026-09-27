@@ -1,77 +1,498 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Product - Davilanco</title>
-<meta property="og:title" content="Davilanco Product">
-<style>
-:root{--gold:#FFD700;--navy:#001F3F;--lemon:#C4FF61;--bg:#fff;--text:#001F3F;--grey:#f5f5f5;--card:#fff}
-[data-theme=dark]{--bg:#000;--text:#fff;--grey:#111;--card:#1a1a1a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
-header{display:flex;align-items:center;gap:10px;padding:12px;position:sticky;top:0;background:var(--bg);border-bottom:2px solid var(--gold);z-index:10}
-header input{flex:1;padding:10px;border-radius:20px;border:1px solid #aaa;background:var(--grey);color:var(--text)}
-#navDrawer{position:fixed;top:0;right:-100%;width:25%;min-width:250px;height:100vh;background:var(--bg);transition:0.3s;z-index:20;padding:20px;box-shadow:-2px 0 10px #0003}
-#navDrawer.open{right:0}
-main{padding:15px;max-width:600px;margin:auto}.card{background:var(--card);padding:15px;border-radius:12px;margin:12px 0;border:1px solid #ddd3}
-button{padding:12px;background:var(--gold);border:none;border-radius:8px;font-weight:bold;cursor:pointer}
-img{max-width:100%;border-radius:12px}
-footer{padding:20px;text-align:center}
-#backToTop{position:fixed;bottom:20px;right:20px;background:var(--gold);border:none;border-radius:50%;width:45px;height:45px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details – Davilanco</title>
+  <meta name="robots" content="index, follow">
+  <link rel="icon" href="/images/logo.png">
+
+  <style>
+    :root {
+      --gold: #FFD700;
+      --lemon: #C4FF61;
+      --navy: #001F3F;
+      --bg: #000000;
+      --text: #ffffff;
+      --grey: #1a1a1a;
+      --card: #111111;
+      --border: #333333;
+    }
+
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --text: #001F3F;
+      --grey: #f4f4f4;
+      --card: #ffffff;
+      --border: #e0e0e0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--gold);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 50;
+    }
+
+    header img { height: 32px; }
+
+    #searchBar {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--grey);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text);
+      padding: 6px;
+    }
+
+    /* Nav Drawer */
+    #navDrawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 25%;
+      min-width: 260px;
+      max-width: 320px;
+      height: 100vh;
+      background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px;
+      transition: right 0.3s ease;
+      z-index: 100;
+      overflow-y: auto;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+    }
+
+    #navDrawer.open { right: 0; }
+
+    #navDrawer a {
+      display: block;
+      padding: 12px 0;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #navDrawer a:hover { color: var(--gold); }
+
+    /* Main */
+    main {
+      flex: 1;
+      padding: 20px 16px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .product-container {
+      display: grid;
+      gap: 24px;
+    }
+
+    @media (min-width: 700px) {
+      .product-container {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+      }
+    }
+
+    .product-image {
+      width: 100%;
+      aspect-ratio: 1/1;
+      object-fit: cover;
+      border-radius: 14px;
+      background: var(--grey);
+      border: 1px solid var(--border);
+    }
+
+    .product-info h1 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
+    .price {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .old-price {
+      font-size: 1rem;
+      opacity: 0.6;
+      text-decoration: line-through;
+      margin-left: 8px;
+    }
+
+    .meta {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 16px;
+    }
+
+    .description {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      opacity: 0.9;
+    }
+
+    .qty-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .qty-row label {
+      font-size: 0.9rem;
+    }
+
+    .qty-row input {
+      width: 70px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--grey);
+      color: var(--text);
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    button {
+      padding: 14px 20px;
+      background: var(--gold);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .state-box {
+      text-align: center;
+      padding: 60px 20px;
+      opacity: 0.8;
+    }
+
+    footer {
+      text-align: center;
+      padding: 18px;
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+
+    #backToTop {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      display: none;
+      z-index: 40;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gold);
+      color: #000;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 14px;
+      display: none;
+      z-index: 60;
+    }
+  </style>
 </head>
 <body>
-<header>
-<a href="/"><img src="/images/logo.png" height="32" alt="Davilanco"></a>
-<input id="searchBar" placeholder="Search products..." >
-<button onclick="toggleTheme()">🌙/☀️</button>
-<button onclick="document.getElementById('navDrawer').classList.toggle('open')">☰</button>
-</header>
 
-<nav id="navDrawer">
-<h3>Menu - 25% Right</h3>
-  <nav style="font-size:13px">
+  <header>
+    <a href="/"><img src="/images/logo.png" alt="Davilanco"></a>
+    <input type="text" id="searchBar" placeholder="Search products..." onkeydown="if(event.key==='Enter') window.location.href='/?q='+this.value">
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+      <button class="icon-btn" onclick="toggleNav()">☰</button>
+    </div>
+  </header>
+
+  <nav id="navDrawer">
     <a href="/">Home</a>
-    <a href="/product.html"> Product</a>
+    <a href="/categories.html">Categories</a>
+    <a href="/cart.html">Cart</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/seller/" id="sellerLink" style="display:none">Seller Panel</a>
+    <a href="/admin/" id="adminLink" style="display:none">Admin Panel</a>
+    <br>
+    <a href="/login.html" id="loginLink">Login</a>
+    <a href="#" id="logoutLink" style="display:none">Logout</a>
+    <a href="#" onclick="toggleNav()">Close ✕</a>
   </nav>
-<a href="/">Home / Products</a><br><br>
-<a href="/#categories">Categories</a><br><br>
-<a href="/cart.html">Cart</a><br><br>
-<a href="/dashboard.html">Dashboard</a><br><br>
-<a href="/seller/">Seller Panel</a><br><br>
-<a href="/admin/">Admin Panel</a><br><br>
-<a href="/login.html">Login</a><br><br>
-<a href="#" onclick="this.parentElement.classList.remove('open')">Close ✕</a>
-</nav>
 
-<main>
-<div class="card">
-<img id="pImage" src="/images/product1.jpg" alt="Product Image">
-<h2 id="pName">Vintage Jacket - Modern Fashion</h2>
-<p id="pPrice" style="font-size:22px;font-weight:bold;color:var(--gold)">₦25,000</p>
-<p id="pDesc">High quality vintage jacket from Davilanco. Category: Fashion. In stock.</p>
-<p>Seller: <span id="pSeller">davilanco_store</span> (Nickname as store name)</p>
-<p>Status: <span style="color:green">Approved</span></p>
-<button onclick="addToCart()" style="width:100%">Add to Cart</button>
-<a href="/checkout.html"><button style="width:100%;margin-top:8px;background:var(--lemon);color:#000">Buy Now</button></a>
-</div>
+  <main>
+    <div id="productContent">
+      <div class="state-box">
+        <h2>Loading product...</h2>
+      </div>
+    </div>
+  </main>
 
-<div class="card">
-<h3>💬 Message Seller</h3>
-<textarea placeholder="Ask seller about this product"></textarea>
-<button>Send to Seller</button>
-</div>
-</main>
+  <footer>
+    Davilanco © 2026 · shop.davilanco.com
+  </footer>
 
-<footer>Davilanco © 2026</footer>
-<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+  <div id="toast">Added to cart</div>
 
-<script>
-// THEME with system preference
-const saved=localStorage.getItem('theme'); const sys=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
-document.documentElement.setAttribute('data-theme', saved||sys);
-function toggleTheme(){const c=document.documentElement.getAttribute('data-theme'); const n=c==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',n); localStorage.setItem('theme',n)}
-function addToCart(){let cart=JSON.parse(localStorage.getItem('cart')||'[]'); cart.push({id:1,name:document.getElementById('pName').innerText,price:25000}); localStorage.setItem('cart',JSON.stringify(cart)); alert('Added to cart!'); window.location='/cart.html'}
-// Later: Load product from D1 via /api/products?id=...
-</script>
+  <script>
+    // ========== THEME (Dark default) ==========
+    const savedTheme = localStorage.getItem('theme');
+    document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    // ========== NAV ==========
+    function toggleNav() {
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+
+    // ========== AUTH STATE ==========
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    let user = null;
+
+    if (token && userStr) {
+      try {
+        user = JSON.parse(userStr);
+        document.getElementById('loginLink').style.display = 'none';
+        document.getElementById('logoutLink').style.display = 'block';
+
+        if (user.role === 'seller' || user.role === 'admin') {
+          document.getElementById('sellerLink').style.display = 'block';
+        }
+        if (user.role === 'admin') {
+          document.getElementById('adminLink').style.display = 'block';
+        }
+      } catch (e) {
+        localStorage.clear();
+      }
+    }
+
+    document.getElementById('logoutLink')?.addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.reload();
+    });
+
+    // ========== BACK TO TOP ==========
+    window.addEventListener('scroll', function() {
+      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+    });
+
+    // ========== LOAD PRODUCT ==========
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+
+    async function loadProduct() {
+      const container = document.getElementById('productContent');
+
+      if (!productId) {
+        container.innerHTML = `
+          <div class="state-box">
+            <h2>Product not found</h2>
+            <p>No product ID provided.</p>
+            <br>
+            <a href="/"><button>Back to Shop</button></a>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        // Try to fetch single product (we will improve the API later)
+        // For now we fetch all and find the matching one
+        const res = await fetch('/api/products');
+        const data = await res.json();
+        const products = Array.isArray(data) ? data : (data.results || []);
+
+        const product = products.find(p => p.id === productId);
+
+        if (!product) {
+          container.innerHTML = `
+            <div class="state-box">
+              <h2>Product not found</h2>
+              <p>This product may have been removed.</p>
+              <br>
+              <a href="/"><button>Back to Shop</button></a>
+            </div>
+          `;
+          return;
+        }
+
+        // Update page title
+        document.title = (product.name || 'Product') + ' – Davilanco';
+
+        const price = Number(product.price || 0).toLocaleString();
+        const oldPrice = product.old_price ? Number(product.old_price).toLocaleString() : null;
+
+        container.innerHTML = `
+          <div class="product-container">
+            <div>
+              <img 
+                class="product-image" 
+                src="${product.image || 'https://via.placeholder.com/500x500?text=No+Image'}" 
+                alt="${product.name || 'Product'}"
+                onerror="this.src='https://via.placeholder.com/500x500?text=No+Image'"
+              >
+            </div>
+
+            <div class="product-info">
+              <h1>${product.name || 'Unnamed Product'}</h1>
+              
+              <div class="price">
+                ₦${price}
+                \( {oldPrice ? `<span class="old-price">₦ \){oldPrice}</span>` : ''}
+              </div>
+
+              <div class="meta">
+                Category: ${product.category || 'General'}<br>
+                Stock: ${product.stock !== undefined ? product.stock : 'Available'}
+              </div>
+
+              <div class="description">
+                ${product.description || 'No description available for this product.'}
+              </div>
+
+              <div class="qty-row">
+                <label for="qty">Quantity:</label>
+                <input type="number" id="qty" value="1" min="1" max="${product.stock || 99}">
+              </div>
+
+              <div class="actions">
+                <button onclick="addToCart('\( {product.id}', ' \){(product.name || '').replace(/'/g, "\\'")}', \( {product.price || 0}, ' \){product.image || ''}')">
+                  Add to Cart
+                </button>
+                <a href="/cart.html">
+                  <button class="secondary" style="width:100%">View Cart</button>
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+
+      } catch (err) {
+        container.innerHTML = `
+          <div class="state-box">
+            <h2>Could not load product</h2>
+            <p>Please try again later.</p>
+            <br>
+            <a href="/"><button>Back to Shop</button></a>
+          </div>
+        `;
+      }
+    }
+
+    // ========== ADD TO CART (localStorage for now) ==========
+    function addToCart(id, name, price, image) {
+      const qty = parseInt(document.getElementById('qty').value) || 1;
+
+      let cart = [];
+      try {
+        cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      } catch (e) {
+        cart = [];
+      }
+
+      const existing = cart.find(item => item.id === id);
+
+      if (existing) {
+        existing.quantity += qty;
+      } else {
+        cart.push({
+          id: id,
+          name: name,
+          price: price,
+          image: image,
+          quantity: qty
+        });
+      }
+
+      localStorage.setItem('cart', JSON.stringify(cart));
+
+      // Show toast
+      const toast = document.getElementById('toast');
+      toast.style.display = 'block';
+      setTimeout(function() {
+        toast.style.display = 'none';
+      }, 2000);
+    }
+
+    // Load product when page opens
+    loadProduct();
+  </script>
 </body>
-              </html>
+  </html>
