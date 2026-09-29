@@ -40,15 +40,25 @@ export async function onRequest(context) {
   `).run();
 
   // ========== GET – list orders for a user ==========
-  if (request.method === 'GET') {
+
+if (request.method === 'GET') {
     try {
       const url = new URL(request.url);
       const userId = url.searchParams.get('user_id') || '';
       const phone = url.searchParams.get('phone') || '';
+      const all = url.searchParams.get('all') || '';
 
       let results = [];
 
-      if (userId) {
+      if (all === '1') {
+        // Admin: all orders
+        const data = await env.DB.prepare(`
+          SELECT * FROM orders
+          ORDER BY created_at DESC
+          LIMIT 100
+        `).all();
+        results = data.results || [];
+      } else if (userId) {
         const data = await env.DB.prepare(`
           SELECT * FROM orders
           WHERE user_id = ?
@@ -66,11 +76,10 @@ export async function onRequest(context) {
         results = data.results || [];
       }
 
-      // Attach items for each order
       for (let i = 0; i < results.length; i++) {
-        const items = await env.DB.prepare(`
-          SELECT * FROM order_items WHERE order_id = ?
-        `).bind(results[i].id).all();
+        const items = await env.DB.prepare(
+          'SELECT * FROM order_items WHERE order_id = ?'
+        ).bind(results[i].id).all();
         results[i].items = items.results || [];
       }
 
@@ -78,7 +87,7 @@ export async function onRequest(context) {
     } catch (err) {
       return Response.json({ error: err.message }, { status: 500 });
     }
-  }
+        }
 
   // ========== POST – create order ==========
   if (request.method === 'POST') {
