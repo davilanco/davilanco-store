@@ -398,6 +398,12 @@
 
         const price = Number(product.price || 0).toLocaleString();
         const oldPrice = product.old_price ? Number(product.old_price).toLocaleString() : null;
+        const safeName = (product.name || '').replace(/'/g, "\\'");
+
+        let oldPriceHtml = '';
+        if (oldPrice) {
+          oldPriceHtml = `<span class="old-price">₦${oldPrice}</span>`;
+        }
 
         container.innerHTML = `
           <div class="product-container">
@@ -415,7 +421,7 @@
               
               <div class="price">
                 ₦${price}
-                \( {oldPrice ? `<span class="old-price">₦ \){oldPrice}</span>` : ''}
+                ${oldPriceHtml}
               </div>
 
               <div class="meta">
@@ -433,7 +439,7 @@
               </div>
 
               <div class="actions">
-                <button onclick="addToCart('\( {product.id}', ' \){(product.name || '').replace(/'/g, "\\'")}', \( {product.price || 0}, ' \){product.image || ''}')">
+                <button onclick="addToCart('${product.id}', '${safeName}', ${product.price || 0}, '${product.image || ''}')">
                   Add to Cart
                 </button>
                 <a href="/cart.html">
@@ -495,4 +501,4 @@
     loadProduct();
   </script>
 </body>
-  </html>
+</html>
