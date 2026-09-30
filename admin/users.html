@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Users – Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/images/logo.jpg">
+  <link rel="stylesheet" href="/admin/styles.css">
+</head>
+<body>
+  <header>
+    <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
+    <div class="header-right">
+      <span style="font-size:13px;opacity:0.8">ADMIN</span>
+      <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
+      <button class="icon-btn" onclick="toggleNav()" aria-label="Open menu">☰</button>
+    </div>
+
+    <nav id="navDrawer">
+      <a href="/admin/">Admin Home</a>
+      <a href="/admin/orders.html">Orders</a>
+      <a href="/admin/users.html" class="active">Users</a>
+      <a href="/admin/products.html">Products</a>
+      <a href="/admin/messages.html">Messages</a>
+      <a href="/">Shop Home</a>
+      <a href="/dashboard.html">User Dashboard</a>
+      <a href="/seller/">Seller Panel</a>
+      <br>
+      <a href="#" id="logoutBtn">Logout</a>
+      <a href="#" onclick="toggleNav()">Close ✕</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Users</h1>
+    <p class="subtitle">Manage customers, sellers and applications</p>
+
+    <div class="card">
+      <h3>Customers & Sellers</h3>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Nickname</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>jane</td>
+              <td>jane@example.com</td>
+              <td>0803 123 4567</td>
+              <td>Customer</td>
+              <td><span class="status approved">Active</span></td>
+              <td><button class="secondary">View</button></td>
+            </tr>
+            <tr>
+              <td>mariafashion</td>
+              <td>seller@example.com</td>
+              <td>0804 500 0011</td>
+              <td>Seller</td>
+              <td><span class="status approved">Verified</span></td>
+              <td><button class="secondary">View</button></td>
+            </tr>
+            <tr>
+              <td>testuser</td>
+              <td>blocked@example.com</td>
+              <td>0702 333 2222</td>
+              <td>Customer</td>
+              <td><span class="status suspended">Suspended</span></td>
+              <td><button class="secondary">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Seller Applications</h3>
+      <div class="msg-box">
+        <p><strong>New seller:</strong> houseofstyle</p>
+        <p>Requested store access on 2026-09-28</p>
+        <p>Documents checked: Yes</p>
+      </div>
+      <button>Approve</button>
+      <button class="secondary">Reject</button>
+    </div>
+  </main>
+
+  <footer>
+    Davilanco Admin © 2026
+  </footer>
+
+  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script src="/admin/utils.js"></script>
+  <script>
+    window.addEventListener('scroll', function() {
+      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+    });
+  </script>
+</body>
+</html>
