@@ -3,359 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel – Davilanco</title>
+  <title>Admin Dashboard – Davilanco</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/images/logo.jpg">
-
-  <style>
-    :root {
-      --gold: #FFD700;
-      --lemon: #C4FF61;
-      --navy: #001F3F;
-      --bg: #000000;
-      --text: #ffffff;
-      --grey: #1a1a1a;
-      --card: #111111;
-      --border: #333333;
-    }
-
-    [data-theme="light"] {
-      --bg: #ffffff;
-      --text: #001F3F;
-      --grey: #f4f4f4;
-      --card: #ffffff;
-      --border: #e0e0e0;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    /* Header */
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      border-bottom: 2px solid var(--gold);
-      position: sticky;
-      top: 0;
-      background: var(--bg);
-      z-index: 50;
-    }
-
-    header img { height: 32px; }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .icon-btn {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--text);
-      padding: 6px;
-    }
-
-    /* Nav Drawer */
-    #navDrawer {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: 25%;
-      min-width: 260px;
-      max-width: 320px;
-      height: 100vh;
-      background: var(--bg);
-      border-left: 2px solid var(--gold);
-      padding: 24px 20px;
-      transition: right 0.3s ease;
-      z-index: 100;
-      overflow-y: auto;
-      box-shadow: -4px 0 20px rgba(0,0,0,0.4);
-    }
-
-    #navDrawer.open { right: 0; }
-
-    #navDrawer a {
-      display: block;
-      padding: 12px 0;
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 500;
-      border-bottom: 1px solid var(--border);
-    }
-
-    #navDrawer a:hover { color: var(--gold); }
-
-    /* Main */
-    main {
-      flex: 1;
-      padding: 20px 16px;
-      max-width: 900px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    h1 {
-      font-size: 1.4rem;
-      margin-bottom: 6px;
-    }
-
-    .subtitle {
-      font-size: 0.9rem;
-      opacity: 0.75;
-      margin-bottom: 20px;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 18px;
-    }
-
-    .card h3 {
-      font-size: 1.05rem;
-      margin-bottom: 14px;
-      color: var(--gold);
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 11px 14px;
-      border-radius: 9px;
-      border: 1px solid var(--border);
-      background: var(--grey);
-      color: var(--text);
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
-
-    textarea { min-height: 80px; resize: vertical; }
-
-    button {
-      padding: 10px 16px;
-      background: var(--gold);
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      margin: 4px 4px 4px 0;
-    }
-
-    button.secondary {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-
-    button.danger {
-      background: #e74c3c;
-      color: #fff;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    th, td {
-      padding: 10px 8px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
-
-    th { opacity: 0.7; font-weight: 600; }
-
-    .status {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .pending { background: #f39c12; color: #000; }
-    .approved { background: var(--lemon); color: #000; }
-    .shipping { background: var(--navy); color: #fff; }
-    .delivered { background: #27ae60; color: #fff; }
-    .suspended { background: #e74c3c; color: #fff; }
-
-    .msg-box {
-      background: var(--grey);
-      border-radius: 10px;
-      padding: 12px;
-      max-height: 160px;
-      overflow-y: auto;
-      font-size: 13px;
-      margin-bottom: 10px;
-    }
-
-    footer {
-      text-align: center;
-      padding: 18px;
-      font-size: 13px;
-      border-top: 1px solid var(--border);
-      margin-top: auto;
-    }
-
-    #backToTop {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: var(--gold);
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      display: none;
-      z-index: 40;
-    }
-
-    .hidden { display: none !important; }
-  </style>
+  <link rel="stylesheet" href="/admin/styles.css">
 </head>
 <body>
-
   <header>
     <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
     <div class="header-right">
       <span style="font-size:13px;opacity:0.8">ADMIN</span>
-      <button class="icon-btn" onclick="toggleTheme()">🌓</button>
-      <button class="icon-btn" onclick="toggleNav()">☰</button>
+      <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
+      <button class="icon-btn" onclick="toggleNav()" aria-label="Open menu">☰</button>
     </div>
-  
-  <nav id="navDrawer">
-    <a href="/">Shop Home</a>
-    <a href="/dashboard.html">User Dashboard</a>
-    <a href="/seller/">Seller Panel</a>
-    <a href="/admin/">Admin Panel</a>
-    <br>
-    <a href="#" id="logoutBtn">Logout</a>
-    <a href="#" onclick="toggleNav()">Close ✕</a>
-  </nav>
+
+    <nav id="navDrawer">
+      <a href="/admin/" class="active">Admin Home</a>
+      <a href="/admin/orders.html">Orders</a>
+      <a href="/admin/users.html">Users</a>
+      <a href="/admin/products.html">Products</a>
+      <a href="/admin/messages.html">Messages</a>
+      <a href="/">Shop Home</a>
+      <a href="/dashboard.html">User Dashboard</a>
+      <a href="/seller/">Seller Panel</a>
+      <br>
+      <a href="#" id="logoutBtn">Logout</a>
+      <a href="#" onclick="toggleNav()">Close ✕</a>
+    </nav>
   </header>
-  
+
   <main>
     <h1>Admin Panel</h1>
-    <p class="subtitle">Manage users, orders, products and messages</p>
+    <p class="subtitle">Operations overview and quick access</p>
 
-    <!-- 1. Users -->
     <div class="card">
-      <h3>1. Customers & Sellers</h3>
-      <div style="overflow-x:auto">
-        <table>
-          <thead>
-            <tr>
-              <th>Nickname</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="usersTable">
-            <tr>
-              <td colspan="6" style="opacity:0.6">Loading users... (will connect to API later)</td>
-            </tr>
-          </tbody>
-        </table>
+      <h3>Quick Access</h3>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;">
+        <a href="/admin/orders.html" class="quick-link">Orders</a>
+        <a href="/admin/users.html" class="quick-link">Users</a>
+        <a href="/admin/products.html" class="quick-link">Products</a>
+        <a href="/admin/messages.html" class="quick-link">Messages</a>
       </div>
     </div>
 
-    <!-- 2. Seller Applications -->
     <div class="card">
-      <h3>2. Seller Applications</h3>
-      <div id="applicationsList">
-        <p style="opacity:0.7">No pending applications</p>
+      <h3>Summary</h3>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-label">Pending Orders</span>
+          <strong>12</strong>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Active Sellers</span>
+          <strong>35</strong>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">New Messages</span>
+          <strong>8</strong>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Product Reviews</span>
+          <strong>5</strong>
+        </div>
       </div>
     </div>
 
-    <!-- 3. Orders -->
     <div class="card">
-      <h3>3. Orders – Change Status + Tracking</h3>
-      <select id="orderSelect">
-        <option value="">Select an order...</option>
-      </select>
-      <select id="orderStatus">
-        <option value="Pending">Pending</option>
-        <option value="Approved">Approved</option>
-        <option value="Shipping">Shipping / In Transit</option>
-        <option value="Delivered">Delivered</option>
-      </select>
-      <input type="text" id="trackingNumber" placeholder="Tracking Number">
-      <input type="text" id="logistics" placeholder="Logistics (e.g. DHL, GIG, Fez)">
-      <input type="text" id="eta" placeholder="Expected Arrival (e.g. 2-3 days)">
-      <button onclick="updateOrder()">Update Order</button>
-      <p style="font-size:13px;margin-top:10px;opacity:0.75">
-        After verifying payment, change status to Approved and release to Seller.
-      </p>
+      <h3>Recent Activity</h3>
+      <ul class="activity-list">
+        <li>New seller application submitted</li>
+        <li>Order #DVL-2043 moved to Shipping</li>
+        <li>Customer reported delayed delivery</li>
+        <li>Product review pending approval</li>
+      </ul>
     </div>
-
-    <!-- 4. Add Product -->
-    <div class="card">
-      <h3>4. Manually Add Product</h3>
-      <input type="text" id="p_name" placeholder="Product Name *">
-      <input type="number" id="p_price" placeholder="Price (NGN) *">
-      <input type="text" id="p_category" placeholder="Category (e.g. Fashion)">
-      <input type="number" id="p_stock" placeholder="Stock quantity">
-      <textarea id="p_desc" placeholder="Description"></textarea>
-      <input type="text" id="p_image" placeholder="Image URL">
-      <button onclick="addProduct()">Add Product</button>
-    </div>
-
-    <!-- 5. Import from AliExpress -->
-    <div class="card">
-      <h3>5. Import Product (AliExpress / Other)</h3>
-      <input type="url" id="importUrl" placeholder="Paste AliExpress or product URL">
-      <button onclick="importProduct()">Import Product</button>
-      <p style="font-size:12px;margin-top:8px;opacity:0.7">
-        Import feature will be connected later.
-      </p>
-    </div>
-
-    <!-- 6. Approve / Reject Seller Products -->
-    <div class="card">
-      <h3>6. Seller Products Pending Approval</h3>
-      <div id="pendingProducts">
-        <p style="opacity:0.7">No products waiting for approval</p>
-      </div>
-    </div>
-
-    <!-- 7. Messaging -->
-    <div class="card">
-      <h3>7. Messages</h3>
-      <div class="msg-box" id="adminMessages">
-        <p style="opacity:0.7">No messages yet</p>
-      </div>
-      <textarea id="adminMsgInput" placeholder="Type your reply..."></textarea>
-      <select id="msgTarget">
-        <option value="customer">To Customer</option>
-        <option value="seller">To Seller</option>
-      </select>
-      <button onclick="sendAdminMessage()">Send Message</button>
-    </div>
-
   </main>
 
   <footer>
@@ -364,107 +85,11 @@
 
   <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
+  <script src="/admin/utils.js"></script>
   <script>
-    // ========== THEME (Dark default) ==========
-    const savedTheme = localStorage.getItem('theme');
-    document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
-
-    function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('theme', next);
-    }
-
-    // ========== NAV ==========
-    function toggleNav() {
-      document.getElementById('navDrawer').classList.toggle('open');
-    }
-
-    // ========== AUTH CHECK ==========
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-
-    if (!token || !userStr) {
-      window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/');
-    }
-
-    let user = {};
-    try {
-      user = JSON.parse(userStr);
-    } catch (e) {
-      localStorage.clear();
-      window.location.href = '/login.html';
-    }
-
-    // Only allow admin
-    if (user.role !== 'admin') {
-      alert('Access denied. Admin only.');
-      window.location.href = '/dashboard.html';
-    }
-
-    // ========== LOGOUT ==========
-    document.getElementById('logoutBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login.html';
-    });
-
-    // ========== BACK TO TOP ==========
     window.addEventListener('scroll', function() {
       document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
     });
-
-    // ========== PLACEHOLDER FUNCTIONS ==========
-    // These will be connected to real API later
-
-    function updateOrder() {
-      const status = document.getElementById('orderStatus').value;
-      const tracking = document.getElementById('trackingNumber').value;
-      const logistics = document.getElementById('logistics').value;
-      const eta = document.getElementById('eta').value;
-
-      alert('Order will be updated:\nStatus: ' + status + '\nTracking: ' + tracking + '\nLogistics: ' + logistics + '\nETA: ' + eta);
-    }
-
-    function addProduct() {
-      const name = document.getElementById('p_name').value.trim();
-      const price = document.getElementById('p_price').value;
-
-      if (!name || !price) {
-        alert('Product name and price are required');
-        return;
-      }
-
-      alert('Product "' + name + '" will be added (API connection coming next)');
-    }
-
-    function importProduct() {
-      const url = document.getElementById('importUrl').value.trim();
-      if (!url) {
-        alert('Please paste a product URL');
-        return;
-      }
-      alert('Import from: ' + url + '\n(This will be connected later)');
-    }
-
-    function sendAdminMessage() {
-      const text = document.getElementById('adminMsgInput').value.trim();
-      const target = document.getElementById('msgTarget').value;
-
-      if (!text) return;
-
-      const box = document.getElementById('adminMessages');
-      if (box.querySelector('p')) box.innerHTML = '';
-
-      const line = document.createElement('div');
-      line.textContent = 'You → ' + target + ': ' + text;
-      line.style.marginBottom = '6px';
-      box.appendChild(line);
-
-      document.getElementById('adminMsgInput').value = '';
-    }
   </script>
 </body>
-  </html>
+</html>
