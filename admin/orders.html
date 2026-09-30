@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders – Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/images/logo.jpg">
+  <link rel="stylesheet" href="/admin/styles.css">
+</head>
+<body>
+  <header>
+    <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
+    <div class="header-right">
+      <span style="font-size:13px;opacity:0.8">ADMIN</span>
+      <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
+      <button class="icon-btn" onclick="toggleNav()" aria-label="Open menu">☰</button>
+    </div>
+
+    <nav id="navDrawer">
+      <a href="/admin/">Admin Home</a>
+      <a href="/admin/orders.html" class="active">Orders</a>
+      <a href="/admin/users.html">Users</a>
+      <a href="/admin/products.html">Products</a>
+      <a href="/admin/messages.html">Messages</a>
+      <a href="/">Shop Home</a>
+      <a href="/dashboard.html">User Dashboard</a>
+      <a href="/seller/">Seller Panel</a>
+      <br>
+      <a href="#" id="logoutBtn">Logout</a>
+      <a href="#" onclick="toggleNav()">Close ✕</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Orders</h1>
+    <p class="subtitle">Change status, review payments and track delivery</p>
+
+    <div class="card">
+      <h3>Order Management</h3>
+      <select id="orderSelect">
+        <option value="">Select an order...</option>
+        <option value="DVL-2043">DVL-2043 – Bella Bag</option>
+        <option value="DVL-2051">DVL-2051 – Gold Watch</option>
+        <option value="DVL-2062">DVL-2062 – Fashion Set</option>
+      </select>
+      <select id="orderStatus">
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+        <option value="Shipping">Shipping / In Transit</option>
+        <option value="Delivered">Delivered</option>
+      </select>
+      <input type="text" id="trackingNumber" placeholder="Tracking Number">
+      <input type="text" id="logistics" placeholder="Logistics (e.g. DHL, GIG, Fez)">
+      <input type="text" id="eta" placeholder="Expected Arrival (e.g. 2-3 days)">
+      <button onclick="updateOrder()">Update Order</button>
+      <p style="font-size:13px;margin-top:10px;opacity:0.75">
+        After verifying payment, change status to Approved and release to Seller.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Recent Orders</h3>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Product</th>
+              <th>Status</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>DVL-2043</td>
+              <td>Jane Doe</td>
+              <td>Bella Bag</td>
+              <td><span class="status shipping">Shipping</span></td>
+              <td>₦18,000</td>
+            </tr>
+            <tr>
+              <td>DVL-2051</td>
+              <td>Michael T.</td>
+              <td>Gold Watch</td>
+              <td><span class="status approved">Approved</span></td>
+              <td>₦42,500</td>
+            </tr>
+            <tr>
+              <td>DVL-2062</td>
+              <td>Sarah O.</td>
+              <td>Fashion Set</td>
+              <td><span class="status pending">Pending</span></td>
+              <td>₦25,400</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Davilanco Admin © 2026
+  </footer>
+
+  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script src="/admin/utils.js"></script>
+  <script>
+    function updateOrder() {
+      const status = document.getElementById('orderStatus').value;
+      const tracking = document.getElementById('trackingNumber').value;
+      const logistics = document.getElementById('logistics').value;
+      const eta = document.getElementById('eta').value;
+      alert('Order will be updated:\nStatus: ' + status + '\nTracking: ' + tracking + '\nLogistics: ' + logistics + '\nETA: ' + eta);
+    }
+
+    window.addEventListener('scroll', function() {
+      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+    });
+  </script>
+</body>
+</html>
