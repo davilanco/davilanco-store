@@ -3,93 +3,210 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard – Davilanco</title>
+  <title>Admin Home – Davilanco</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/images/logo.jpg">
-  <link rel="stylesheet" href="/admin/styles.css">
+  <style>
+    :root {
+      --gold: #FFD700;
+      --lemon: #C4FF61;
+      --navy: #001F3F;
+      --bg: #000;
+      --text: #fff;
+      --grey: #1a1a1a;
+      --card: #111;
+      --border: #333;
+    }
+    [data-theme="light"] {
+      --bg: #fff;
+      --text: #001F3F;
+      --grey: #f4f4f4;
+      --card: #fff;
+      --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--gold);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 50;
+    }
+    header img { height: 32px; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .icon-btn {
+      background: none; border: none; font-size: 20px;
+      cursor: pointer; color: var(--text); padding: 6px;
+    }
+    #navDrawer {
+      position: fixed; top: 0; right: -100%;
+      width: 25%; min-width: 260px; max-width: 320px;
+      height: 100vh; background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px; transition: right 0.3s ease;
+      z-index: 100; overflow-y: auto;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+    }
+    #navDrawer.open { right: 0; }
+    #navDrawer a {
+      display: block; padding: 12px 0; color: var(--text);
+      text-decoration: none; font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+    #navDrawer a:hover { color: var(--gold); }
+    #navDrawer .nav-section {
+      margin-top: 16px; font-size: 12px;
+      text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;
+    }
+    main {
+      flex: 1; padding: 20px 16px;
+      max-width: 900px; margin: 0 auto; width: 100%;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 6px; }
+    .subtitle { font-size: 0.9rem; opacity: 0.75; margin-bottom: 20px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    @media (min-width: 640px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .tile {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 16px;
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .tile:hover {
+      border-color: var(--gold);
+      transform: translateY(-3px);
+    }
+    .tile .icon { font-size: 1.6rem; margin-bottom: 8px; }
+    .tile h3 { font-size: 1rem; margin-bottom: 4px; color: var(--gold); }
+    .tile p { font-size: 0.8rem; opacity: 0.75; line-height: 1.4; }
+    footer {
+      text-align: center; padding: 18px; font-size: 13px;
+      border-top: 1px solid var(--border); margin-top: auto;
+    }
+  </style>
 </head>
 <body>
   <header>
     <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
     <div class="header-right">
       <span style="font-size:13px;opacity:0.8">ADMIN</span>
-      <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
-      <button class="icon-btn" onclick="toggleNav()" aria-label="Open menu">☰</button>
+      <button class="icon-btn" type="button" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
+      <button class="icon-btn" type="button" onclick="toggleNav()" aria-label="Open menu">☰</button>
     </div>
-
-    <nav id="navDrawer">
-      <a href="/admin/" class="active">Admin Home</a>
-      <a href="/admin/orders.html">Orders</a>
+    <nav id="navDrawer" aria-label="Admin menu">
+      <a href="/admin/">Admin Home</a>
+      <div class="nav-section">Manage</div>
+      <a href="/admin/orders.html">Orders & Tracking</a>
       <a href="/admin/users.html">Users</a>
       <a href="/admin/products.html">Products</a>
       <a href="/admin/messages.html">Messages</a>
+      <div class="nav-section">Site</div>
       <a href="/">Shop Home</a>
       <a href="/dashboard.html">User Dashboard</a>
       <a href="/seller/">Seller Panel</a>
       <br>
       <a href="#" id="logoutBtn">Logout</a>
-      <a href="#" onclick="toggleNav()">Close ✕</a>
+      <a href="#" onclick="toggleNav(); return false;">Close ✕</a>
     </nav>
   </header>
 
   <main>
-    <h1>Admin Panel</h1>
-    <p class="subtitle">Operations overview and quick access</p>
+    <h1>Admin Home</h1>
+    <p class="subtitle">Choose a section to manage</p>
 
-    <div class="card">
-      <h3>Quick Access</h3>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;">
-        <a href="/admin/orders.html" class="quick-link">Orders</a>
-        <a href="/admin/users.html" class="quick-link">Users</a>
-        <a href="/admin/products.html" class="quick-link">Products</a>
-        <a href="/admin/messages.html" class="quick-link">Messages</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Summary</h3>
-      <div class="stats-grid">
-        <div class="stat-box">
-          <span class="stat-label">Pending Orders</span>
-          <strong>12</strong>
-        </div>
-        <div class="stat-box">
-          <span class="stat-label">Active Sellers</span>
-          <strong>35</strong>
-        </div>
-        <div class="stat-box">
-          <span class="stat-label">New Messages</span>
-          <strong>8</strong>
-        </div>
-        <div class="stat-box">
-          <span class="stat-label">Product Reviews</span>
-          <strong>5</strong>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Recent Activity</h3>
-      <ul class="activity-list">
-        <li>New seller application submitted</li>
-        <li>Order #DVL-2043 moved to Shipping</li>
-        <li>Customer reported delayed delivery</li>
-        <li>Product review pending approval</li>
-      </ul>
+    <div class="grid">
+      <a class="tile" href="/admin/orders.html">
+        <div class="icon">📦</div>
+        <h3>Orders</h3>
+        <p>Status, bank transfer, Paystack, tracking</p>
+      </a>
+      <a class="tile" href="/admin/users.html">
+        <div class="icon">👥</div>
+        <h3>Users</h3>
+        <p>Customers, sellers, suspend, promote</p>
+      </a>
+      <a class="tile" href="/admin/products.html">
+        <div class="icon">🛍️</div>
+        <h3>Products</h3>
+        <p>Add, import, approve, stock & price</p>
+      </a>
+      <a class="tile" href="/admin/messages.html">
+        <div class="icon">💬</div>
+        <h3>Messages</h3>
+        <p>Chat with customers and sellers</p>
+      </a>
+      <a class="tile" href="/admin/orders.html#tracking">
+        <div class="icon">🚚</div>
+        <h3>Tracking</h3>
+        <p>Add courier, tracking number, ETA</p>
+      </a>
+      <a class="tile" href="/admin/orders.html#payments">
+        <div class="icon">💳</div>
+        <h3>Payments</h3>
+        <p>Confirm bank transfers & payment status</p>
+      </a>
     </div>
   </main>
 
-  <footer>
-    Davilanco Admin © 2026
-  </footer>
+  <footer>Davilanco Admin © 2026</footer>
 
-  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-
-  <script src="/admin/utils.js"></script>
   <script>
-    window.addEventListener('scroll', function() {
-      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+    var savedTheme = localStorage.getItem('theme');
+    document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
+
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    function toggleNav() {
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+
+    var token = localStorage.getItem('token');
+    var userStr = localStorage.getItem('user');
+    if (!token || !userStr) {
+      window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/');
+    }
+    var user = {};
+    try { user = JSON.parse(userStr); } catch (e) {
+      localStorage.clear();
+      window.location.href = '/login.html';
+    }
+    if (user.role !== 'admin') {
+      alert('Access denied. Admin only.');
+      window.location.href = '/dashboard.html';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
     });
   </script>
 </body>
-</html>
+  </html>
