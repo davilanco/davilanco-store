@@ -3,122 +3,350 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orders – Admin</title>
+  <title>Admin Orders – Davilanco</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/images/logo.jpg">
-  <link rel="stylesheet" href="/admin/styles.css">
+  <style>
+    :root {
+      --gold: #FFD700; --lemon: #C4FF61; --navy: #001F3F;
+      --bg: #000; --text: #fff; --grey: #1a1a1a; --card: #111; --border: #333;
+    }
+    [data-theme="light"] {
+      --bg: #fff; --text: #001F3F; --grey: #f4f4f4; --card: #fff; --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 2px solid var(--gold);
+      position: sticky; top: 0; background: var(--bg); z-index: 50;
+    }
+    header img { height: 32px; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .icon-btn {
+      background: none; border: none; font-size: 20px;
+      cursor: pointer; color: var(--text); padding: 6px;
+    }
+    #navDrawer {
+      position: fixed; top: 0; right: -100%;
+      width: 25%; min-width: 260px; max-width: 320px;
+      height: 100vh; background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px; transition: right 0.3s ease;
+      z-index: 100; overflow-y: auto;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+    }
+    #navDrawer.open { right: 0; }
+    #navDrawer a {
+      display: block; padding: 12px 0; color: var(--text);
+      text-decoration: none; font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+    #navDrawer a:hover { color: var(--gold); }
+    #navDrawer .nav-section {
+      margin-top: 16px; font-size: 12px;
+      text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;
+    }
+    main {
+      flex: 1; padding: 20px 16px;
+      max-width: 900px; margin: 0 auto; width: 100%;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 6px; }
+    .subtitle { font-size: 0.9rem; opacity: 0.75; margin-bottom: 20px; }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px; margin-bottom: 18px;
+    }
+    .card h3 { font-size: 1.05rem; margin-bottom: 14px; color: var(--gold); }
+    input, select {
+      width: 100%; padding: 11px 14px; border-radius: 9px;
+      border: 1px solid var(--border); background: var(--grey);
+      color: var(--text); font-size: 14px; margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 16px; background: var(--gold); color: #000;
+      border: none; border-radius: 8px; font-weight: 600;
+      font-size: 14px; cursor: pointer; margin: 4px 4px 4px 0;
+    }
+    button.secondary {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+    }
+    button.success { background: #27ae60; color: #fff; }
+    .order-card {
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; margin-bottom: 12px; background: var(--grey);
+    }
+    .order-top {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 8px; flex-wrap: wrap; margin-bottom: 8px;
+    }
+    .status {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+    }
+    .pending { background: #f39c12; color: #000; }
+    .approved { background: var(--lemon); color: #000; }
+    .shipping { background: var(--navy); color: #fff; }
+    .delivered { background: #27ae60; color: #fff; }
+    .meta { font-size: 13px; opacity: 0.9; line-height: 1.5; margin-bottom: 10px; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+    footer {
+      text-align: center; padding: 18px; font-size: 13px;
+      border-top: 1px solid var(--border); margin-top: auto;
+    }
+    #toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: var(--gold); color: #000; padding: 12px 20px;
+      border-radius: 30px; font-weight: 600; font-size: 14px;
+      display: none; z-index: 60;
+    }
+  </style>
 </head>
 <body>
   <header>
     <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
     <div class="header-right">
       <span style="font-size:13px;opacity:0.8">ADMIN</span>
-      <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
-      <button class="icon-btn" onclick="toggleNav()" aria-label="Open menu">☰</button>
+      <button class="icon-btn" type="button" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
+      <button class="icon-btn" type="button" onclick="toggleNav()" aria-label="Open menu">☰</button>
     </div>
-
-    <nav id="navDrawer">
+    <nav id="navDrawer" aria-label="Admin menu">
       <a href="/admin/">Admin Home</a>
-      <a href="/admin/orders.html" class="active">Orders</a>
+      <div class="nav-section">Manage</div>
+      <a href="/admin/orders.html">Orders & Tracking</a>
       <a href="/admin/users.html">Users</a>
       <a href="/admin/products.html">Products</a>
       <a href="/admin/messages.html">Messages</a>
+      <div class="nav-section">Site</div>
       <a href="/">Shop Home</a>
       <a href="/dashboard.html">User Dashboard</a>
-      <a href="/seller/">Seller Panel</a>
       <br>
       <a href="#" id="logoutBtn">Logout</a>
-      <a href="#" onclick="toggleNav()">Close ✕</a>
+      <a href="#" onclick="toggleNav(); return false;">Close ✕</a>
     </nav>
   </header>
 
   <main>
     <h1>Orders</h1>
-    <p class="subtitle">Change status, review payments and track delivery</p>
+    <p class="subtitle">Payments, status and tracking</p>
 
-    <div class="card">
-      <h3>Order Management</h3>
-      <select id="orderSelect">
-        <option value="">Select an order...</option>
-        <option value="DVL-2043">DVL-2043 – Bella Bag</option>
-        <option value="DVL-2051">DVL-2051 – Gold Watch</option>
-        <option value="DVL-2062">DVL-2062 – Fashion Set</option>
-      </select>
-      <select id="orderStatus">
-        <option value="Pending">Pending</option>
-        <option value="Approved">Approved</option>
-        <option value="Shipping">Shipping / In Transit</option>
-        <option value="Delivered">Delivered</option>
-      </select>
-      <input type="text" id="trackingNumber" placeholder="Tracking Number">
-      <input type="text" id="logistics" placeholder="Logistics (e.g. DHL, GIG, Fez)">
-      <input type="text" id="eta" placeholder="Expected Arrival (e.g. 2-3 days)">
-      <button onclick="updateOrder()">Update Order</button>
-      <p style="font-size:13px;margin-top:10px;opacity:0.75">
-        After verifying payment, change status to Approved and release to Seller.
-      </p>
+    <div class="card" id="payments">
+      <h3>All Orders</h3>
+      <button class="secondary" type="button" onclick="loadOrders()">Refresh</button>
+      <div id="ordersBox" style="margin-top:14px">
+        <p style="opacity:0.7">Loading orders...</p>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>Recent Orders</h3>
-      <div style="overflow-x:auto">
-        <table>
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Customer</th>
-              <th>Product</th>
-              <th>Status</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>DVL-2043</td>
-              <td>Jane Doe</td>
-              <td>Bella Bag</td>
-              <td><span class="status shipping">Shipping</span></td>
-              <td>₦18,000</td>
-            </tr>
-            <tr>
-              <td>DVL-2051</td>
-              <td>Michael T.</td>
-              <td>Gold Watch</td>
-              <td><span class="status approved">Approved</span></td>
-              <td>₦42,500</td>
-            </tr>
-            <tr>
-              <td>DVL-2062</td>
-              <td>Sarah O.</td>
-              <td>Fashion Set</td>
-              <td><span class="status pending">Pending</span></td>
-              <td>₦25,400</td>
-            </tr>
-          </tbody>
-        </table>
+    <div class="card" id="tracking">
+      <h3>Update Selected Order</h3>
+      <input type="text" id="u_orderId" placeholder="Order ID" readonly>
+      <div class="row2">
+        <select id="u_status">
+          <option value="Pending">Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="Shipping">Shipping / In Transit</option>
+          <option value="Delivered">Delivered</option>
+        </select>
+        <select id="u_payment">
+          <option value="pending">Payment: Pending</option>
+          <option value="paid">Payment: Paid</option>
+          <option value="failed">Payment: Failed</option>
+        </select>
       </div>
+      <input type="text" id="u_tracking" placeholder="Tracking Number">
+      <input type="text" id="u_logistics" placeholder="Logistics (DHL, GIG, Fez...)">
+      <input type="text" id="u_eta" placeholder="Expected Arrival (e.g. 2-3 days)">
+      <button type="button" onclick="updateOrder()">Save Update</button>
+      <button type="button" class="success" onclick="markPaidAndApprove()">Confirm Bank Transfer</button>
+      <p id="updateMsg" style="font-size:13px;margin-top:10px"></p>
     </div>
   </main>
 
-  <footer>
-    Davilanco Admin © 2026
-  </footer>
+  <footer>Davilanco Admin © 2026</footer>
+  <div id="toast">Saved</div>
 
-  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-
-  <script src="/admin/utils.js"></script>
   <script>
-    function updateOrder() {
-      const status = document.getElementById('orderStatus').value;
-      const tracking = document.getElementById('trackingNumber').value;
-      const logistics = document.getElementById('logistics').value;
-      const eta = document.getElementById('eta').value;
-      alert('Order will be updated:\nStatus: ' + status + '\nTracking: ' + tracking + '\nLogistics: ' + logistics + '\nETA: ' + eta);
+    var savedTheme = localStorage.getItem('theme');
+    document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
+
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
     }
 
-    window.addEventListener('scroll', function() {
-      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+    function toggleNav() {
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+
+    var token = localStorage.getItem('token');
+    var userStr = localStorage.getItem('user');
+    if (!token || !userStr) {
+      window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/orders.html');
+    }
+    var user = {};
+    try { user = JSON.parse(userStr); } catch (e) {
+      localStorage.clear();
+      window.location.href = '/login.html';
+    }
+    if (user.role !== 'admin') {
+      alert('Access denied. Admin only.');
+      window.location.href = '/dashboard.html';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
     });
+
+    function showToast(text) {
+      var t = document.getElementById('toast');
+      t.textContent = text || 'Saved';
+      t.style.display = 'block';
+      setTimeout(function() { t.style.display = 'none'; }, 1800);
+    }
+
+    function badgeClass(status) {
+      var s = (status || '').toLowerCase();
+      if (s.indexOf('approved') !== -1) return 'approved';
+      if (s.indexOf('ship') !== -1 || s.indexOf('transit') !== -1) return 'shipping';
+      if (s.indexOf('deliver') !== -1) return 'delivered';
+      return 'pending';
+    }
+
+    function selectOrder(order) {
+      document.getElementById('u_orderId').value = order.id || '';
+      document.getElementById('u_status').value = order.status || 'Pending';
+      document.getElementById('u_payment').value = order.payment_status || 'pending';
+      document.getElementById('u_tracking').value = order.tracking_number || '';
+      document.getElementById('u_logistics').value = order.logistics || '';
+      document.getElementById('u_eta').value = order.eta || '';
+      document.getElementById('updateMsg').textContent = 'Selected: ' + order.id;
+      document.getElementById('tracking').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function loadOrders() {
+      var box = document.getElementById('ordersBox');
+      box.innerHTML = '<p style="opacity:0.7">Loading...</p>';
+      try {
+        var res = await fetch('/api/orders?all=1');
+        var data = await res.json();
+        var orders = data.orders || [];
+        if (!orders.length) {
+          box.innerHTML = '<p style="opacity:0.7">No orders yet.</p>';
+          return;
+        }
+        var html = '';
+        for (var i = 0; i < orders.length; i++) {
+          var o = orders[i];
+          var itemsText = '';
+          if (o.items && o.items.length) {
+            var parts = [];
+            for (var j = 0; j < o.items.length; j++) {
+              parts.push((o.items[j].product_name || 'Item') + ' x' + o.items[j].quantity);
+            }
+            itemsText = parts.join(', ');
+          }
+          html += '<div class="order-card">';
+          html += '<div class="order-top">';
+          html += '<strong>' + (o.id || '') + '</strong>';
+          html += '<span class="status ' + badgeClass(o.status) + '">' + (o.status || 'Pending') + '</span>';
+          html += '</div><div class="meta">';
+          html += (o.firstname || '') + ' ' + (o.lastname || '') + ' · ' + (o.phone || '') + '<br>';
+          html += (o.address || '') + ', ' + (o.town || '') + ', ' + (o.state || '') + '<br>';
+          html += 'Total: ₦' + Number(o.total || 0).toLocaleString() + '<br>';
+          html += 'Pay: ' + (o.payment_method || '–') + ' · ' + (o.payment_status || 'pending') + '<br>';
+          html += 'Ref: ' + (o.payment_reference || o.id);
+          if (itemsText) html += '<br>Items: ' + itemsText;
+          if (o.tracking_number) {
+            html += '<br>Track: ' + o.tracking_number;
+            if (o.logistics) html += ' (' + o.logistics + ')';
+            if (o.eta) html += ' · ETA ' + o.eta;
+          }
+          html += '</div>';
+          html += '<button type="button" onclick=\'selectOrder(' + JSON.stringify(o).replace(/'/g, "&#39;") + ')\'>Select</button>';
+          if ((o.payment_method || '') === 'bank_transfer' && (o.payment_status || '') !== 'paid') {
+            html += '<button type="button" class="success" onclick="quickConfirm(\'' + o.id + '\')">Confirm Bank Transfer</button>';
+          }
+          html += '</div>';
+        }
+        box.innerHTML = html;
+      } catch (err) {
+        box.innerHTML = '<p style="opacity:0.7">Could not load orders.</p>';
+      }
+    }
+
+    async function updateOrder() {
+      var msg = document.getElementById('updateMsg');
+      var orderId = document.getElementById('u_orderId').value.trim();
+      if (!orderId) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = 'Select an order first';
+        return;
+      }
+      try {
+        var res = await fetch('/api/orders-update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order_id: orderId,
+            status: document.getElementById('u_status').value,
+            payment_status: document.getElementById('u_payment').value,
+            tracking_number: document.getElementById('u_tracking').value.trim(),
+            logistics: document.getElementById('u_logistics').value.trim(),
+            eta: document.getElementById('u_eta').value.trim()
+          })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Update failed');
+        msg.style.color = '#27ae60';
+        msg.textContent = 'Order updated';
+        showToast('Order updated');
+        loadOrders();
+      } catch (err) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = err.message || 'Update failed';
+      }
+    }
+
+    async function markPaidAndApprove() {
+      document.getElementById('u_status').value = 'Approved';
+      document.getElementById('u_payment').value = 'paid';
+      await updateOrder();
+    }
+
+    async function quickConfirm(orderId) {
+      try {
+        var res = await fetch('/api/orders-update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order_id: orderId,
+            status: 'Approved',
+            payment_status: 'paid'
+          })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast('Bank transfer confirmed');
+        loadOrders();
+      } catch (err) {
+        alert(err.message || 'Failed');
+      }
+    }
+
+    window.selectOrder = selectOrder;
+    window.quickConfirm = quickConfirm;
+    loadOrders();
   </script>
 </body>
-</html>
+  </html>
