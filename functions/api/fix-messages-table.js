@@ -1,25 +1,43 @@
-async function sendMessage(userId, nickname) {
-  var textEl = document.getElementById('msgText-' + userId);
-  var text = (textEl && textEl.value || '').trim();
-  if (!text) { alert('Type a message first'); return; }
+export async function onRequestGet(context) {
+  const { env } = context;
+
   try {
-    var res = await fetch('/api/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sender_id: adminUser.id,
-        sender_role: 'admin',
-        sender_name: 'Admin',
-        receiver_id: userId,
-        receiver_role: 'customer',
-        message: text
-      })
+    const columns = [
+      "ALTER TABLE messages ADD COLUMN sender_id TEXT",
+      "ALTER TABLE messages ADD COLUMN sender_role TEXT",
+      "ALTER TABLE messages ADD COLUMN sender_name TEXT",
+      "ALTER TABLE messages ADD COLUMN receiver_id TEXT",
+      "ALTER TABLE messages ADD COLUMN receiver_role TEXT",
+      "ALTER TABLE messages ADD COLUMN message TEXT",
+      "ALTER TABLE messages ADD COLUMN is_read INTEGER DEFAULT 0",
+      "ALTER TABLE messages ADD COLUMN created_at TEXT"
+    ];
+
+    const results = [];
+
+    for (let i = 0; i < columns.length; i++) {
+      try {
+        await env.DB.prepare(columns[i]).run();
+        results.push({ sql: columns[i], status: "added" });
+      } catch (err) {
+        results.push({
+          sql: columns[i],
+          status: "skipped",
+          reason: err.message
+        });
+      }
+    }
+
+    return Response.json({
+      ok: true,
+      message: "Messages table columns checked/updated",
+      details: results
     });
-    var data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Failed');
-    textEl.value = '';
-    showToast('Message sent');
+
   } catch (err) {
-    alert(err.message || 'Failed');
+    return Response.json({
+      ok: false,
+      error: err.message
+    }, { status: 500 });
   }
-}
+      }
