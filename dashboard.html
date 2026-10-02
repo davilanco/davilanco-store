@@ -572,21 +572,60 @@
     }
 
     // ========== MESSAGES (Admin only for now) ==========
-    function sendMessage() {
-      const text = document.getElementById('msgInput').value.trim();
-      if (!text) return;
-
-      const box = document.getElementById('messagesBox');
-      if (box.querySelector('p')) box.innerHTML = '';
-
-      const line = document.createElement('div');
-      line.textContent = 'You → Admin: ' + text;
-      line.style.marginBottom = '6px';
-      box.appendChild(line);
-      document.getElementById('msgInput').value = '';
-      // API connection later
+    async function loadMessages() {
+  var box = document.getElementById('messagesBox');
+  if (!user || !user.id) return;
+  try {
+    var res = await fetch('/api/messages?user_id=' + encodeURIComponent(user.id));
+    var data = await res.json();
+    var msgs = data.messages || [];
+    if (!msgs.length) {
+      box.innerHTML = '<p style="opacity:0.7">No messages yet.</p>';
+      return;
     }
+    var html = '';
+    for (var i = 0; i < msgs.length; i++) {
+      var m = msgs[i];
+      var who = m.sender_role === 'admin' ? 'Admin' : 'You';
+      html += '<div style="margin-bottom:6px"><strong>' + who + ':</strong> ' +
+        String(m.message || '').replace(/</g, '&lt;') + '</div>';
+    }
+    box.innerHTML = html;
+  } catch (e) {
+    box.innerHTML = '<p style="opacity:0.7">Could not load messages.</p>';
+  }
+}
 
+async function sendMessage() {
+  var text = document.getElementById('msgInput').value.trim();
+  if (!text || !user || !user.id) return;
+  try {
+    var res = await fetch('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender_id: user.id,
+        sender_role: user.role || 'customer',
+        sender_name: user.nickname || 'Customer',
+        receiver_id: null,
+        receiver_role: 'admin',
+        message: text
+      })
+    });
+    var data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Failed');
+    document.getElementById('msgInput').value = '';
+    loadMessages();
+  } catch (err) {
+    alert(err.message || 'Could not send');
+  }
+}
+
+// call with other loaders:
+loadMessages();
+
+    
+    
     function applySeller() {
       const products = document.getElementById('s_products').value.trim();
       const address = document.getElementById('s_address').value.trim();
