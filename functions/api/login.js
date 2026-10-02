@@ -3,8 +3,8 @@ export async function onRequestPost(context) {
 
   try {
     const body = await request.json();
-    const login = (body.login || '').trim();
-    const password = body.password || '';
+    const login = String(body.login || '').trim();
+    const password = String(body.password || '');
 
     if (!login || !password) {
       return Response.json({ error: 'Login and password are required' }, { status: 400 });
@@ -28,17 +28,24 @@ export async function onRequestPost(context) {
       return Response.json({ error: 'Invalid login or password' }, { status: 401 });
     }
 
+    if (Number(user.verified) !== 1) {
+      return Response.json({
+        error: 'Please verify your email first',
+        needs_verification: true,
+        email: user.email
+      }, { status: 403 });
+    }
+
     const tokenPayload = {
       id: user.id,
       nickname: user.nickname,
       role: user.role,
       exp: Date.now() + 7 * 24 * 60 * 60 * 1000
     };
-    const token = btoa(JSON.stringify(tokenPayload));
 
     return Response.json({
       ok: true,
-      token: token,
+      token: btoa(JSON.stringify(tokenPayload)),
       user: {
         id: user.id,
         firstname: user.firstname,
@@ -57,11 +64,9 @@ export async function onRequestPost(context) {
 
 async function verifyPassword(password, stored) {
   if (!stored || stored.indexOf(':') === -1) return false;
-
   const parts = stored.split(':');
   const saltHex = parts[0];
   const hashHex = parts[1];
-
   if (!saltHex || !hashHex) return false;
 
   const salt = new Uint8Array(saltHex.match(/.{1,2}/g).map(function(byte) {
@@ -69,29 +74,16 @@ async function verifyPassword(password, stored) {
   }));
 
   const encoder = new TextEncoder();
-
   const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(password),
-    'PBKDF2',
-    false,
-    ['deriveBits']
+    'raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']
   );
-
   const derivedBits = await crypto.subtle.deriveBits(
-    {
-      name: 'PBKDF2',
-      salt: salt,
-      iterations: 100000,
-      hash: 'SHA-256'
-    },
+    { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
     keyMaterial,
     256
   );
-
   const newHash = Array.from(new Uint8Array(derivedBits)).map(function(b) {
     return b.toString(16).padStart(2, '0');
   }).join('');
-
   return newHash === hashHex;
-}
+      }
