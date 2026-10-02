@@ -3,80 +3,384 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Messages – Admin</title>
+  <title>Admin Messages – Davilanco</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/images/logo.jpg">
-  <link rel="stylesheet" href="/admin/styles.css">
+  <style>
+    :root {
+      --gold: #FFD700; --lemon: #C4FF61; --navy: #001F3F;
+      --bg: #000; --text: #fff; --grey: #1a1a1a; --card: #111; --border: #333;
+    }
+    [data-theme="light"] {
+      --bg: #fff; --text: #001F3F; --grey: #f4f4f4; --card: #fff; --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 2px solid var(--gold);
+      position: sticky; top: 0; background: var(--bg); z-index: 50;
+    }
+    header img { height: 32px; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .icon-btn {
+      background: none; border: none; font-size: 20px;
+      cursor: pointer; color: var(--text); padding: 6px;
+    }
+    #navDrawer {
+      position: fixed; top: 0; right: -100%;
+      width: 25%; min-width: 260px; max-width: 320px;
+      height: 100vh; background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px; transition: right 0.3s; z-index: 100;
+      overflow-y: auto; box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+    }
+    #navDrawer.open { right: 0; }
+    #navDrawer a {
+      display: block; padding: 12px 0; color: var(--text);
+      text-decoration: none; font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+    #navDrawer a:hover { color: var(--gold); }
+    #navDrawer .nav-section {
+      margin-top: 16px; font-size: 12px;
+      text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;
+    }
+    main {
+      flex: 1; padding: 20px 16px;
+      max-width: 900px; margin: 0 auto; width: 100%;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 6px; }
+    .subtitle { font-size: 0.9rem; opacity: 0.75; margin-bottom: 18px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 720px) {
+      .layout { grid-template-columns: 240px 1fr; }
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px;
+    }
+    .card h3 { color: var(--gold); margin-bottom: 12px; font-size: 1rem; }
+    .user-item {
+      padding: 10px 8px; border-radius: 8px; cursor: pointer;
+      border-bottom: 1px solid var(--border); font-size: 14px;
+    }
+    .user-item:hover, .user-item.active {
+      background: var(--grey); border-color: var(--gold);
+    }
+    .user-item small { display: block; opacity: 0.7; font-size: 12px; }
+    #threadBox {
+      height: 320px; overflow-y: auto; background: var(--grey);
+      border-radius: 10px; padding: 12px; margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .bubble {
+      max-width: 85%; padding: 10px 12px; border-radius: 12px;
+      margin-bottom: 10px; line-height: 1.4;
+    }
+    .bubble.them {
+      background: #222; border: 1px solid var(--border);
+    }
+    .bubble.me {
+      background: rgba(255, 215, 0, 0.15);
+      border: 1px solid var(--gold);
+      margin-left: auto;
+    }
+    .bubble .meta {
+      font-size: 11px; opacity: 0.65; margin-bottom: 4px;
+    }
+    [data-theme="light"] .bubble.them { background: #eee; }
+    textarea {
+      width: 100%; min-height: 80px; padding: 12px;
+      border-radius: 10px; border: 1px solid var(--border);
+      background: var(--grey); color: var(--text);
+      font-size: 14px; margin-bottom: 10px; resize: vertical;
+    }
+    input, select {
+      width: 100%; padding: 11px 12px; border-radius: 9px;
+      border: 1px solid var(--border); background: var(--grey);
+      color: var(--text); font-size: 14px; margin-bottom: 10px;
+    }
+    button {
+      padding: 11px 16px; background: var(--gold); color: #000;
+      border: none; border-radius: 8px; font-weight: 700;
+      font-size: 14px; cursor: pointer;
+    }
+    button.secondary {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+    }
+    footer {
+      text-align: center; padding: 18px; font-size: 13px;
+      border-top: 1px solid var(--border); margin-top: auto;
+    }
+    #toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: var(--gold); color: #000; padding: 12px 20px;
+      border-radius: 30px; font-weight: 600; font-size: 14px;
+      display: none; z-index: 60;
+    }
+  </style>
 </head>
 <body>
   <header>
     <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
     <div class="header-right">
       <span style="font-size:13px;opacity:0.8">ADMIN</span>
-      <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
-      <button class="icon-btn" onclick="toggleNav()" aria-label="Open menu">☰</button>
+      <button class="icon-btn" type="button" onclick="toggleTheme()">🌓</button>
+      <button class="icon-btn" type="button" onclick="toggleNav()">☰</button>
     </div>
-
-    <nav id="navDrawer">
+    <nav id="navDrawer" aria-label="Admin menu">
       <a href="/admin/">Admin Home</a>
-      <a href="/admin/orders.html">Orders</a>
+      <div class="nav-section">Manage</div>
+      <a href="/admin/orders.html">Orders & Tracking</a>
       <a href="/admin/users.html">Users</a>
       <a href="/admin/products.html">Products</a>
-      <a href="/admin/messages.html" class="active">Messages</a>
+      <a href="/admin/messages.html">Messages</a>
+      <div class="nav-section">Site</div>
       <a href="/">Shop Home</a>
-      <a href="/dashboard.html">User Dashboard</a>
-      <a href="/seller/">Seller Panel</a>
       <br>
       <a href="#" id="logoutBtn">Logout</a>
-      <a href="#" onclick="toggleNav()">Close ✕</a>
+      <a href="#" onclick="toggleNav();return false;">Close ✕</a>
     </nav>
   </header>
 
   <main>
     <h1>Messages</h1>
-    <p class="subtitle">Reply to customer and seller conversations</p>
+    <p class="subtitle">Chat with customers and sellers</p>
 
-    <div class="card">
-      <h3>Inbox</h3>
-      <div class="msg-box" id="adminMessages">
-        <p><strong>Customer:</strong> My order has not arrived yet.</p>
-        <p><strong>Seller:</strong> Please confirm payment release for my order.</p>
-        <p><strong>Customer:</strong> Where can I track my package?</p>
+    <div class="layout">
+      <!-- Users list -->
+      <div class="card">
+        <h3>Users</h3>
+        <input type="text" id="userSearch" placeholder="Search users..." oninput="filterUserList()">
+        <div id="usersSide" style="max-height:400px;overflow-y:auto">
+          <p style="opacity:0.7;font-size:13px">Loading...</p>
+        </div>
       </div>
-      <textarea id="adminMsgInput" placeholder="Type your reply..."></textarea>
-      <select id="msgTarget">
-        <option value="customer">To Customer</option>
-        <option value="seller">To Seller</option>
-      </select>
-      <button onclick="sendAdminMessage()">Send Message</button>
+
+      <!-- Thread -->
+      <div class="card">
+        <h3 id="threadTitle">Select a user</h3>
+        <div id="threadBox">
+          <p style="opacity:0.7">Choose a user on the left to view conversation.</p>
+        </div>
+        <textarea id="msgInput" placeholder="Type your reply..."></textarea>
+        <button type="button" onclick="sendAdminReply()">Send</button>
+        <button type="button" class="secondary" onclick="loadThread()">Refresh</button>
+      </div>
+    </div>
+
+    <!-- Recent all messages -->
+    <div class="card" style="margin-top:16px">
+      <h3>Recent messages (all)</h3>
+      <button type="button" class="secondary" onclick="loadAllMessages()">Refresh feed</button>
+      <div id="allFeed" style="margin-top:12px;font-size:13px"></div>
     </div>
   </main>
 
-  <footer>
-    Davilanco Admin © 2026
-  </footer>
+  <footer>Davilanco Admin © 2026</footer>
+  <div id="toast">Sent</div>
 
-  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-
-  <script src="/admin/utils.js"></script>
   <script>
-    function sendAdminMessage() {
-      const text = document.getElementById('adminMsgInput').value.trim();
-      const target = document.getElementById('msgTarget').value;
-      if (!text) return;
+    var savedTheme = localStorage.getItem('theme');
+    document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
 
-      const box = document.getElementById('adminMessages');
-      if (box.querySelector('p')) box.innerHTML = '';
-      const line = document.createElement('div');
-      line.textContent = 'You → ' + target + ': ' + text;
-      line.style.marginBottom = '6px';
-      box.appendChild(line);
-      document.getElementById('adminMsgInput').value = '';
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
     }
 
-    window.addEventListener('scroll', function() {
-      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+    function toggleNav() {
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+
+    var token = localStorage.getItem('token');
+    var userStr = localStorage.getItem('user');
+    if (!token || !userStr) {
+      window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/messages.html');
+    }
+    var adminUser = {};
+    try { adminUser = JSON.parse(userStr); } catch (e) {
+      localStorage.clear();
+      window.location.href = '/login.html';
+    }
+    if (adminUser.role !== 'admin') {
+      alert('Access denied. Admin only.');
+      window.location.href = '/dashboard.html';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
     });
+
+    function showToast(text) {
+      var t = document.getElementById('toast');
+      t.textContent = text || 'Sent';
+      t.style.display = 'block';
+      setTimeout(function() { t.style.display = 'none'; }, 1500);
+    }
+
+    var allUsers = [];
+    var selectedUser = null;
+
+    async function loadUsers() {
+      try {
+        var res = await fetch('/api/users');
+        var data = await res.json();
+        allUsers = data.users || [];
+        renderUserList(allUsers);
+      } catch (e) {
+        document.getElementById('usersSide').innerHTML = '<p style="opacity:0.7">Could not load users</p>';
+      }
+    }
+
+    function filterUserList() {
+      var q = (document.getElementById('userSearch').value || '').toLowerCase();
+      var filtered = allUsers.filter(function(u) {
+        if (!q) return true;
+        return [u.nickname, u.email, u.firstname, u.lastname, u.phone, u.role]
+          .join(' ').toLowerCase().indexOf(q) !== -1;
+      });
+      renderUserList(filtered);
+    }
+
+    function renderUserList(users) {
+      var box = document.getElementById('usersSide');
+      if (!users.length) {
+        box.innerHTML = '<p style="opacity:0.7;font-size:13px">No users</p>';
+        return;
+      }
+      var html = '';
+      for (var i = 0; i < users.length; i++) {
+        var u = users[i];
+        var active = selectedUser && selectedUser.id === u.id ? ' active' : '';
+        html += '<div class="user-item' + active + '" onclick=\'selectUser(' + JSON.stringify(u).replace(/'/g, "&#39;") + ')\'>';
+        html += '<strong>@' + (u.nickname || '') + '</strong> · ' + (u.role || '');
+        html += '<small>' + (u.firstname || '') + ' ' + (u.lastname || '') + ' · ' + (u.email || '') + '</small>';
+        html += '</div>';
+      }
+      box.innerHTML = html;
+    }
+
+    function selectUser(u) {
+      selectedUser = u;
+      document.getElementById('threadTitle').textContent = 'Chat with @' + (u.nickname || 'user');
+      renderUserList(allUsers);
+      loadThread();
+    }
+
+    async function loadThread() {
+      var box = document.getElementById('threadBox');
+      if (!selectedUser) {
+        box.innerHTML = '<p style="opacity:0.7">Select a user first.</p>';
+        return;
+      }
+      box.innerHTML = '<p style="opacity:0.7">Loading...</p>';
+      try {
+        var res = await fetch('/api/messages?user_id=' + encodeURIComponent(selectedUser.id));
+        var data = await res.json();
+        var msgs = data.messages || [];
+        if (!msgs.length) {
+          box.innerHTML = '<p style="opacity:0.7">No messages yet. Send the first one.</p>';
+          return;
+        }
+        var html = '';
+        for (var i = 0; i < msgs.length; i++) {
+          var m = msgs[i];
+          var isMe = (m.sender_role === 'admin');
+          html += '<div class="bubble ' + (isMe ? 'me' : 'them') + '">';
+          html += '<div class="meta">' + (m.sender_name || m.sender_role || '') + ' · ' + (m.created_at || '') + '</div>';
+          html += escapeHtml(m.message || '');
+          html += '</div>';
+        }
+        box.innerHTML = html;
+        box.scrollTop = box.scrollHeight;
+      } catch (e) {
+        box.innerHTML = '<p style="opacity:0.7">Could not load messages.</p>';
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    async function sendAdminReply() {
+      if (!selectedUser) {
+        alert('Select a user first');
+        return;
+      }
+      var text = document.getElementById('msgInput').value.trim();
+      if (!text) return;
+
+      try {
+        var res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sender_id: adminUser.id,
+            sender_role: 'admin',
+            sender_name: 'Admin',
+            receiver_id: selectedUser.id,
+            receiver_role: selectedUser.role || 'customer',
+            message: text
+          })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        document.getElementById('msgInput').value = '';
+        showToast('Sent');
+        loadThread();
+        loadAllMessages();
+      } catch (err) {
+        alert(err.message || 'Failed');
+      }
+    }
+
+    async function loadAllMessages() {
+      var box = document.getElementById('allFeed');
+      try {
+        var res = await fetch('/api/messages?all=1');
+        var data = await res.json();
+        var msgs = data.messages || [];
+        if (!msgs.length) {
+          box.innerHTML = '<p style="opacity:0.7">No messages yet.</p>';
+          return;
+        }
+        var html = '';
+        for (var i = 0; i < Math.min(msgs.length, 40); i++) {
+          var m = msgs[i];
+          html += '<div style="padding:8px 0;border-bottom:1px solid var(--border)">';
+          html += '<strong>' + escapeHtml(m.sender_name || m.sender_role || '') + '</strong>';
+          html += ' → ' + escapeHtml(m.receiver_role || '');
+          html += '<br>' + escapeHtml(m.message || '');
+          html += '<br><span style="opacity:0.6">' + (m.created_at || '') + '</span>';
+          html += '</div>';
+        }
+        box.innerHTML = html;
+      } catch (e) {
+        box.innerHTML = '<p style="opacity:0.7">Could not load feed.</p>';
+      }
+    }
+
+    window.selectUser = selectUser;
+    loadUsers();
+    loadAllMessages();
   </script>
 </body>
-</html>
+  </html>
