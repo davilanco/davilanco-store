@@ -3,98 +3,424 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Products – Admin</title>
+  <title>Admin Products – Davilanco</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/images/logo.jpg">
-  <link rel="stylesheet" href="/admin/styles.css">
+  <style>
+    :root {
+      --gold: #FFD700; --lemon: #C4FF61; --navy: #001F3F;
+      --bg: #000; --text: #fff; --grey: #1a1a1a; --card: #111; --border: #333;
+    }
+    [data-theme="light"] {
+      --bg: #fff; --text: #001F3F; --grey: #f4f4f4; --card: #fff; --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 2px solid var(--gold);
+      position: sticky; top: 0; background: var(--bg); z-index: 50;
+    }
+    header img { height: 32px; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .icon-btn {
+      background: none; border: none; font-size: 20px;
+      cursor: pointer; color: var(--text); padding: 6px;
+    }
+    #navDrawer {
+      position: fixed; top: 0; right: -100%;
+      width: 25%; min-width: 260px; max-width: 320px;
+      height: 100vh; background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px; transition: right 0.3s; z-index: 100;
+      overflow-y: auto; box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+    }
+    #navDrawer.open { right: 0; }
+    #navDrawer a {
+      display: block; padding: 12px 0; color: var(--text);
+      text-decoration: none; font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+    #navDrawer a:hover { color: var(--gold); }
+    #navDrawer .nav-section {
+      margin-top: 16px; font-size: 12px;
+      text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;
+    }
+    main {
+      flex: 1; padding: 20px 16px;
+      max-width: 900px; margin: 0 auto; width: 100%;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 6px; }
+    .subtitle { font-size: 0.9rem; opacity: 0.75; margin-bottom: 18px; }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px; margin-bottom: 16px;
+    }
+    .card h3 { color: var(--gold); margin-bottom: 12px; font-size: 1.05rem; }
+    input, select, textarea {
+      width: 100%; padding: 11px 14px; border-radius: 9px;
+      border: 1px solid var(--border); background: var(--grey);
+      color: var(--text); font-size: 14px; margin-bottom: 10px;
+    }
+    textarea { min-height: 70px; resize: vertical; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+    button {
+      padding: 10px 14px; background: var(--gold); color: #000;
+      border: none; border-radius: 8px; font-weight: 600;
+      font-size: 13px; cursor: pointer; margin: 3px 3px 3px 0;
+    }
+    button.secondary {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+    }
+    button.danger { background: #e74c3c; color: #fff; }
+    button.success { background: #27ae60; color: #fff; }
+    .product-card {
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; margin-bottom: 12px; background: var(--grey);
+      display: flex; gap: 12px; flex-wrap: wrap;
+    }
+    .product-card img {
+      width: 80px; height: 80px; object-fit: cover;
+      border-radius: 8px; background: #222;
+    }
+    .product-info { flex: 1; min-width: 180px; font-size: 13px; line-height: 1.5; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 12px;
+      font-size: 11px; font-weight: 600;
+    }
+    .approved { background: #27ae60; color: #fff; }
+    .pending { background: #f39c12; color: #000; }
+    .rejected { background: #e74c3c; color: #fff; }
+    .edit-panel {
+      width: 100%; margin-top: 10px; padding-top: 10px;
+      border-top: 1px solid var(--border); display: none;
+    }
+    .edit-panel.open { display: block; }
+    footer {
+      text-align: center; padding: 18px; font-size: 13px;
+      border-top: 1px solid var(--border); margin-top: auto;
+    }
+    #toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: var(--gold); color: #000; padding: 12px 20px;
+      border-radius: 30px; font-weight: 600; font-size: 14px;
+      display: none; z-index: 60;
+    }
+  </style>
 </head>
 <body>
   <header>
     <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
     <div class="header-right">
       <span style="font-size:13px;opacity:0.8">ADMIN</span>
-      <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
-      <button class="icon-btn" onclick="toggleNav()" aria-label="Open menu">☰</button>
+      <button class="icon-btn" type="button" onclick="toggleTheme()">🌓</button>
+      <button class="icon-btn" type="button" onclick="toggleNav()">☰</button>
     </div>
-
-    <nav id="navDrawer">
+    <nav id="navDrawer" aria-label="Admin menu">
       <a href="/admin/">Admin Home</a>
-      <a href="/admin/orders.html">Orders</a>
+      <div class="nav-section">Manage</div>
+      <a href="/admin/orders.html">Orders & Tracking</a>
       <a href="/admin/users.html">Users</a>
-      <a href="/admin/products.html" class="active">Products</a>
+      <a href="/admin/products.html">Products</a>
       <a href="/admin/messages.html">Messages</a>
+      <div class="nav-section">Site</div>
       <a href="/">Shop Home</a>
-      <a href="/dashboard.html">User Dashboard</a>
-      <a href="/seller/">Seller Panel</a>
       <br>
       <a href="#" id="logoutBtn">Logout</a>
-      <a href="#" onclick="toggleNav()">Close ✕</a>
+      <a href="#" onclick="toggleNav();return false;">Close ✕</a>
     </nav>
   </header>
 
   <main>
     <h1>Products</h1>
-    <p class="subtitle">Add inventory, import new products and approve seller listings</p>
+    <p class="subtitle">Add, edit stock/price, approve seller products</p>
 
+    <!-- Add product -->
     <div class="card">
-      <h3>Manually Add Product</h3>
+      <h3>Add Product</h3>
       <input type="text" id="p_name" placeholder="Product Name *">
-      <input type="number" id="p_price" placeholder="Price (NGN) *">
-      <input type="text" id="p_category" placeholder="Category (e.g. Fashion)">
-      <input type="number" id="p_stock" placeholder="Stock quantity">
-      <textarea id="p_desc" placeholder="Description"></textarea>
-      <input type="text" id="p_image" placeholder="Image URL">
-      <button onclick="addProduct()">Add Product</button>
-    </div>
-
-    <div class="card">
-      <h3>Import Product</h3>
-      <input type="url" id="importUrl" placeholder="Paste AliExpress or product URL">
-      <button onclick="importProduct()">Import Product</button>
-      <p style="font-size:12px;margin-top:8px;opacity:0.7">Import feature will be connected later.</p>
-    </div>
-
-    <div class="card">
-      <h3>Seller Products Pending Approval</h3>
-      <div class="msg-box">
-        <p><strong>Luxury Handbag</strong> – seller: riverlane</p>
-        <p>Submitted 2 hours ago · Needs review</p>
+      <div class="row2">
+        <input type="number" id="p_price" placeholder="Price (NGN) *">
+        <input type="number" id="p_old_price" placeholder="Old price (optional)">
       </div>
-      <button>Approve</button>
-      <button class="secondary">Reject</button>
+      <div class="row2">
+        <input type="text" id="p_category" placeholder="Category (fashion, electronics...)">
+        <input type="number" id="p_stock" placeholder="Stock quantity" value="10">
+      </div>
+      <input type="text" id="p_image" placeholder="Image URL">
+      <textarea id="p_desc" placeholder="Description"></textarea>
+      <button type="button" onclick="addProduct()">Add Product</button>
+      <p id="addMsg" style="font-size:13px;margin-top:8px"></p>
+    </div>
+
+    <!-- Import placeholder -->
+    <div class="card">
+      <h3>Import (AliExpress / Other)</h3>
+      <input type="url" id="importUrl" placeholder="Paste product URL">
+      <button type="button" class="secondary" onclick="importProduct()">Import Product</button>
+      <p style="font-size:12px;opacity:0.7;margin-top:8px">Import will be connected later. For now, add products manually.</p>
+    </div>
+
+    <!-- List -->
+    <div class="card">
+      <h3>All Products</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <select id="statusFilter" onchange="loadProducts()">
+          <option value="all">All statuses</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <button class="secondary" type="button" onclick="loadProducts()">Refresh</button>
+      </div>
+      <div id="productsList">
+        <p style="opacity:0.7">Loading...</p>
+      </div>
     </div>
   </main>
 
-  <footer>
-    Davilanco Admin © 2026
-  </footer>
+  <footer>Davilanco Admin © 2026</footer>
+  <div id="toast">Saved</div>
 
-  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-
-  <script src="/admin/utils.js"></script>
   <script>
-    function addProduct() {
-      const name = document.getElementById('p_name').value.trim();
-      const price = document.getElementById('p_price').value;
+    var savedTheme = localStorage.getItem('theme');
+    document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
+
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    function toggleNav() {
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+
+    var token = localStorage.getItem('token');
+    var userStr = localStorage.getItem('user');
+    if (!token || !userStr) {
+      window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/products.html');
+    }
+    var user = {};
+    try { user = JSON.parse(userStr); } catch (e) {
+      localStorage.clear();
+      window.location.href = '/login.html';
+    }
+    if (user.role !== 'admin') {
+      alert('Access denied. Admin only.');
+      window.location.href = '/dashboard.html';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
+    });
+
+    function showToast(text) {
+      var t = document.getElementById('toast');
+      t.textContent = text || 'Saved';
+      t.style.display = 'block';
+      setTimeout(function() { t.style.display = 'none'; }, 1800);
+    }
+
+    async function addProduct() {
+      var msg = document.getElementById('addMsg');
+      var name = document.getElementById('p_name').value.trim();
+      var price = Number(document.getElementById('p_price').value);
       if (!name || !price) {
-        alert('Product name and price are required');
+        msg.style.color = '#e74c3c';
+        msg.textContent = 'Name and price are required';
         return;
       }
-      alert('Product "' + name + '" will be added (API connection coming next)');
+      try {
+        var res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name,
+            price: price,
+            old_price: Number(document.getElementById('p_old_price').value) || 0,
+            category: document.getElementById('p_category').value.trim() || 'others',
+            stock: Number(document.getElementById('p_stock').value) || 0,
+            image: document.getElementById('p_image').value.trim(),
+            description: document.getElementById('p_desc').value.trim(),
+            status: 'approved'
+          })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        msg.style.color = '#27ae60';
+        msg.textContent = 'Product added';
+        document.getElementById('p_name').value = '';
+        document.getElementById('p_price').value = '';
+        document.getElementById('p_desc').value = '';
+        showToast('Product added');
+        loadProducts();
+      } catch (err) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = err.message || 'Failed';
+      }
     }
 
     function importProduct() {
-      const url = document.getElementById('importUrl').value.trim();
+      var url = document.getElementById('importUrl').value.trim();
       if (!url) {
-        alert('Please paste a product URL');
+        alert('Paste a product URL first');
         return;
       }
-      alert('Import from: ' + url + '\n(This will be connected later)');
+      alert('Import from:\n' + url + '\n\nComing next. Please add products manually for now.');
     }
 
-    window.addEventListener('scroll', function() {
-      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
-    });
+    async function loadProducts() {
+      var box = document.getElementById('productsList');
+      box.innerHTML = '<p style="opacity:0.7">Loading...</p>';
+      try {
+        var filter = document.getElementById('statusFilter').value;
+        var url = '/api/products?all=1';
+        if (filter !== 'all') url += '&status=' + encodeURIComponent(filter);
+
+        var res = await fetch(url);
+        var data = await res.json();
+        var products = Array.isArray(data) ? data : (data.results || []);
+
+        if (!products.length) {
+          box.innerHTML = '<p style="opacity:0.7">No products found.</p>';
+          return;
+        }
+
+        var html = '';
+        for (var i = 0; i < products.length; i++) {
+          var p = products[i];
+          var id = p.id || '';
+          var status = p.status || 'approved';
+          var img = p.image || 'https://via.placeholder.com/80?text=No+Img';
+
+          html += '<div class="product-card">';
+          html += '<img src="' + img + '" alt="" onerror="this.src=\'https://via.placeholder.com/80?text=No+Img\'">';
+          html += '<div class="product-info">';
+          html += '<strong>' + (p.name || 'Unnamed') + '</strong> ';
+          html += '<span class="badge ' + status + '">' + status + '</span><br>';
+          html += '₦' + Number(p.price || 0).toLocaleString();
+          if (p.old_price && Number(p.old_price) > 0) {
+            html += ' <s style="opacity:0.6">₦' + Number(p.old_price).toLocaleString() + '</s>';
+          }
+          html += '<br>Stock: ' + (p.stock != null ? p.stock : 0);
+          html += ' · ' + (p.category || '–');
+          html += '</div>';
+          html += '<div style="width:100%">';
+          html += '<button type="button" class="secondary" onclick="toggleEdit(\'' + id + '\')">Edit</button>';
+          if (status === 'pending') {
+            html += '<button type="button" class="success" onclick="setStatus(\'' + id + '\',\'approved\')">Approve</button>';
+            html += '<button type="button" class="danger" onclick="setStatus(\'' + id + '\',\'rejected\')">Reject</button>';
+          }
+          if (status === 'approved') {
+            html += '<button type="button" class="secondary" onclick="setStatus(\'' + id + '\',\'pending\')">Unpublish</button>';
+          }
+          html += '<button type="button" class="danger" onclick="deleteProduct(\'' + id + '\')">Delete</button>';
+          html += '</div>';
+
+          html += '<div class="edit-panel" id="edit-' + id + '">';
+          html += '<input type="text" id="e_name_' + id + '" value="' + String(p.name || '').replace(/"/g, '&quot;') + '" placeholder="Name">';
+          html += '<div class="row2">';
+          html += '<input type="number" id="e_price_' + id + '" value="' + (p.price || 0) + '" placeholder="Price">';
+          html += '<input type="number" id="e_stock_' + id + '" value="' + (p.stock != null ? p.stock : 0) + '" placeholder="Stock">';
+          html += '</div>';
+          html += '<div class="row2">';
+          html += '<input type="number" id="e_old_' + id + '" value="' + (p.old_price || 0) + '" placeholder="Old price">';
+          html += '<input type="text" id="e_cat_' + id + '" value="' + String(p.category || '').replace(/"/g, '&quot;') + '" placeholder="Category">';
+          html += '</div>';
+          html += '<input type="text" id="e_img_' + id + '" value="' + String(p.image || '').replace(/"/g, '&quot;') + '" placeholder="Image URL">';
+          html += '<textarea id="e_desc_' + id + '" placeholder="Description">' + String(p.description || '') + '</textarea>';
+          html += '<select id="e_status_' + id + '">';
+          html += '<option value="approved"' + (status === 'approved' ? ' selected' : '') + '>Approved</option>';
+          html += '<option value="pending"' + (status === 'pending' ? ' selected' : '') + '>Pending</option>';
+          html += '<option value="rejected"' + (status === 'rejected' ? ' selected' : '') + '>Rejected</option>';
+          html += '</select>';
+          html += '<button type="button" onclick="saveProduct(\'' + id + '\')">Save Changes</button>';
+          html += '</div>';
+
+          html += '</div>';
+        }
+        box.innerHTML = html;
+      } catch (err) {
+        box.innerHTML = '<p style="opacity:0.7">Could not load products.</p>';
+      }
+    }
+
+    function toggleEdit(id) {
+      var el = document.getElementById('edit-' + id);
+      if (el) el.classList.toggle('open');
+    }
+
+    async function saveProduct(id) {
+      try {
+        var res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update',
+            id: id,
+            name: document.getElementById('e_name_' + id).value.trim(),
+            price: Number(document.getElementById('e_price_' + id).value),
+            stock: Number(document.getElementById('e_stock_' + id).value),
+            old_price: Number(document.getElementById('e_old_' + id).value) || 0,
+            category: document.getElementById('e_cat_' + id).value.trim(),
+            image: document.getElementById('e_img_' + id).value.trim(),
+            description: document.getElementById('e_desc_' + id).value.trim(),
+            status: document.getElementById('e_status_' + id).value
+          })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast('Product updated');
+        loadProducts();
+      } catch (err) {
+        alert(err.message || 'Failed');
+      }
+    }
+
+    async function setStatus(id, status) {
+      try {
+        var res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'set_status', id: id, status: status })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast('Status: ' + status);
+        loadProducts();
+      } catch (err) {
+        alert(err.message || 'Failed');
+      }
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Delete this product?')) return;
+      try {
+        var res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', id: id })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast('Product deleted');
+        loadProducts();
+      } catch (err) {
+        alert(err.message || 'Failed');
+      }
+    }
+
+    loadProducts();
   </script>
 </body>
-</html>
+  </html>
