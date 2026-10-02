@@ -360,29 +360,32 @@
       el.classList.toggle('open');
     }
 
-    function sendMessage(userId, nickname) {
-      var textEl = document.getElementById('msgText-' + userId);
-      var text = (textEl && textEl.value || '').trim();
-      if (!text) {
-        alert('Type a message first');
-        return;
-      }
-      // Store locally until full messaging API is ready
-      var key = 'admin_outbox';
-      var list = [];
-      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { list = []; }
-      list.push({
-        to_user_id: userId,
-        to_nickname: nickname,
-        message: text,
-        from: 'admin',
-        at: new Date().toISOString()
-      });
-      localStorage.setItem(key, JSON.stringify(list));
-      textEl.value = '';
-      showToast('Message saved (API next)');
-      // Later: POST /api/messages
+async function sendMessage(userId, nickname) {
+  var textEl = document.getElementById('msgText-' + userId);
+  var text = (textEl && textEl.value || '').trim();
+  if (!text) { alert('Type a message first'); return; }
+  try {
+    var res = await fetch('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender_id: adminUser.id,
+        sender_role: 'admin',
+        sender_name: 'Admin',
+        receiver_id: userId,
+        receiver_role: 'customer',
+        message: text
+      })
+    });
+    var data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Failed');
+    textEl.value = '';
+    showToast('Message sent');
+  } catch (err) {
+    alert(err.message || 'Failed');
+  }
     }
+  
 
     async function setStatus(userId, status) {
       try {
