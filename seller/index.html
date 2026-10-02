@@ -6,386 +6,215 @@
   <title>Seller Panel – Davilanco</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/images/logo.jpg">
-
   <style>
     :root {
-      --gold: #FFD700;
-      --lemon: #C4FF61;
-      --navy: #001F3F;
-      --bg: #000000;
-      --text: #ffffff;
-      --grey: #1a1a1a;
-      --card: #111111;
-      --border: #333333;
+      --gold: #FFD700; --lemon: #C4FF61; --navy: #001F3F;
+      --bg: #000; --text: #fff; --grey: #1a1a1a; --card: #111; --border: #333;
     }
-
     [data-theme="light"] {
-      --bg: #ffffff;
-      --text: #001F3F;
-      --grey: #f4f4f4;
-      --card: #ffffff;
-      --border: #e0e0e0;
+      --bg: #fff; --text: #001F3F; --grey: #f4f4f4; --card: #fff; --border: #e0e0e0;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      transition: background 0.3s, color 0.3s;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
     }
-
-    /* Header */
     header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 16px;
-      border-bottom: 2px solid var(--gold);
-      position: sticky;
-      top: 0;
-      background: var(--bg);
-      z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 2px solid var(--gold);
+      position: sticky; top: 0; background: var(--bg); z-index: 50;
     }
-
     header img { height: 32px; }
-
-    #searchBar {
-      flex: 1;
-      padding: 10px 14px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      background: var(--grey);
-      color: var(--text);
-      font-size: 14px;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
+    .header-right { display: flex; align-items: center; gap: 8px; }
     .icon-btn {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--text);
-      padding: 6px;
+      background: none; border: none; font-size: 20px;
+      cursor: pointer; color: var(--text); padding: 6px;
     }
-
-    /* Nav Drawer */
     #navDrawer {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: 25%;
-      min-width: 260px;
-      max-width: 320px;
-      height: 100vh;
-      background: var(--bg);
+      position: fixed; top: 0; right: -100%;
+      width: 25%; min-width: 260px; max-width: 320px;
+      height: 100vh; background: var(--bg);
       border-left: 2px solid var(--gold);
-      padding: 24px 20px;
-      transition: right 0.3s ease;
-      z-index: 100;
-      overflow-y: auto;
-      box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+      padding: 24px 20px; transition: right 0.3s; z-index: 100;
+      overflow-y: auto; box-shadow: -4px 0 20px rgba(0,0,0,0.4);
     }
-
     #navDrawer.open { right: 0; }
-
     #navDrawer a {
-      display: block;
-      padding: 12px 0;
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 500;
+      display: block; padding: 12px 0; color: var(--text);
+      text-decoration: none; font-weight: 500;
       border-bottom: 1px solid var(--border);
     }
-
     #navDrawer a:hover { color: var(--gold); }
-
-    /* Main */
     main {
-      flex: 1;
-      padding: 20px 16px;
-      max-width: 800px;
-      margin: 0 auto;
-      width: 100%;
+      flex: 1; padding: 20px 16px;
+      max-width: 800px; margin: 0 auto; width: 100%;
     }
-
-    h1 {
-      font-size: 1.4rem;
-      margin-bottom: 4px;
-    }
-
-    .subtitle {
-      font-size: 0.9rem;
-      opacity: 0.75;
-      margin-bottom: 20px;
-    }
-
+    h1 { font-size: 1.4rem; margin-bottom: 4px; }
+    .subtitle { font-size: 0.9rem; opacity: 0.75; margin-bottom: 18px; }
     .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 18px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px; margin-bottom: 16px;
     }
-
-    .card h3 {
-      font-size: 1.05rem;
-      margin-bottom: 14px;
-      color: var(--gold);
-    }
-
+    .card h3 { color: var(--gold); margin-bottom: 12px; font-size: 1.05rem; }
     input, select, textarea {
-      width: 100%;
-      padding: 11px 14px;
-      border-radius: 9px;
-      border: 1px solid var(--border);
-      background: var(--grey);
-      color: var(--text);
-      font-size: 14px;
-      margin-bottom: 10px;
+      width: 100%; padding: 11px 14px; border-radius: 9px;
+      border: 1px solid var(--border); background: var(--grey);
+      color: var(--text); font-size: 14px; margin-bottom: 10px;
     }
-
-    textarea { min-height: 80px; resize: vertical; }
-
+    textarea { min-height: 70px; resize: vertical; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
     button {
-      padding: 10px 16px;
-      background: var(--gold);
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      margin: 4px 4px 4px 0;
+      padding: 10px 14px; background: var(--gold); color: #000;
+      border: none; border-radius: 8px; font-weight: 600;
+      font-size: 13px; cursor: pointer; margin: 3px 3px 3px 0;
     }
-
     button.secondary {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
+      background: transparent; border: 1px solid var(--border); color: var(--text);
     }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
+    .preview {
+      width: 100px; height: 100px; object-fit: cover;
+      border-radius: 10px; border: 1px solid var(--border);
+      margin-bottom: 10px; display: none; background: var(--grey);
     }
-
-    th, td {
-      padding: 10px 8px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-      vertical-align: top;
+    .hint { font-size: 12px; opacity: 0.7; margin-bottom: 10px; }
+    .product-row, .order-row {
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px; margin-bottom: 10px; background: var(--grey);
+      font-size: 13px; line-height: 1.5;
     }
-
-    th { opacity: 0.7; font-weight: 600; }
-
-    .status {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 12px;
+      font-size: 11px; font-weight: 600;
     }
-
+    .approved { background: #27ae60; color: #fff; }
     .pending { background: #f39c12; color: #000; }
-    .approved { background: var(--lemon); color: #000; }
-    .shipping { background: var(--navy); color: #fff; }
-    .delivered { background: #27ae60; color: #fff; }
-
-    .msg-box {
-      background: var(--grey);
-      border-radius: 10px;
-      padding: 12px;
-      max-height: 150px;
-      overflow-y: auto;
-      font-size: 13px;
-      margin-bottom: 10px;
-    }
-
+    .rejected { background: #e74c3c; color: #fff; }
     footer {
-      text-align: center;
-      padding: 18px;
-      font-size: 13px;
-      border-top: 1px solid var(--border);
-      margin-top: auto;
+      text-align: center; padding: 18px; font-size: 13px;
+      border-top: 1px solid var(--border); margin-top: auto;
     }
-
-    #backToTop {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: var(--gold);
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      display: none;
-      z-index: 40;
+    #toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: var(--gold); color: #000; padding: 12px 20px;
+      border-radius: 30px; font-weight: 600; font-size: 14px;
+      display: none; z-index: 60;
     }
   </style>
 </head>
 <body>
-
   <header>
     <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
-    <input type="text" id="searchBar" placeholder="Search products...">
-    <div class="header-actions">
-      <button class="icon-btn" onclick="toggleTheme()">🌓</button>
-      <button class="icon-btn" onclick="toggleNav()">☰</button>
+    <div class="header-right">
+      <span style="font-size:13px;opacity:0.8">SELLER</span>
+      <button class="icon-btn" type="button" onclick="toggleTheme()">🌓</button>
+      <button class="icon-btn" type="button" onclick="toggleNav()">☰</button>
     </div>
+    <nav id="navDrawer">
+      <a href="/seller/">Seller Panel</a>
+      <a href="/dashboard.html">My Dashboard</a>
+      <a href="/">Shop Home</a>
+      <a href="/admin/" id="adminLink" style="display:none">Admin</a>
+      <br>
+      <a href="#" id="logoutBtn">Logout</a>
+      <a href="#" onclick="toggleNav();return false;">Close ✕</a>
+    </nav>
   </header>
-
-  <nav id="navDrawer">
-    <a href="/">Home</a>
-    <a href="/dashboard.html">Dashboard</a>
-    <a href="/seller/">Seller Panel</a>
-    <a href="/admin/" id="adminLink" style="display:none">Admin Panel</a>
-    <br>
-    <a href="#" id="logoutBtn">Logout</a>
-    <a href="#" onclick="toggleNav()">Close ✕</a>
-  </nav>
 
   <main>
     <h1>Seller Panel</h1>
-    <p class="subtitle">Store: <strong id="storeName">Your Store</strong></p>
+    <p class="subtitle">Welcome, <strong id="sellerName">Seller</strong> — products need admin approval before they appear in the store.</p>
 
-    <!-- 1. Add Product -->
+    <!-- Add product -->
     <div class="card">
-      <h3>1. Add Your Product</h3>
+      <h3>Add Product</h3>
       <input type="text" id="p_name" placeholder="Product Name *">
-      <input type="number" id="p_price" placeholder="Price (NGN) *">
-      <input type="text" id="p_category" placeholder="Category *">
-      <input type="number" id="p_stock" placeholder="Stock quantity *">
-      <textarea id="p_desc" placeholder="Product description"></textarea>
-      <input type="text" id="p_image" placeholder="Image URL">
-      <button onclick="addProduct()">Add Product (Pending Admin Approval)</button>
+      <div class="row2">
+        <input type="number" id="p_price" placeholder="Price (NGN) *">
+        <input type="number" id="p_stock" placeholder="Stock *" value="5">
+      </div>
+      <input type="text" id="p_category" placeholder="Category (fashion, electronics, home, beauty...)">
+      <textarea id="p_desc" placeholder="Description"></textarea>
+
+      <p class="hint">Image: paste a URL <strong>or</strong> upload from your phone (max \~400KB after compress)</p>
+      <input type="text" id="p_image_url" placeholder="Image URL (optional if you upload a file)">
+      <input type="file" id="p_image_file" accept="image/*" onchange="onFileSelected(event)">
+      <img id="imgPreview" class="preview" alt="Preview">
+
+      <button type="button" onclick="addProduct()">Submit for Approval</button>
       <p id="addMsg" style="font-size:13px;margin-top:8px"></p>
     </div>
 
-    <!-- 2. Orders for your products -->
+    <!-- My products -->
     <div class="card">
-      <h3>2. Orders for Your Products</h3>
-      <div style="overflow-x:auto">
-        <table>
-          <thead>
-            <tr>
-              <th>Order</th>
-              <th>Customer Info</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="ordersTable">
-            <tr>
-              <td colspan="4" style="opacity:0.7">No orders yet</td>
-            </tr>
-          </tbody>
-        </table>
+      <h3>My Products</h3>
+      <button class="secondary" type="button" onclick="loadMyProducts()">Refresh</button>
+      <div id="myProducts" style="margin-top:12px">
+        <p style="opacity:0.7">Loading...</p>
       </div>
     </div>
 
-    <!-- 3. Shipping + Tracking -->
+    <!-- Orders for my products -->
     <div class="card">
-      <h3>3. Shipping Method + Tracking</h3>
-      <select id="shipMethod">
-        <option value="">Select shipping method</option>
-        <option value="DHL">DHL</option>
-        <option value="GIG">GIG Logistics</option>
-        <option value="Fez">Fez Delivery</option>
-        <option value="Self">Self Delivery</option>
-      </select>
-      <input type="text" id="trackInput" placeholder="Tracking Number">
-      <input type="text" id="etaInput" placeholder="Expected Arrival (e.g. 2-3 days)">
-      <button onclick="addTracking()">Add Tracking Details</button>
-      <p id="trackMsg" style="font-size:13px;margin-top:8px"></p>
-    </div>
-
-    <!-- 4. Messages -->
-    <div class="card">
-      <h3>4. Messages</h3>
-      <p style="font-size:13px;opacity:0.75;margin-bottom:10px">
-        Chat with Customers and Admin
-      </p>
-      <div class="msg-box" id="msgBox">
-        <p style="opacity:0.7">No messages yet</p>
+      <h3>Orders for My Products</h3>
+      <p class="hint">Customer name, phone, email and address only. Add tracking when you ship.</p>
+      <button class="secondary" type="button" onclick="loadMyOrders()">Refresh Orders</button>
+      <div id="myOrders" style="margin-top:12px">
+        <p style="opacity:0.7">Loading...</p>
       </div>
-      <textarea id="msgText" placeholder="Type your message..."></textarea>
-      <select id="msgTo">
-        <option value="customer">To Customer</option>
-        <option value="admin">To Admin</option>
-      </select>
-      <button onclick="sendMessage()">Send Message</button>
     </div>
 
+    <!-- Message admin -->
+    <div class="card">
+      <h3>Message Admin</h3>
+      <textarea id="adminMsg" placeholder="Write to admin..."></textarea>
+      <button type="button" onclick="messageAdmin()">Send</button>
+      <p id="msgStatus" style="font-size:13px;margin-top:8px"></p>
+    </div>
   </main>
 
-  <footer>
-    Davilanco Seller © 2026
-  </footer>
-
-  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+  <footer>Davilanco Seller © 2026</footer>
+  <div id="toast">Saved</div>
 
   <script>
-    // ========== THEME (Dark default) ==========
-    const savedTheme = localStorage.getItem('theme');
+    var savedTheme = localStorage.getItem('theme');
     document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
 
     function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('theme', next);
     }
 
-    // ========== NAV ==========
     function toggleNav() {
       document.getElementById('navDrawer').classList.toggle('open');
     }
 
-    // ========== AUTH CHECK ==========
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-
+    var token = localStorage.getItem('token');
+    var userStr = localStorage.getItem('user');
     if (!token || !userStr) {
       window.location.href = '/login.html?redirect=' + encodeURIComponent('/seller/');
     }
 
-    let user = {};
-    try {
-      user = JSON.parse(userStr);
-    } catch (e) {
+    var user = {};
+    try { user = JSON.parse(userStr); } catch (e) {
       localStorage.clear();
       window.location.href = '/login.html';
     }
 
-    // Only seller or admin can access
     if (user.role !== 'seller' && user.role !== 'admin') {
-      alert('Access denied. Seller account required.');
+      alert('Seller access only. Apply from your dashboard or ask admin to promote you.');
       window.location.href = '/dashboard.html';
     }
 
-    // Show admin link if user is admin
     if (user.role === 'admin') {
       document.getElementById('adminLink').style.display = 'block';
     }
 
-    // Display store name (nickname)
-    document.getElementById('storeName').textContent = user.nickname || 'Your Store';
+    document.getElementById('sellerName').textContent = user.nickname || 'Seller';
 
-    // ========== LOGOUT ==========
     document.getElementById('logoutBtn').addEventListener('click', function(e) {
       e.preventDefault();
       localStorage.removeItem('token');
@@ -393,66 +222,290 @@
       window.location.href = '/login.html';
     });
 
-    // ========== BACK TO TOP ==========
-    window.addEventListener('scroll', function() {
-      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
-    });
+    function showToast(t) {
+      var el = document.getElementById('toast');
+      el.textContent = t || 'Saved';
+      el.style.display = 'block';
+      setTimeout(function() { el.style.display = 'none'; }, 1600);
+    }
+
+    // ========== IMAGE UPLOAD (compress to data URL) ==========
+    var uploadedDataUrl = '';
+
+    function onFileSelected(e) {
+      var file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      if (!file.type || file.type.indexOf('image/') !== 0) {
+        alert('Please choose an image file');
+        return;
+      }
+
+      // Hard limit before compress (\~5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image too large. Please choose a file under 5MB.');
+        return;
+      }
+
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        compressImage(ev.target.result, function(dataUrl) {
+          uploadedDataUrl = dataUrl;
+          var prev = document.getElementById('imgPreview');
+          prev.src = dataUrl;
+          prev.style.display = 'block';
+          // Clear URL field so upload wins
+          document.getElementById('p_image_url').value = '';
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function compressImage(dataUrl, callback) {
+      var img = new Image();
+      img.onload = function() {
+        var maxW = 800;
+        var scale = Math.min(1, maxW / img.width);
+        var w = Math.round(img.width * scale);
+        var h = Math.round(img.height * scale);
+        var canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+
+        // quality 0.7 JPEG
+        var out = canvas.toDataURL('image/jpeg', 0.7);
+
+        // If still huge, lower quality
+        if (out.length > 550000) {
+          out = canvas.toDataURL('image/jpeg', 0.5);
+        }
+        if (out.length > 700000) {
+          alert('Image is still too large after compression. Try a smaller photo.');
+          uploadedDataUrl = '';
+          document.getElementById('imgPreview').style.display = 'none';
+          return;
+        }
+        callback(out);
+      };
+      img.onerror = function() {
+        alert('Could not read image');
+      };
+      img.src = dataUrl;
+    }
+
+    function getImageValue() {
+      var url = document.getElementById('p_image_url').value.trim();
+      if (url) return url;
+      return uploadedDataUrl || '';
+    }
 
     // ========== ADD PRODUCT ==========
-    function addProduct() {
-      const name = document.getElementById('p_name').value.trim();
-      const price = document.getElementById('p_price').value;
-      const category = document.getElementById('p_category').value.trim();
-      const stock = document.getElementById('p_stock').value;
-      const msg = document.getElementById('addMsg');
+    async function addProduct() {
+      var msg = document.getElementById('addMsg');
+      var name = document.getElementById('p_name').value.trim();
+      var price = Number(document.getElementById('p_price').value);
+      var stock = Number(document.getElementById('p_stock').value);
+      var image = getImageValue();
 
-      if (!name || !price || !category || !stock) {
+      if (!name || !price) {
         msg.style.color = '#e74c3c';
-        msg.textContent = 'Please fill all required fields';
+        msg.textContent = 'Name and price are required';
         return;
       }
 
-      msg.style.color = '#27ae60';
-      msg.textContent = 'Product submitted! Waiting for admin approval.';
-      // Will connect to API later
-    }
+      try {
+        var res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name,
+            price: price,
+            stock: stock || 0,
+            category: document.getElementById('p_category').value.trim() || 'others',
+            description: document.getElementById('p_desc').value.trim(),
+            image: image,
+            status: 'pending',
+            seller_id: user.id
+          })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
 
-    // ========== TRACKING ==========
-    function addTracking() {
-      const method = document.getElementById('shipMethod').value;
-      const tracking = document.getElementById('trackInput').value.trim();
-      const eta = document.getElementById('etaInput').value.trim();
-      const msg = document.getElementById('trackMsg');
+        msg.style.color = '#27ae60';
+        msg.textContent = 'Submitted! Waiting for admin approval.';
+        showToast('Product submitted');
 
-      if (!method || !tracking) {
+        document.getElementById('p_name').value = '';
+        document.getElementById('p_price').value = '';
+        document.getElementById('p_desc').value = '';
+        document.getElementById('p_image_url').value = '';
+        document.getElementById('p_image_file').value = '';
+        uploadedDataUrl = '';
+        document.getElementById('imgPreview').style.display = 'none';
+
+        loadMyProducts();
+      } catch (err) {
         msg.style.color = '#e74c3c';
-        msg.textContent = 'Please select shipping method and enter tracking number';
-        return;
+        msg.textContent = err.message || 'Failed to add product';
       }
-
-      msg.style.color = '#27ae60';
-      msg.textContent = 'Tracking details saved: ' + method + ' - ' + tracking;
-      // Will connect to API later
     }
 
-    // ========== MESSAGES ==========
-    function sendMessage() {
-      const text = document.getElementById('msgText').value.trim();
-      const to = document.getElementById('msgTo').value;
+    // ========== MY PRODUCTS ==========
+    async function loadMyProducts() {
+      var box = document.getElementById('myProducts');
+      box.innerHTML = '<p style="opacity:0.7">Loading...</p>';
+      try {
+        var res = await fetch('/api/products?all=1');
+        var data = await res.json();
+        var products = Array.isArray(data) ? data : [];
+        var mine = products.filter(function(p) {
+          return p.seller_id === user.id;
+        });
 
+        if (!mine.length) {
+          box.innerHTML = '<p style="opacity:0.7">No products yet. Add one above.</p>';
+          return;
+        }
+
+        var html = '';
+        for (var i = 0; i < mine.length; i++) {
+          var p = mine[i];
+          var st = p.status || 'pending';
+          html += '<div class="product-row">';
+          if (p.image && p.image.indexOf('http') === 0) {
+            html += '<img src="' + p.image + '" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px;float:left;margin-right:10px">';
+          }
+          html += '<strong>' + (p.name || '') + '</strong> ';
+          html += '<span class="badge ' + st + '">' + st + '</span><br>';
+          html += '₦' + Number(p.price || 0).toLocaleString() + ' · Stock: ' + (p.stock != null ? p.stock : 0);
+          html += '<br>' + (p.category || '');
+          html += '<div style="clear:both"></div></div>';
+        }
+        box.innerHTML = html;
+      } catch (e) {
+        box.innerHTML = '<p style="opacity:0.7">Could not load products.</p>';
+      }
+    }
+
+    // ========== ORDERS (filter items belonging to my products) ==========
+    async function loadMyOrders() {
+      var box = document.getElementById('myOrders');
+      box.innerHTML = '<p style="opacity:0.7">Loading...</p>';
+      try {
+        var prodRes = await fetch('/api/products?all=1');
+        var prodData = await prodRes.json();
+        var products = Array.isArray(prodData) ? prodData : [];
+        var myIds = {};
+        for (var i = 0; i < products.length; i++) {
+          if (products[i].seller_id === user.id) {
+            myIds[products[i].id] = products[i].name;
+          }
+        }
+
+        var ordRes = await fetch('/api/orders?all=1');
+        var ordData = await ordRes.json();
+        var orders = ordData.orders || [];
+
+        var html = '';
+        var found = 0;
+
+        for (var o = 0; o < orders.length; o++) {
+          var order = orders[o];
+          var items = order.items || [];
+          var myItems = [];
+          for (var j = 0; j < items.length; j++) {
+            if (myIds[items[j].product_id]) {
+              myItems.push(items[j]);
+            }
+          }
+          if (!myItems.length) continue;
+          found++;
+
+          html += '<div class="order-row">';
+          html += '<strong>' + (order.id || '') + '</strong> · ' + (order.status || 'Pending') + '<br>';
+          html += 'Customer: ' + (order.firstname || '') + ' ' + (order.lastname || '') + '<br>';
+          html += 'Phone: ' + (order.phone || '') + ' · Email: (on order)<br>';
+          html += 'Address: ' + (order.address || '') + ', ' + (order.town || '') + ', ' + (order.state || '') + '<br>';
+          html += 'Items: ';
+          for (var k = 0; k < myItems.length; k++) {
+            html += (myItems[k].product_name || '') + ' x' + myItems[k].quantity + (k < myItems.length - 1 ? ', ' : '');
+          }
+          html += '<br>Pay: ' + (order.payment_status || 'pending');
+          if (order.tracking_number) {
+            html += '<br>Tracking: ' + order.tracking_number;
+          }
+          html += '<div style="margin-top:8px">';
+          html += '<input type="text" id="tr_' + order.id + '" placeholder="Tracking number" value="' + (order.tracking_number || '') + '">';
+          html += '<input type="text" id="lg_' + order.id + '" placeholder="Logistics" value="' + (order.logistics || '') + '">';
+          html += '<input type="text" id="eta_' + order.id + '" placeholder="ETA" value="' + (order.eta || '') + '">';
+          html += '<button type="button" onclick="saveTracking(\'' + order.id + '\')">Save Tracking</button>';
+          html += '</div></div>';
+        }
+
+        if (!found) {
+          box.innerHTML = '<p style="opacity:0.7">No orders for your products yet.</p>';
+        } else {
+          box.innerHTML = html;
+        }
+      } catch (e) {
+        box.innerHTML = '<p style="opacity:0.7">Could not load orders. (Admin all-orders API needed)</p>';
+      }
+    }
+
+    async function saveTracking(orderId) {
+      try {
+        var res = await fetch('/api/orders-update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order_id: orderId,
+            status: 'Shipping',
+            tracking_number: document.getElementById('tr_' + orderId).value.trim(),
+            logistics: document.getElementById('lg_' + orderId).value.trim(),
+            eta: document.getElementById('eta_' + orderId).value.trim()
+          })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast('Tracking saved');
+        loadMyOrders();
+      } catch (err) {
+        alert(err.message || 'Failed');
+      }
+    }
+
+    async function messageAdmin() {
+      var text = document.getElementById('adminMsg').value.trim();
+      var status = document.getElementById('msgStatus');
       if (!text) return;
-
-      const box = document.getElementById('msgBox');
-      if (box.querySelector('p')) box.innerHTML = '';
-
-      const line = document.createElement('div');
-      line.textContent = 'You → ' + to + ': ' + text;
-      line.style.marginBottom = '6px';
-      box.appendChild(line);
-
-      document.getElementById('msgText').value = '';
-      // Will connect to API later
+      try {
+        var res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sender_id: user.id,
+            sender_role: 'seller',
+            sender_name: user.nickname || 'Seller',
+            receiver_id: null,
+            receiver_role: 'admin',
+            message: text
+          })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        document.getElementById('adminMsg').value = '';
+        status.style.color = '#27ae60';
+        status.textContent = 'Message sent to admin';
+      } catch (err) {
+        status.style.color = '#e74c3c';
+        status.textContent = err.message || 'Failed';
+      }
     }
+
+    loadMyProducts();
+    loadMyOrders();
   </script>
 </body>
   </html>
