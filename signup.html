@@ -4,297 +4,132 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Account – Davilanco</title>
-  <meta name="description" content="Create your Davilanco account">
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/images/logo.jpg">
-
   <style>
     :root {
-      --gold: #FFD700;
-      --lemon: #C4FF61;
-      --navy: #001F3F;
-      --bg: #ffffff;
-      --text: #001F3F;
-      --grey: #f4f4f4;
-      --card: #ffffff;
-      --border: #e0e0e0;
+      --gold: #FFD700; --bg: #000; --text: #fff;
+      --grey: #1a1a1a; --card: #111; --border: #333;
     }
-
-    [data-theme="dark"] {
-      --bg: #000000;
-      --text: #ffffff;
-      --grey: #1a1a1a;
-      --card: #111111;
-      --border: #333333;
+    [data-theme="light"] {
+      --bg: #fff; --text: #001F3F; --grey: #f4f4f4; --card: #fff; --border: #e0e0e0;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      transition: background 0.3s, color 0.3s;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
     }
-
-    /* Header */
     header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      border-bottom: 2px solid var(--gold);
-      position: sticky;
-      top: 0;
-      background: var(--bg);
-      z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 2px solid var(--gold);
+      position: sticky; top: 0; background: var(--bg); z-index: 50;
     }
-
     header img { height: 32px; }
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
     .icon-btn {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--text);
-      padding: 6px;
+      background: none; border: none; font-size: 20px;
+      cursor: pointer; color: var(--text); padding: 6px;
     }
-
-    /* Navigation Drawer */
     #navDrawer {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: 25%;
-      min-width: 260px;
-      max-width: 320px;
-      height: 100vh;
-      background: var(--bg);
+      position: fixed; top: 0; right: -100%;
+      width: 25%; min-width: 260px; max-width: 320px;
+      height: 100vh; background: var(--bg);
       border-left: 2px solid var(--gold);
-      padding: 24px 20px;
-      transition: right 0.3s ease;
-      z-index: 100;
-      overflow-y: auto;
-      box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+      padding: 24px 20px; transition: right 0.3s; z-index: 100;
     }
-
     #navDrawer.open { right: 0; }
-
     #navDrawer a {
-      display: block;
-      padding: 12px 0;
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 500;
-      border-bottom: 1px solid var(--border);
+      display: block; padding: 12px 0; color: var(--text);
+      text-decoration: none; border-bottom: 1px solid var(--border);
     }
-
-    #navDrawer a:hover { color: var(--gold); }
-
-    /* Main */
     main {
-      flex: 1;
-      padding: 24px 16px;
-      max-width: 440px;
-      margin: 0 auto;
-      width: 100%;
+      flex: 1; padding: 24px 16px; max-width: 440px; margin: 0 auto; width: 100%;
     }
-
-    h1 {
-      font-size: 1.6rem;
-      margin-bottom: 6px;
-    }
-
-    .subtitle {
-      font-size: 0.9rem;
-      opacity: 0.75;
-      margin-bottom: 24px;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
+    h1 { font-size: 1.5rem; margin-bottom: 6px; }
+    .subtitle { font-size: 0.9rem; opacity: 0.75; margin-bottom: 20px; }
     input {
-      width: 100%;
-      padding: 14px 16px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--grey);
-      color: var(--text);
-      font-size: 15px;
+      width: 100%; padding: 14px 16px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--grey);
+      color: var(--text); font-size: 15px; margin-bottom: 12px;
     }
-
-    input:focus {
-      outline: 2px solid var(--gold);
-      border-color: transparent;
-    }
-
     button[type="submit"] {
-      margin-top: 8px;
-      padding: 15px;
-      background: var(--gold);
-      color: #000;
-      border: none;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 16px;
-      cursor: pointer;
+      width: 100%; padding: 15px; background: var(--gold); color: #000;
+      border: none; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer;
     }
-
-    button[type="submit"]:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    #msg {
-      margin-top: 16px;
-      font-size: 14px;
-      text-align: center;
-    }
-
+    button[type="submit"]:disabled { opacity: 0.6; }
+    #msg { margin-top: 14px; text-align: center; font-size: 14px; }
     .error { color: #e74c3c; }
     .success { color: #27ae60; }
-
-    .login-link {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 14px;
-    }
-
+    .login-link { text-align: center; margin-top: 18px; font-size: 14px; }
     .login-link a { color: var(--gold); font-weight: 600; }
-
-    /* Footer */
     footer {
-      text-align: center;
-      padding: 20px;
-      font-size: 13px;
-      border-top: 1px solid var(--border);
-      margin-top: auto;
-    }
-
-    /* Back to top */
-    #backToTop {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: var(--gold);
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      display: none;
-      z-index: 40;
+      text-align: center; padding: 18px; font-size: 13px;
+      border-top: 1px solid var(--border); margin-top: auto;
     }
   </style>
 </head>
 <body>
-
-  <!-- Header -->
   <header>
-    <a href="/">
-      <img src="/images/logo.jpg" alt="Davilanco Logo">
-    </a>
-    <div class="header-actions">
-      <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
-      <button class="icon-btn" onclick="toggleNav()">☰</button>
+    <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
+    <div>
+      <button class="icon-btn" type="button" onclick="toggleTheme()">🌓</button>
+      <button class="icon-btn" type="button" onclick="toggleNav()">☰</button>
     </div>
-
-  <!-- Navigation Drawer -->
-  <nav id="navDrawer">
-    <a href="/">Home</a>
-    <a href="/categories.html">Categories</a>
-    <a href="/cart.html">Cart</a>
-    <a href="/login.html">Login</a>
-    <a href="/signup.html">Create Account</a>
-    <br>
-    <a href="#" onclick="toggleNav()">Close ✕</a>
-  </nav>
+    <nav id="navDrawer">
+      <a href="/">Home</a>
+      <a href="/login.html">Login</a>
+      <a href="/signup.html">Create Account</a>
+      <a href="#" onclick="toggleNav();return false;">Close ✕</a>
+    </nav>
   </header>
 
-  <!-- Main Content -->
   <main>
     <h1>Create Account</h1>
-    <p class="subtitle">All new accounts start as Customer</p>
+    <p class="subtitle">New accounts start as Customer. We will email a verification code.</p>
 
     <form id="signupForm">
       <input type="text" id="firstname" placeholder="First Name *" required>
       <input type="text" id="lastname" placeholder="Last Name *" required>
-      <input type="text" id="nickname" placeholder="Nickname (can become store name) *" required>
+      <input type="text" id="nickname" placeholder="Nickname *" required>
       <input type="tel" id="phone" placeholder="Phone Number *" required>
       <input type="email" id="email" placeholder="Email Address *" required>
-      <input type="password" id="password" placeholder="Password (min 8, uppercase, number, symbol) *" required>
+      <input type="password" id="password" placeholder="Password (8+, upper, number, symbol) *" required>
       <input type="password" id="password2" placeholder="Confirm Password *" required>
-
       <button type="submit" id="submitBtn">Create Account</button>
     </form>
-
     <p id="msg"></p>
-
-    <p class="login-link">
-      Already have an account? <a href="/login.html">Login here</a>
-    </p>
+    <p class="login-link">Already have an account? <a href="/login.html">Login</a></p>
   </main>
 
-  <footer>
-    Davilanco © 2026 · shop.davilanco.com
-  </footer>
-
-  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+  <footer>Davilanco © 2026</footer>
 
   <script>
-    // ========== THEME ==========
-    const savedTheme = localStorage.getItem('theme');
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme || systemTheme);
+    var savedTheme = localStorage.getItem('theme');
+    document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
 
     function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('theme', next);
     }
 
-    // ========== NAV ==========
     function toggleNav() {
       document.getElementById('navDrawer').classList.toggle('open');
     }
 
-    // ========== BACK TO TOP ==========
-    window.addEventListener('scroll', () => {
-      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
-    });
-
-    // ========== SIGNUP FORM ==========
-    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
       e.preventDefault();
+      var msg = document.getElementById('msg');
+      var btn = document.getElementById('submitBtn');
+      var password = document.getElementById('password').value;
+      var password2 = document.getElementById('password2').value;
 
-      const msg = document.getElementById('msg');
-      const btn = document.getElementById('submitBtn');
-      const password = document.getElementById('password').value;
-      const password2 = document.getElementById('password2').value;
-
-      // Client-side password strength
       if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
         msg.className = 'error';
-        msg.textContent = 'Password must be at least 8 characters and contain uppercase, number and symbol';
+        msg.textContent = 'Password must be 8+ chars with uppercase, number and symbol';
         return;
       }
-
       if (password !== password2) {
         msg.className = 'error';
         msg.textContent = 'Passwords do not match';
@@ -302,11 +137,11 @@
       }
 
       btn.disabled = true;
-      btn.textContent = 'Creating account...';
+      btn.textContent = 'Creating...';
       msg.textContent = '';
 
       try {
-        const res = await fetch('/api/signup', {
+        var res = await fetch('/api/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -318,15 +153,15 @@
             password: password
           })
         });
-
-        const data = await res.json();
+        var data = await res.json();
 
         if (data.ok) {
           msg.className = 'success';
-          msg.textContent = data.message || 'Account created successfully!';
-          setTimeout(() => {
-            window.location.href = '/login.html';
-          }, 1500);
+          msg.textContent = data.message || 'Account created. Check your email.';
+          var email = document.getElementById('email').value.trim();
+          setTimeout(function() {
+            window.location.href = '/verify.html?email=' + encodeURIComponent(email);
+          }, 1200);
         } else {
           msg.className = 'error';
           msg.textContent = data.error || 'Something went wrong';
@@ -342,4 +177,4 @@
     });
   </script>
 </body>
-  </html>
+                  </html>
