@@ -3,106 +3,435 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Users – Admin</title>
+  <title>Admin Users – Davilanco</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/images/logo.jpg">
-  <link rel="stylesheet" href="/admin/styles.css">
+  <style>
+    :root {
+      --gold: #FFD700; --lemon: #C4FF61; --navy: #001F3F;
+      --bg: #000; --text: #fff; --grey: #1a1a1a; --card: #111; --border: #333;
+    }
+    [data-theme="light"] {
+      --bg: #fff; --text: #001F3F; --grey: #f4f4f4; --card: #fff; --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 2px solid var(--gold);
+      position: sticky; top: 0; background: var(--bg); z-index: 50;
+    }
+    header img { height: 32px; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .icon-btn {
+      background: none; border: none; font-size: 20px;
+      cursor: pointer; color: var(--text); padding: 6px;
+    }
+    #navDrawer {
+      position: fixed; top: 0; right: -100%;
+      width: 25%; min-width: 260px; max-width: 320px;
+      height: 100vh; background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px; transition: right 0.3s; z-index: 100;
+      overflow-y: auto; box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+    }
+    #navDrawer.open { right: 0; }
+    #navDrawer a {
+      display: block; padding: 12px 0; color: var(--text);
+      text-decoration: none; font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+    #navDrawer a:hover { color: var(--gold); }
+    #navDrawer .nav-section {
+      margin-top: 16px; font-size: 12px;
+      text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;
+    }
+    main {
+      flex: 1; padding: 20px 16px;
+      max-width: 900px; margin: 0 auto; width: 100%;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 6px; }
+    .subtitle { font-size: 0.9rem; opacity: 0.75; margin-bottom: 16px; }
+    .toolbar {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .toolbar input, .toolbar select {
+      flex: 1; min-width: 140px;
+      padding: 10px 12px; border-radius: 9px;
+      border: 1px solid var(--border); background: var(--grey);
+      color: var(--text); font-size: 14px;
+    }
+    button {
+      padding: 10px 14px; background: var(--gold); color: #000;
+      border: none; border-radius: 8px; font-weight: 600;
+      font-size: 13px; cursor: pointer; margin: 3px 3px 3px 0;
+    }
+    button.secondary {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+    }
+    button.danger { background: #e74c3c; color: #fff; }
+    button.success { background: #27ae60; color: #fff; }
+    .user-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px; margin-bottom: 12px;
+    }
+    .user-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 10px; flex-wrap: wrap; margin-bottom: 10px;
+    }
+    .user-name { font-size: 1.05rem; font-weight: 700; }
+    .user-meta { font-size: 13px; opacity: 0.9; line-height: 1.55; }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; margin-left: 4px;
+    }
+    .role-customer { background: #555; color: #fff; }
+    .role-seller { background: var(--lemon); color: #000; }
+    .role-admin { background: var(--gold); color: #000; }
+    .status-active { background: #27ae60; color: #fff; }
+    .status-suspended { background: #e74c3c; color: #fff; }
+    .verified { background: var(--navy); color: #fff; }
+    .unverified { background: #f39c12; color: #000; }
+    .actions { margin-top: 12px; }
+    .orders-box {
+      margin-top: 12px; padding: 12px; background: var(--grey);
+      border-radius: 10px; font-size: 13px; display: none;
+    }
+    .orders-box.open { display: block; }
+    .order-line {
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+    .order-line:last-child { border-bottom: none; }
+    .msg-box {
+      margin-top: 12px; display: none;
+    }
+    .msg-box.open { display: block; }
+    .msg-box textarea {
+      width: 100%; min-height: 70px; padding: 10px;
+      border-radius: 9px; border: 1px solid var(--border);
+      background: var(--grey); color: var(--text); margin-bottom: 8px;
+    }
+    footer {
+      text-align: center; padding: 18px; font-size: 13px;
+      border-top: 1px solid var(--border); margin-top: auto;
+    }
+    #toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: var(--gold); color: #000; padding: 12px 20px;
+      border-radius: 30px; font-weight: 600; font-size: 14px;
+      display: none; z-index: 60; white-space: nowrap;
+    }
+  </style>
 </head>
 <body>
   <header>
     <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
     <div class="header-right">
       <span style="font-size:13px;opacity:0.8">ADMIN</span>
-      <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
-      <button class="icon-btn" onclick="toggleNav()" aria-label="Open menu">☰</button>
+      <button class="icon-btn" type="button" onclick="toggleTheme()" aria-label="Theme">🌓</button>
+      <button class="icon-btn" type="button" onclick="toggleNav()" aria-label="Menu">☰</button>
     </div>
-
-    <nav id="navDrawer">
+    <nav id="navDrawer" aria-label="Admin menu">
       <a href="/admin/">Admin Home</a>
-      <a href="/admin/orders.html">Orders</a>
-      <a href="/admin/users.html" class="active">Users</a>
+      <div class="nav-section">Manage</div>
+      <a href="/admin/orders.html">Orders & Tracking</a>
+      <a href="/admin/users.html">Users</a>
       <a href="/admin/products.html">Products</a>
       <a href="/admin/messages.html">Messages</a>
+      <div class="nav-section">Site</div>
       <a href="/">Shop Home</a>
       <a href="/dashboard.html">User Dashboard</a>
-      <a href="/seller/">Seller Panel</a>
       <br>
       <a href="#" id="logoutBtn">Logout</a>
-      <a href="#" onclick="toggleNav()">Close ✕</a>
+      <a href="#" onclick="toggleNav();return false;">Close ✕</a>
     </nav>
   </header>
 
   <main>
     <h1>Users</h1>
-    <p class="subtitle">Manage customers, sellers and applications</p>
+    <p class="subtitle">Customers, sellers & admins</p>
 
-    <div class="card">
-      <h3>Customers & Sellers</h3>
-      <div style="overflow-x:auto">
-        <table>
-          <thead>
-            <tr>
-              <th>Nickname</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>jane</td>
-              <td>jane@example.com</td>
-              <td>0803 123 4567</td>
-              <td>Customer</td>
-              <td><span class="status approved">Active</span></td>
-              <td><button class="secondary">View</button></td>
-            </tr>
-            <tr>
-              <td>mariafashion</td>
-              <td>seller@example.com</td>
-              <td>0804 500 0011</td>
-              <td>Seller</td>
-              <td><span class="status approved">Verified</span></td>
-              <td><button class="secondary">View</button></td>
-            </tr>
-            <tr>
-              <td>testuser</td>
-              <td>blocked@example.com</td>
-              <td>0702 333 2222</td>
-              <td>Customer</td>
-              <td><span class="status suspended">Suspended</span></td>
-              <td><button class="secondary">View</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="toolbar">
+      <input type="text" id="searchBox" placeholder="Search name, email, phone..." oninput="filterUsers()">
+      <select id="roleFilter" onchange="filterUsers()">
+        <option value="all">All roles</option>
+        <option value="customer">Customer</option>
+        <option value="seller">Seller</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button class="secondary" type="button" onclick="loadUsers()">Refresh</button>
     </div>
 
-    <div class="card">
-      <h3>Seller Applications</h3>
-      <div class="msg-box">
-        <p><strong>New seller:</strong> houseofstyle</p>
-        <p>Requested store access on 2026-09-28</p>
-        <p>Documents checked: Yes</p>
-      </div>
-      <button>Approve</button>
-      <button class="secondary">Reject</button>
+    <div id="usersList">
+      <p style="opacity:0.7">Loading users...</p>
     </div>
   </main>
 
-  <footer>
-    Davilanco Admin © 2026
-  </footer>
+  <footer>Davilanco Admin © 2026</footer>
+  <div id="toast">Done</div>
 
-  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-
-  <script src="/admin/utils.js"></script>
   <script>
-    window.addEventListener('scroll', function() {
-      document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+    var savedTheme = localStorage.getItem('theme');
+    document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
+
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    function toggleNav() {
+      document.getElementById('navDrawer').classList.toggle('open');
+    }
+
+    var token = localStorage.getItem('token');
+    var userStr = localStorage.getItem('user');
+    if (!token || !userStr) {
+      window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/users.html');
+    }
+    var adminUser = {};
+    try { adminUser = JSON.parse(userStr); } catch (e) {
+      localStorage.clear();
+      window.location.href = '/login.html';
+    }
+    if (adminUser.role !== 'admin') {
+      alert('Access denied. Admin only.');
+      window.location.href = '/dashboard.html';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
     });
+
+    function showToast(text) {
+      var t = document.getElementById('toast');
+      t.textContent = text || 'Done';
+      t.style.display = 'block';
+      setTimeout(function() { t.style.display = 'none'; }, 1800);
+    }
+
+    var allUsers = [];
+
+    async function loadUsers() {
+      var box = document.getElementById('usersList');
+      box.innerHTML = '<p style="opacity:0.7">Loading...</p>';
+      try {
+        var res = await fetch('/api/users');
+        var data = await res.json();
+        allUsers = data.users || [];
+        renderUsers(allUsers);
+      } catch (err) {
+        box.innerHTML = '<p style="opacity:0.7">Could not load users.</p>';
+      }
+    }
+
+    function filterUsers() {
+      var q = (document.getElementById('searchBox').value || '').toLowerCase().trim();
+      var role = document.getElementById('roleFilter').value;
+      var filtered = allUsers.filter(function(u) {
+        var matchRole = role === 'all' || (u.role || '') === role;
+        if (!matchRole) return false;
+        if (!q) return true;
+        var hay = [
+          u.firstname, u.lastname, u.nickname, u.email, u.phone, u.role
+        ].join(' ').toLowerCase();
+        return hay.indexOf(q) !== -1;
+      });
+      renderUsers(filtered);
+    }
+
+    function renderUsers(users) {
+      var box = document.getElementById('usersList');
+      if (!users.length) {
+        box.innerHTML = '<p style="opacity:0.7">No users found.</p>';
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < users.length; i++) {
+        var u = users[i];
+        var id = u.id || '';
+        var role = u.role || 'customer';
+        var status = u.status || 'active';
+        var verified = Number(u.verified) === 1;
+
+        html += '<div class="user-card" data-id="' + id + '">';
+        html += '<div class="user-top">';
+        html += '<div><div class="user-name">' + (u.firstname || '') + ' ' + (u.lastname || '') + '</div>';
+        html += '<div style="font-size:13px;opacity:0.8">@' + (u.nickname || '') + '</div></div>';
+        html += '<div>';
+        html += '<span class="badge role-' + role + '">' + role + '</span>';
+        html += '<span class="badge status-' + status + '">' + status + '</span>';
+        html += '<span class="badge ' + (verified ? 'verified' : 'unverified') + '">' + (verified ? 'verified' : 'unverified') + '</span>';
+        html += '</div></div>';
+
+        html += '<div class="user-meta">';
+        html += 'Email: ' + (u.email || '–') + '<br>';
+        html += 'Phone: ' + (u.phone || '–') + '<br>';
+        html += 'Joined: ' + (u.created_at || '–');
+        html += '</div>';
+
+        html += '<div class="actions">';
+        html += '<button type="button" onclick="toggleOrders(\'' + id + '\')">Orders</button>';
+        html += '<button type="button" class="secondary" onclick="toggleMessage(\'' + id + '\')">Message</button>';
+
+        if (status === 'active') {
+          html += '<button type="button" class="secondary" onclick="setStatus(\'' + id + '\',\'suspended\')">Suspend</button>';
+        } else {
+          html += '<button type="button" class="success" onclick="setStatus(\'' + id + '\',\'active\')">Reactivate</button>';
+        }
+
+        if (role === 'customer') {
+          html += '<button type="button" class="secondary" onclick="setRole(\'' + id + '\',\'seller\')">Make Seller</button>';
+        } else if (role === 'seller') {
+          html += '<button type="button" class="secondary" onclick="setRole(\'' + id + '\',\'customer\')">Make Customer</button>';
+        }
+
+        if (role !== 'admin') {
+          html += '<button type="button" class="danger" onclick="deleteUser(\'' + id + '\', \'' + (u.nickname || '').replace(/'/g, '') + '\')">Delete</button>';
+        }
+        html += '</div>';
+
+        // Orders panel
+        html += '<div class="orders-box" id="orders-' + id + '"></div>';
+
+        // Message panel
+        html += '<div class="msg-box" id="msg-' + id + '">';
+        html += '<textarea id="msgText-' + id + '" placeholder="Type message to ' + (u.nickname || 'user') + '..."></textarea>';
+        html += '<button type="button" onclick="sendMessage(\'' + id + '\', \'' + (u.nickname || '') + '\')">Send Message</button>';
+        html += '</div>';
+
+        html += '</div>';
+      }
+      box.innerHTML = html;
+    }
+
+    function toggleOrders(userId) {
+      var el = document.getElementById('orders-' + userId);
+      if (!el) return;
+      if (el.classList.contains('open')) {
+        el.classList.remove('open');
+        return;
+      }
+      // close others optional
+      el.classList.add('open');
+      el.innerHTML = '<p style="opacity:0.7">Loading orders...</p>';
+      loadUserOrders(userId);
+    }
+
+    async function loadUserOrders(userId) {
+      var el = document.getElementById('orders-' + userId);
+      try {
+        var res = await fetch('/api/orders?user_id=' + encodeURIComponent(userId));
+        var data = await res.json();
+        var orders = data.orders || [];
+        if (!orders.length) {
+          el.innerHTML = '<p style="opacity:0.7">No orders for this user.</p>';
+          return;
+        }
+        var html = '';
+        for (var i = 0; i < orders.length; i++) {
+          var o = orders[i];
+          html += '<div class="order-line">';
+          html += '<strong>' + (o.id || '') + '</strong> · ' + (o.status || 'Pending');
+          html += '<br>₦' + Number(o.total || 0).toLocaleString();
+          html += ' · ' + (o.payment_method || '') + ' · ' + (o.payment_status || 'pending');
+          if (o.payment_reference) html += '<br>Ref: ' + o.payment_reference;
+          html += '</div>';
+        }
+        html += '<a href="/admin/orders.html" style="color:var(--gold);font-size:13px">Open Orders panel →</a>';
+        el.innerHTML = html;
+      } catch (err) {
+        el.innerHTML = '<p style="opacity:0.7">Could not load orders.</p>';
+      }
+    }
+
+    function toggleMessage(userId) {
+      var el = document.getElementById('msg-' + userId);
+      if (!el) return;
+      el.classList.toggle('open');
+    }
+
+    function sendMessage(userId, nickname) {
+      var textEl = document.getElementById('msgText-' + userId);
+      var text = (textEl && textEl.value || '').trim();
+      if (!text) {
+        alert('Type a message first');
+        return;
+      }
+      // Store locally until full messaging API is ready
+      var key = 'admin_outbox';
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { list = []; }
+      list.push({
+        to_user_id: userId,
+        to_nickname: nickname,
+        message: text,
+        from: 'admin',
+        at: new Date().toISOString()
+      });
+      localStorage.setItem(key, JSON.stringify(list));
+      textEl.value = '';
+      showToast('Message saved (API next)');
+      // Later: POST /api/messages
+    }
+
+    async function setStatus(userId, status) {
+      try {
+        var res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId, status: status })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast(status === 'suspended' ? 'User suspended' : 'User reactivated');
+        loadUsers();
+      } catch (err) {
+        alert(err.message || 'Failed');
+      }
+    }
+
+    async function setRole(userId, role) {
+      try {
+        var res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId, role: role })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast('Role updated to ' + role);
+        loadUsers();
+      } catch (err) {
+        alert(err.message || 'Failed');
+      }
+    }
+
+    async function deleteUser(userId, nickname) {
+      if (!confirm('Delete user @' + nickname + '? This cannot be undone.')) return;
+      try {
+        var res = await fetch('/api/users?id=' + encodeURIComponent(userId), {
+          method: 'DELETE'
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast('User deleted');
+        loadUsers();
+      } catch (err) {
+        alert(err.message || 'Failed');
+      }
+    }
+
+    loadUsers();
   </script>
 </body>
-</html>
+  </html>
