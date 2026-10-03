@@ -126,7 +126,6 @@
     <h1>Seller Panel</h1>
     <p class="subtitle">Welcome, <strong id="sellerName">Seller</strong> — products need admin approval before they appear in the store.</p>
 
-    <!-- Add product -->
     <div class="card">
       <h3>Add Product</h3>
       <input type="text" id="p_name" placeholder="Product Name *">
@@ -137,7 +136,7 @@
       <input type="text" id="p_category" placeholder="Category (fashion, electronics, home, beauty...)">
       <textarea id="p_desc" placeholder="Description"></textarea>
 
-      <p class="hint">Image: paste a URL <strong>or</strong> upload from your phone (max \~400KB after compress)</p>
+      <p class="hint">Image: paste a URL <strong>or</strong> upload from your phone (max 5MB · stored on R2)</p>
       <input type="text" id="p_image_url" placeholder="Image URL (optional if you upload a file)">
       <input type="file" id="p_image_file" accept="image/*" onchange="onFileSelected(event)">
       <img id="imgPreview" class="preview" alt="Preview">
@@ -146,7 +145,6 @@
       <p id="addMsg" style="font-size:13px;margin-top:8px"></p>
     </div>
 
-    <!-- My products -->
     <div class="card">
       <h3>My Products</h3>
       <button class="secondary" type="button" onclick="loadMyProducts()">Refresh</button>
@@ -155,17 +153,15 @@
       </div>
     </div>
 
-    <!-- Orders for my products -->
     <div class="card">
       <h3>Orders for My Products</h3>
-      <p class="hint">Customer name, phone, email and address only. Add tracking when you ship.</p>
+      <p class="hint">Customer name, phone and address only. Add tracking when you ship.</p>
       <button class="secondary" type="button" onclick="loadMyOrders()">Refresh Orders</button>
       <div id="myOrders" style="margin-top:12px">
         <p style="opacity:0.7">Loading...</p>
       </div>
     </div>
 
-    <!-- Message admin -->
     <div class="card">
       <h3>Message Admin</h3>
       <textarea id="adminMsg" placeholder="Write to admin..."></textarea>
@@ -229,10 +225,10 @@
       setTimeout(function() { el.style.display = 'none'; }, 1600);
     }
 
-    // ========== IMAGE UPLOAD (compress to data URL) ==========
-    var uploadedDataUrl = '';
+    // ========== R2 IMAGE UPLOAD ==========
+    var uploadedUrl = '';
 
-    function onFileSelected(e) {
+    async function onFileSelected(e) {
       var file = e.target.files && e.target.files[0];
       if (!file) return;
 
@@ -241,64 +237,46 @@
         return;
       }
 
-      // Hard limit before compress (\~5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('Image too large. Please choose a file under 5MB.');
+        alert('Max file size is 5MB');
         return;
       }
 
-      var reader = new FileReader();
-      reader.onload = function(ev) {
-        compressImage(ev.target.result, function(dataUrl) {
-          uploadedDataUrl = dataUrl;
-          var prev = document.getElementById('imgPreview');
-          prev.src = dataUrl;
-          prev.style.display = 'block';
-          // Clear URL field so upload wins
-          document.getElementById('p_image_url').value = '';
+      var prev = document.getElementById('imgPreview');
+      prev.src = URL.createObjectURL(file);
+      prev.style.display = 'block';
+
+      var msg = document.getElementById('addMsg');
+      msg.style.color = 'var(--text)';
+      msg.textContent = 'Uploading image...';
+
+      try {
+        var form = new FormData();
+        form.append('file', file);
+
+        var res = await fetch('/api/upload', {
+          method: 'POST',
+          body: form
         });
-      };
-      reader.readAsDataURL(file);
-    }
 
-    function compressImage(dataUrl, callback) {
-      var img = new Image();
-      img.onload = function() {
-        var maxW = 800;
-        var scale = Math.min(1, maxW / img.width);
-        var w = Math.round(img.width * scale);
-        var h = Math.round(img.height * scale);
-        var canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-
-        // quality 0.7 JPEG
-        var out = canvas.toDataURL('image/jpeg', 0.7);
-
-        // If still huge, lower quality
-        if (out.length > 550000) {
-          out = canvas.toDataURL('image/jpeg', 0.5);
+        var data = await res.json();
+        if (!data.ok || !data.url) {
+          throw new Error(data.error || 'Upload failed');
         }
-        if (out.length > 700000) {
-          alert('Image is still too large after compression. Try a smaller photo.');
-          uploadedDataUrl = '';
-          document.getElementById('imgPreview').style.display = 'none';
-          return;
-        }
-        callback(out);
-      };
-      img.onerror = function() {
-        alert('Could not read image');
-      };
-      img.src = dataUrl;
+
+        uploadedUrl = data.url;
+        document.getElementById('p_image_url').value = data.url;
+        msg.style.color = '#27ae60';
+        msg.textContent = 'Image uploaded';
+      } catch (err) {
+        uploadedUrl = '';
+        msg.style.color = '#e74c3c';
+        msg.textContent = err.message || 'Upload failed';
+      }
     }
 
     function getImageValue() {
-      var url = document.getElementById('p_image_url').value.trim();
-      if (url) return url;
-      return uploadedDataUrl || '';
+      return document.getElementById('p_image_url').value.trim() || uploadedUrl || '';
     }
 
     // ========== ADD PRODUCT ==========
@@ -342,7 +320,7 @@
         document.getElementById('p_desc').value = '';
         document.getElementById('p_image_url').value = '';
         document.getElementById('p_image_file').value = '';
-        uploadedDataUrl = '';
+        uploadedUrl = '';
         document.getElementById('imgPreview').style.display = 'none';
 
         loadMyProducts();
@@ -374,7 +352,7 @@
           var p = mine[i];
           var st = p.status || 'pending';
           html += '<div class="product-row">';
-          if (p.image && p.image.indexOf('http') === 0) {
+          if (p.image && (p.image.indexOf('http') === 0 || p.image.indexOf('data:') === 0)) {
             html += '<img src="' + p.image + '" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px;float:left;margin-right:10px">';
           }
           html += '<strong>' + (p.name || '') + '</strong> ';
@@ -389,7 +367,7 @@
       }
     }
 
-    // ========== ORDERS (filter items belonging to my products) ==========
+    // ========== ORDERS ==========
     async function loadMyOrders() {
       var box = document.getElementById('myOrders');
       box.innerHTML = '<p style="opacity:0.7">Loading...</p>';
@@ -426,7 +404,7 @@
           html += '<div class="order-row">';
           html += '<strong>' + (order.id || '') + '</strong> · ' + (order.status || 'Pending') + '<br>';
           html += 'Customer: ' + (order.firstname || '') + ' ' + (order.lastname || '') + '<br>';
-          html += 'Phone: ' + (order.phone || '') + ' · Email: (on order)<br>';
+          html += 'Phone: ' + (order.phone || '') + '<br>';
           html += 'Address: ' + (order.address || '') + ', ' + (order.town || '') + ', ' + (order.state || '') + '<br>';
           html += 'Items: ';
           for (var k = 0; k < myItems.length; k++) {
@@ -450,7 +428,7 @@
           box.innerHTML = html;
         }
       } catch (e) {
-        box.innerHTML = '<p style="opacity:0.7">Could not load orders. (Admin all-orders API needed)</p>';
+        box.innerHTML = '<p style="opacity:0.7">Could not load orders.</p>';
       }
     }
 
