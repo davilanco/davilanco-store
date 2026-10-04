@@ -306,7 +306,11 @@ async function onAdminFileSelected(e) {
         document.getElementById('p_name').value = '';
         document.getElementById('p_price').value = '';
         document.getElementById('p_desc').value = '';
-        showToast('Product added');
+        document.getElementById('p_image').value = '';
+        document.getElementById('p_image_file').value = '';
+        adminUploadedUrl = '';
+        document.getElementById('adminImgPreview').style.display = 'none';
+		  showToast('Product added');
         loadProducts();
       } catch (err) {
         msg.style.color = '#e74c3c';
