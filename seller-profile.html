@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seller Profile – Davilanco</title>
+  <meta name="robots" content="index, follow">
+  <link rel="icon" href="/images/logo.jpg">
+  <style>
+    :root {
+      --gold: #FFD700; --bg: #000; --text: #fff; --grey: #1a1a1a; --card: #111; --border: #333;
+    }
+    [data-theme="light"] {
+      --bg: #fff; --text: #001F3F; --grey: #f4f4f4; --card: #fff; --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, sans-serif; background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 2px solid var(--gold);
+      position: sticky; top: 0; background: var(--bg); z-index: 50;
+    }
+    header img { height: 32px; }
+    .icon-btn { background: none; border: none; font-size: 20px; color: var(--text); cursor: pointer; padding: 6px; }
+    main { flex: 1; padding: 20px 16px; max-width: 800px; margin: 0 auto; width: 100%; }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px; margin-bottom: 16px;
+    }
+    .profile-top { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+    .avatar {
+      width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+      background: var(--grey); border: 2px solid var(--gold);
+    }
+    h1 { font-size: 1.3rem; margin-bottom: 4px; }
+    .meta { font-size: 13px; opacity: 0.85; line-height: 1.5; }
+    textarea {
+      width: 100%; min-height: 80px; padding: 12px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--grey); color: var(--text);
+      margin: 10px 0;
+    }
+    button {
+      padding: 11px 16px; background: var(--gold); color: #000;
+      border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
+    }
+    .grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+    }
+    @media (min-width: 600px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+    .p-card {
+      background: var(--grey); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; text-decoration: none; color: var(--text);
+    }
+    .p-card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #222; }
+    .p-card div { padding: 10px; font-size: 13px; }
+    footer { text-align: center; padding: 18px; font-size: 13px; border-top: 1px solid var(--border); }
+    .msg-note { font-size: 12px; opacity: 0.75; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
+    <button class="icon-btn" type="button" onclick="toggleTheme()">🌓</button>
+  </header>
+
+  <main>
+    <div id="content"><p style="opacity:0.7">Loading seller...</p></div>
+  </main>
+
+  <footer>Davilanco © 2026</footer>
+
+  <script>
+    var savedTheme = localStorage.getItem('theme');
+    document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
+    function toggleTheme() {
+      var c = document.documentElement.getAttribute('data-theme');
+      var n = c === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', n);
+      localStorage.setItem('theme', n);
+    }
+
+    var params = new URLSearchParams(window.location.search);
+    var sellerId = params.get('id') || '';
+    var nickname = params.get('nickname') || '';
+    var currentSeller = null;
+
+    var me = null;
+    try { me = JSON.parse(localStorage.getItem('user') || 'null'); } catch (e) { me = null; }
+
+    async function load() {
+      var box = document.getElementById('content');
+      if (!sellerId && !nickname) {
+        box.innerHTML = '<p>Seller not specified.</p><a href="/" style="color:var(--gold)">Back to shop</a>';
+        return;
+      }
+      try {
+        var q = sellerId
+          ? '/api/seller?id=' + encodeURIComponent(sellerId)
+          : '/api/seller?nickname=' + encodeURIComponent(nickname);
+        var res = await fetch(q);
+        var data = await res.json();
+        if (!data.ok || !data.seller) throw new Error(data.error || 'Not found');
+
+        currentSeller = data.seller;
+        var s = data.seller;
+        var store = s.store_name || s.nickname || 'Seller';
+        var photo = s.photo || 'https://via.placeholder.com/72?text=' + encodeURIComponent((s.nickname || 'S').charAt(0));
+
+        var html = '';
+        html += '<div class="card"><div class="profile-top">';
+        html += '<img class="avatar" src="' + photo + '" alt="">';
+        html += '<div><h1>' + store + '</h1>';
+        html += '<div class="meta">@' + (s.nickname || '') + '<br>';
+        if (s.phone) html += 'Phone: ' + s.phone + '<br>';
+        if (s.email) html += 'Email: ' + s.email;
+        html += '</div></div></div>';
+        if (s.bio) html += '<p style="margin-top:12px;font-size:14px">' + s.bio + '</p>';
+        html += '</div>';
+
+        html += '<div class="card"><h3 style="color:var(--gold);margin-bottom:8px">Message seller</h3>';
+        if (!me) {
+          html += '<p class="msg-note">Please <a href="/login.html?redirect=' + encodeURIComponent(location.pathname + location.search) + '" style="color:var(--gold)">login</a> to message this seller.</p>';
+        } else {
+          html += '<p class="msg-note">This messages the seller only. Admin chat stays on your dashboard.</p>';
+          html += '<textarea id="sellerMsg" placeholder="Write a message..."></textarea>';
+          html += '<button type="button" onclick="sendToSeller()">Send message</button>';
+          html += '<p id="msgStatus" style="font-size:13px;margin-top:8px"></p>';
+        }
+        html += '</div>';
+
+        html += '<div class="card"><h3 style="color:var(--gold);margin-bottom:12px">Products</h3>';
+        var products = data.products || [];
+        if (!products.length) {
+          html += '<p style="opacity:0.7">No approved products yet.</p>';
+        } else {
+          html += '<div class="grid">';
+          for (var i = 0; i < products.length; i++) {
+            var p = products[i];
+            html += '<a class="p-card" href="/product.html?id=' + p.id + '">';
+            html += '<img src="' + (p.image || 'https://via.placeholder.com/200?text=No+Image') + '" alt="">';
+            html += '<div><strong>' + (p.name || '') + '</strong><br>₦' + Number(p.price || 0).toLocaleString() + '</div>';
+            html += '</a>';
+          }
+          html += '</div>';
+        }
+        html += '</div>';
+
+        box.innerHTML = html;
+        document.title = store + ' – Davilanco';
+      } catch (err) {
+        box.innerHTML = '<p>Could not load seller.</p><a href="/" style="color:var(--gold)">Back to shop</a>';
+      }
+    }
+
+    async function sendToSeller() {
+      if (!me || !currentSeller) return;
+      var text = (document.getElementById('sellerMsg').value || '').trim();
+      var status = document.getElementById('msgStatus');
+      if (!text) return;
+      try {
+        var res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sender_id: me.id,
+            sender_role: me.role || 'customer',
+            sender_name: me.nickname || 'Customer',
+            receiver_id: currentSeller.id,
+            receiver_role: 'seller',
+            message: text
+          })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        document.getElementById('sellerMsg').value = '';
+        status.style.color = '#27ae60';
+        status.textContent = 'Message sent';
+      } catch (err) {
+        status.style.color = '#e74c3c';
+        status.textContent = err.message || 'Failed';
+      }
+    }
+
+    load();
+  </script>
+</body>
+  </html>
