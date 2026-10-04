@@ -151,8 +151,11 @@
       <div class="row2">
         <input type="text" id="p_category" placeholder="Category (fashion, electronics...)">
         <input type="number" id="p_stock" placeholder="Stock quantity" value="10">
-      </div>
-      <input type="text" id="p_image" placeholder="Image URL">
+  </div>
+      <p style="font-size:12px;opacity:0.7;margin-bottom:8px">Image URL or upload (max 3MB)</p>
+<input type="text" id="p_image" placeholder="Image URL">
+<input type="file" id="p_image_file" accept="image/*" onchange="onAdminFileSelected(event)">
+<img id="adminImgPreview" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:8px;display:none;margin-bottom:10px">
       <textarea id="p_desc" placeholder="Description"></textarea>
       <button type="button" onclick="addProduct()">Add Product</button>
       <p id="addMsg" style="font-size:13px;margin-top:8px"></p>
@@ -231,6 +234,45 @@
       setTimeout(function() { t.style.display = 'none'; }, 1800);
     }
 
+    var adminUploadedUrl = '';
+
+async function onAdminFileSelected(e) {
+  var file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (!file.type || file.type.indexOf('image/') !== 0) {
+    alert('Choose an image file');
+    return;
+  }
+  if (file.size > 3 * 1024 * 1024) {
+    alert('Max 3MB');
+    return;
+  }
+
+  var prev = document.getElementById('adminImgPreview');
+  prev.src = URL.createObjectURL(file);
+  prev.style.display = 'block';
+
+  var msg = document.getElementById('addMsg');
+  msg.style.color = 'var(--text)';
+  msg.textContent = 'Uploading image...';
+
+  try {
+    var form = new FormData();
+    form.append('file', file);
+    var res = await fetch('/api/upload', { method: 'POST', body: form });
+    var data = await res.json();
+    if (!data.ok || !data.url) throw new Error(data.error || 'Upload failed');
+    adminUploadedUrl = data.url;
+    document.getElementById('p_image').value = data.url;
+    msg.style.color = '#27ae60';
+    msg.textContent = 'Image uploaded';
+  } catch (err) {
+    adminUploadedUrl = '';
+    msg.style.color = '#e74c3c';
+    msg.textContent = err.message || 'Upload failed';
+  }
+    }
+    
     async function addProduct() {
       var msg = document.getElementById('addMsg');
       var name = document.getElementById('p_name').value.trim();
@@ -250,7 +292,9 @@
             old_price: Number(document.getElementById('p_old_price').value) || 0,
             category: document.getElementById('p_category').value.trim() || 'others',
             stock: Number(document.getElementById('p_stock').value) || 0,
-            image: document.getElementById('p_image').value.trim(),
+            image: document.getElementById('p_image').value.trim() || adminUploadedUrl || '',
+			  
+			  
             description: document.getElementById('p_desc').value.trim(),
             status: 'approved'
           })
