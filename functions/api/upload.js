@@ -2,9 +2,12 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    if (!env.IMAGES) {
+    const cloudName = env.CLOUDINARY_CLOUD_NAME;
+    const preset = env.CLOUDINARY_UPLOAD_PRESET || 'davilanco_products';
+
+    if (!cloudName) {
       return Response.json({
-        error: 'R2 not bound. Add IMAGES binding in Pages settings.'
+        error: 'CLOUDINARY_CLOUD_NAME is not set'
       }, { status: 500 });
     }
 
@@ -22,57 +25,46 @@ export async function onRequestPost(context) {
       return Response.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    // Basic checks
-    const type = file.type || 'application/octet-stream';
+    const type = file.type || '';
     if (!type.startsWith('image/')) {
       return Response.json({ error: 'Only image files allowed' }, { status: 400 });
     }
 
-    const maxBytes = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxBytes) {
+    if (file.size > 5 * 1024 * 1024) {
       return Response.json({ error: 'File too large (max 5MB)' }, { status: 400 });
     }
 
-    // Unique key
-    const ext = guessExt(type, file.name || '');
-    const key = 'products/' + Date.now() + '-' + crypto.randomUUID().slice(0, 8) + ext;
+    // Send to Cloudinary
+    const out = new FormData();
+    out.append('file', file);
+    out.append('upload_preset', preset);
+    out.append('folder', 'davilanco/products');
 
-    const bytes = await file.arrayBuffer();
-
-    await env.IMAGES.put(key, bytes, {
-      httpMetadata: {
-        contentType: type,
-        cacheControl: 'public, max-age=31536000'
+    const cloudRes = await fetch(
+      'https://api.cloudinary.com/v1_1/' + cloudName + '/image/upload',
+      {
+        method: 'POST',
+        body: out
       }
-    });
+    );
 
-    const base = (env.R2_PUBLIC_URL || '').replace(/\/$/, '');
-    if (!base) {
+    const data = await cloudRes.json();
+
+    if (!cloudRes.ok || !data.secure_url) {
       return Response.json({
-        error: 'R2_PUBLIC_URL env variable not set'
+        error: data.error && data.error.message
+          ? data.error.message
+          : 'Cloudinary upload failed'
       }, { status: 500 });
     }
 
-    const url = base + '/' + key;
-
     return Response.json({
       ok: true,
-      url: url,
-      key: key
+      url: data.secure_url,
+      public_id: data.public_id
     });
 
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }
-}
-
-function guessExt(mime, filename) {
-  if (filename && filename.indexOf('.') !== -1) {
-    var e = filename.slice(filename.lastIndexOf('.')).toLowerCase();
-    if (['.jpg', '.jpeg', '.png', '.webp', '.gif'].indexOf(e) !== -1) return e;
-  }
-  if (mime === 'image/png') return '.png';
-  if (mime === 'image/webp') return '.webp';
-  if (mime === 'image/gif') return '.gif';
-  return '.jpg';
-}
+        }
