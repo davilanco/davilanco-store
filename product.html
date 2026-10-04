@@ -166,6 +166,28 @@
       margin-bottom: 16px;
     }
 
+    .seller-badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(255, 215, 0, 0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .seller-badge:hover {
+      background: rgba(255, 215, 0, 0.28);
+    }
+
+    .out-of-stock {
+      opacity: 0.55;
+      pointer-events: none;
+  }
+
     .description {
       font-size: 0.95rem;
       line-height: 1.6;
@@ -405,6 +427,23 @@
           oldPriceHtml = `<span class="old-price">₦${oldPrice}</span>`;
         }
 
+        const stockNum = Number(product.stock);
+        const hasStock = !isNaN(stockNum);
+        const inStock = hasStock ? stockNum > 0 : true;
+        const stockLabel = hasStock
+          ? (stockNum > 0 ? stockNum + ' in stock' : 'Out of stock')
+          : 'Available';
+
+        const safeImage = (product.image || '').replace(/'/g, "\\'");
+
+        const cartButton = inStock
+          ? `<button onclick="addToCart('\( {product.id}', ' \){safeName}', \( {product.price || 0}, ' \){safeImage}')">Add to Cart</button>`
+          : `<button class="out-of-stock" disabled>Out of Stock</button>`;
+
+        const sellerBadgeHtml = product.seller_id
+          ? `<div id="sellerBadgeWrap" style="margin-top:8px"><span class="seller-badge">Seller</span></div>`
+          : `<div id="sellerBadgeWrap" style="margin-top:8px"><span class="seller-badge">Official Store</span></div>`;
+
         container.innerHTML = `
           <div class="product-container">
             <div>
@@ -426,8 +465,10 @@
 
               <div class="meta">
                 Category: ${product.category || 'General'}<br>
-                Stock: ${product.stock !== undefined ? product.stock : 'Available'}
+                Stock: ${stockLabel}
               </div>
+
+              ${sellerBadgeHtml}
 
               <div class="description">
                 ${product.description || 'No description available for this product.'}
@@ -435,13 +476,11 @@
 
               <div class="qty-row">
                 <label for="qty">Quantity:</label>
-                <input type="number" id="qty" value="1" min="1" max="${product.stock || 99}">
+                <input type="number" id="qty" value="1" min="1" max="${hasStock && stockNum > 0 ? stockNum : 99}" ${inStock ? '' : 'disabled'}>
               </div>
 
               <div class="actions">
-                <button onclick="addToCart('${product.id}', '${safeName}', ${product.price || 0}, '${product.image || ''}')">
-                  Add to Cart
-                </button>
+                ${cartButton}
                 <a href="/cart.html">
                   <button class="secondary" style="width:100%">View Cart</button>
                 </a>
@@ -450,6 +489,22 @@
           </div>
         `;
 
+        // Load seller name into badge (clickable)
+        if (product.seller_id) {
+          fetch('/api/seller?id=' + encodeURIComponent(product.seller_id))
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+              var wrap = document.getElementById('sellerBadgeWrap');
+              if (!wrap || !d.seller) return;
+              var name = d.seller.store_name || d.seller.nickname || 'Seller';
+              wrap.innerHTML =
+                '<a class="seller-badge" href="/seller-profile.html?id=' + d.seller.id + '">' +
+                'Sold by ' + name +
+                '</a>';
+            })
+            .catch(function() {});
+    }
+        
       } catch (err) {
         container.innerHTML = `
           <div class="state-box">
