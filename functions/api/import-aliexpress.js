@@ -3,6 +3,13 @@ export async function onRequestPost(context) {
 
   try {
     const body = await request.json();
+
+    // --- Optional: exchange OAuth code for token (same file) ---
+    if (body && body.action === 'ae_token') {
+      return await handleAeToken(env, body.code);
+    }
+
+    // --- Product import from URL ---
     const rawUrl = String(body.url || '').trim();
     const status = body.status || 'pending';
     const sellerId = body.seller_id || null;
@@ -36,7 +43,8 @@ export async function onRequestPost(context) {
       ship_to_country: 'NG',
       target_currency: 'USD',
       target_language: 'en',
-      access_token: accessToken
+      access_token: accessToken,
+      session: accessToken
     });
 
     // 2) Affiliate fallback
@@ -46,10 +54,10 @@ export async function onRequestPost(context) {
         product_ids: productId,
         target_currency: 'USD',
         target_language: 'EN',
-        access_token: accessToken
+        access_token: accessToken,
+        session: accessToken
       };
       if (env.AE_TRACKING_ID) affParams.tracking_id = env.AE_TRACKING_ID;
-
       detail = await callIop(env, 'aliexpress.affiliate.productdetail.get', affParams);
     }
 
@@ -62,14 +70,11 @@ export async function onRequestPost(context) {
 
     const mapped = mapProduct(detail, productId, rawUrl, env);
     if (!mapped.name) {
-      // Temporary debug: top-level keys + a small sample (no secrets)
-      var raw = detail.raw || {};
-      var topKeys = Object.keys(raw);
-      var sample = JSON.stringify(raw).slice(0, 1500);
+      const raw = detail.raw || {};
       return Response.json({
         error: 'Could not map product title from API response',
-        top_keys: topKeys,
-        sample: sample
+        top_keys: Object.keys(raw),
+        sample: JSON.stringify(raw).slice(0, 1500)
       }, { status: 502 });
     }
 
@@ -128,6 +133,71 @@ export async function onRequestPost(context) {
   }
 }
 
+// ---------- OAuth token exchange (POST { action: "ae_token", code: "..." }) ----------
+async function handleAeToken(env, code) {
+  code = String(code || '').trim();
+  if (!code) {
+    return Response.json({ ok: false, error: 'code required' }, { status: 400 });
+  }
+
+  const appKey = env.AE_APP_KEY;
+  const appSecret = env.AE_APP_SECRET;
+  if (!appKey || !appSecret) {
+    return Response.json({ ok: false, error: 'AE_APP_KEY / AE_APP_SECRET not set' }, { status: 500 });
+  }
+
+  const apiPath = '/auth/token/create';
+  const params = {
+    app_key: String(appKey),
+    timestamp: String(Date.now()),
+    sign_method: 'sha256',
+    code: code
+  };
+  params.sign = await iopSign(apiPath, params, appSecret);
+
+  const formBody = toForm(params);
+  const urls = [
+    'https://api-sg.aliexpress.com/rest' + apiPath,
+    'https://api-sg.aliexpress.com/rest'
+  ];
+
+  let lastRaw = null;
+  let lastErr = 'no response';
+
+  for (let i = 0; i < urls.length; i++) {
+    try {
+      const res = await fetch(urls[i], {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
+        body: formBody
+      });
+      const raw = await res.json();
+      lastRaw = raw;
+
+      if (raw && raw.error_response) {
+        lastErr = raw.error_response.sub_msg || raw.error_response.msg || raw.error_response.code || 'error';
+        continue;
+      }
+
+      const access = deepFindString(raw, ['access_token']);
+      if (access) {
+        return Response.json({
+          ok: true,
+          access_token: access,
+          refresh_token: deepFindString(raw, ['refresh_token']) || '',
+          raw: raw
+        });
+      }
+      lastErr = 'no access_token in response';
+    } catch (e) {
+      lastErr = e.message;
+    }
+  }
+
+  return Response.json({ ok: false, error: lastErr, raw: lastRaw || {} }, { status: 502 });
+}
+
+// ---------- helpers ----------
 function extractProductId(url) {
   var m = url.match(/\/item\/(\d+)/i);
   if (m) return m[1];
@@ -138,7 +208,6 @@ function extractProductId(url) {
 }
 
 async function callIop(env, methodName, businessParams) {
-  // Business API sign path = method name (IOP)
   var params = {
     method: methodName,
     app_key: String(env.AE_APP_KEY),
@@ -152,11 +221,6 @@ async function callIop(env, methodName, businessParams) {
     if (businessParams[k] !== undefined && businessParams[k] !== null && String(businessParams[k]) !== '') {
       params[k] = String(businessParams[k]);
     }
-  }
-
-  // Some AE docs use "session" instead of "access_token"
-  if (params.access_token && !params.session) {
-    params.session = params.access_token;
   }
 
   params.sign = await iopSign(methodName, params, env.AE_APP_SECRET);
@@ -233,125 +297,21 @@ function toForm(obj) {
   for (var i = 0; i < keys.length; i++) {
     parts.push(encodeURIComponent(keys[i]) + '=' + encodeURIComponent(String(obj[keys[i]])));
   }
+  return parts.join('&');
+}
 
-  function mapProduct(detail, productId, rawUrl, env) {
-  var raw = detail.raw || {};
-  var rate = Number(env.AE_USD_TO_NGN) || 1600;
-  var markup = Number(env.AE_MARKUP) || 1.3;
-
-  // Prefer official DS paths
-  var result =
-    dig(raw, ['aliexpress_ds_product_get_response', 'result']) ||
-    dig(raw, ['result']) ||
-    null;
-
-  var base =
-    dig(result, ['ae_item_base_info_dto']) ||
-    result ||
-    {};
-
-  // Affiliate shapes
-  var aff =
-    dig(raw, ['aliexpress_affiliate_productdetail_get_response', 'resp_result', 'result', 'products', 'product']) ||
-    dig(raw, ['aliexpress_affiliate_productdetail_get_response', 'resp_result', 'result']);
-
-  if (Array.isArray(aff) && aff.length) aff = aff[0];
-  if (aff && aff.products && Array.isArray(aff.products.product)) aff = aff.products.product[0];
-  if (aff && Array.isArray(aff.product)) aff = aff.product[0];
-
-  var name =
-    base.subject ||
-    base.product_title ||
-    base.title ||
-    (aff && (aff.product_title || aff.subject || aff.title)) ||
-    deepFindString(raw, ['subject', 'product_title', 'title', 'product_title_name']) ||
-    '';
-
-  var usdPrice = Number(
-    base.target_sale_price || base.sale_price || base.min_price || 0
-  );
-
-  if (!usdPrice && aff) {
-    usdPrice = Number(aff.target_sale_price || aff.sale_price || aff.product_price || aff.target_app_sale_price || 0);
+function dig(obj, path) {
+  var cur = obj;
+  for (var i = 0; i < path.length; i++) {
+    if (!cur || typeof cur !== 'object') return null;
+    cur = cur[path[i]];
   }
-
-  // SKU prices (DS)
-  if (!usdPrice && result) {
-    var skus =
-      dig(result, ['ae_item_sku_info_dtos', 'ae_item_sku_info_d_t_o']) ||
-      dig(result, ['ae_item_sku_info_dtos']) ||
-      [];
-    if (!Array.isArray(skus)) skus = [skus];
-    for (var i = 0; i < skus.length; i++) {
-      var p = Number(skus[i] && (skus[i].offer_sale_price || skus[i].sku_price || skus[i].sku_price_cent || 0));
-      if (p > 0) { usdPrice = p; break; }
-    }
-  }
-
-  // Sometimes price is in cents as string
-  if (usdPrice > 10000 && String(usdPrice).indexOf('.') === -1) {
-    usdPrice = usdPrice / 100;
-  }
-
-  var usdOld = Number(
-    base.target_original_price || base.original_price ||
-    (aff && (aff.target_original_price || aff.original_price)) || 0
-  );
-
-  var priceNgn = Math.round(usdPrice * rate * markup);
-  var oldNgn = usdOld ? Math.round(usdOld * rate * markup) : 0;
-
-  var image =
-    dig(result, ['ae_multimedia_info_dto', 'image_urls']) ||
-    base.product_main_image_url ||
-    (aff && (aff.product_main_image_url || aff.product_image || aff.image_url)) ||
-    '';
-
-  if (typeof image === 'string' && image.indexOf(';') !== -1) {
-    image = image.split(';')[0].trim();
-  }
-  if (typeof image === 'string' && image.indexOf(',') !== -1 && image.indexOf('http') === 0) {
-    image = image.split(',')[0].trim();
-  }
-  if (!image && aff && aff.product_small_image_urls) {
-    var imgs = aff.product_small_image_urls.string || aff.product_small_image_urls;
-    if (Array.isArray(imgs) && imgs[0]) image = imgs[0];
-  }
-  if (!image) {
-    image = deepFindString(raw, ['image_urls', 'product_main_image_url', 'main_image']) || '';
-    if (image.indexOf(';') !== -1) image = image.split(';')[0].trim();
-  }
-
-  var description =
-    base.detail ||
-    base.product_description ||
-    (aff && aff.product_description) ||
-    ('Imported from AliExpress #' + productId);
-
-  // Strip simple HTML tags for description length
-  if (typeof description === 'string') {
-    description = description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-  }
-
-  return {
-    name: String(name || '').slice(0, 200),
-    description: String(description || '').slice(0, 4000),
-    price: priceNgn || 0,
-    old_price: oldNgn || 0,
-    category: 'imported',
-    image: image || '',
-    stock: 20,
-    source_url: rawUrl.indexOf('http') === 0
-      ? rawUrl.split('?')[0]
-      : ('https://www.aliexpress.com/item/' + productId + '.html'),
-    aliexpress_id: productId,
-    cost_usd: usdPrice
-  };
+  return cur == null ? null : cur;
 }
 
 function deepFindString(obj, keys, depth) {
   if (depth === undefined) depth = 0;
-  if (!obj || typeof obj !== 'object' || depth > 8) return '';
+  if (!obj || typeof obj !== 'object' || depth > 10) return '';
   if (Array.isArray(obj)) {
     for (var i = 0; i < obj.length; i++) {
       var a = deepFindString(obj[i], keys, depth + 1);
@@ -371,14 +331,113 @@ function deepFindString(obj, keys, depth) {
     }
   }
   return '';
-      }
+}
 
-function dig(obj, path) {
-  var cur = obj;
-  for (var i = 0; i < path.length; i++) {
-    if (!cur || typeof cur !== 'object') return null;
-    cur = cur[path[i]];
+function mapProduct(detail, productId, rawUrl, env) {
+  var raw = detail.raw || {};
+  var rate = Number(env.AE_USD_TO_NGN) || 1600;
+  var markup = Number(env.AE_MARKUP) || 1.3;
+
+  var result =
+    dig(raw, ['aliexpress_ds_product_get_response', 'result']) ||
+    dig(raw, ['result']) ||
+    null;
+
+  var base =
+    dig(result, ['ae_item_base_info_dto']) ||
+    {};
+
+  var aff =
+    dig(raw, ['aliexpress_affiliate_productdetail_get_response', 'resp_result', 'result', 'products', 'product']) ||
+    dig(raw, ['aliexpress_affiliate_productdetail_get_response', 'resp_result', 'result']);
+
+  if (Array.isArray(aff) && aff.length) aff = aff[0];
+  if (aff && aff.products && Array.isArray(aff.products.product)) aff = aff.products.product[0];
+  if (aff && Array.isArray(aff.product)) aff = aff.product[0];
+
+  var name =
+    (base && base.subject) ||
+    (base && base.product_title) ||
+    (base && base.title) ||
+    (aff && (aff.product_title || aff.subject || aff.title)) ||
+    deepFindString(raw, ['subject', 'product_title', 'title', 'product_title_name']) ||
+    '';
+
+  var usdPrice = Number(
+    (base && (base.target_sale_price || base.sale_price || base.min_price)) || 0
+  );
+
+  if (!usdPrice && aff) {
+    usdPrice = Number(aff.target_sale_price || aff.sale_price || aff.product_price || aff.target_app_sale_price || 0);
   }
-  return cur || null;
+
+  if (!usdPrice && result) {
+    var skus =
+      dig(result, ['ae_item_sku_info_dtos', 'ae_item_sku_info_d_t_o']) ||
+      dig(result, ['ae_item_sku_info_dtos']) ||
+      [];
+    if (!Array.isArray(skus)) skus = [skus];
+    for (var i = 0; i < skus.length; i++) {
+      if (!skus[i]) continue;
+      var p = Number(skus[i].offer_sale_price || skus[i].sku_price || 0);
+      if (p > 0) {
+        usdPrice = p;
+        break;
       }
-       }
+    }
+  }
+
+  if (usdPrice > 10000 && String(usdPrice).indexOf('.') === -1) {
+    usdPrice = usdPrice / 100;
+  }
+
+  var usdOld = Number(
+    (base && (base.target_original_price || base.original_price)) ||
+    (aff && (aff.target_original_price || aff.original_price)) ||
+    0
+  );
+
+  var priceNgn = Math.round(usdPrice * rate * markup);
+  var oldNgn = usdOld ? Math.round(usdOld * rate * markup) : 0;
+
+  var image =
+    dig(result, ['ae_multimedia_info_dto', 'image_urls']) ||
+    (base && base.product_main_image_url) ||
+    (aff && (aff.product_main_image_url || aff.product_image || aff.image_url)) ||
+    deepFindString(raw, ['image_urls', 'product_main_image_url', 'main_image']) ||
+    '';
+
+  if (typeof image === 'string') {
+    if (image.indexOf(';') !== -1) image = image.split(';')[0].trim();
+    else if (image.indexOf(',') !== -1 && image.indexOf('http') === 0) image = image.split(',')[0].trim();
+  }
+
+  if (!image && aff && aff.product_small_image_urls) {
+    var imgs = aff.product_small_image_urls.string || aff.product_small_image_urls;
+    if (Array.isArray(imgs) && imgs[0]) image = imgs[0];
+  }
+
+  var description =
+    (base && (base.detail || base.product_description)) ||
+    (aff && aff.product_description) ||
+    ('Imported from AliExpress #' + productId);
+
+  if (typeof description === 'string') {
+    description = description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  return {
+    name: String(name || '').slice(0, 200),
+    description: String(description || '').slice(0, 4000),
+    price: priceNgn || 0,
+    old_price: oldNgn || 0,
+    category: 'imported',
+    image: image || '',
+    stock: 20,
+    source_url: rawUrl.indexOf('http') === 0
+      ? rawUrl.split('?')[0]
+      : ('https://www.aliexpress.com/item/' + productId + '.html'),
+    aliexpress_id: productId,
+    cost_usd: usdPrice
+  };
+        }
