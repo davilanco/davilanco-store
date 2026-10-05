@@ -325,9 +325,9 @@ function md5(string) {
     return add32((a << s) | (a >>> (32 - s)), b);
   }
   function ff(a, b, c, d, x, s, t) { return cmn((b & c) | ((~b) & d), a, b, x, s, t); }
-  function gg(a, b, c, d, x, s, t) { return cmn((b & d) | (c & (\~d)), a, b, x, s, t); }
+  function gg(a, b, c, d, x, s, t) { return cmn((b & d) | (c & (~d)), a, b, x, s, t); }
   function hh(a, b, c, d, x, s, t) { return cmn(b ^ c ^ d, a, b, x, s, t); }
-  function ii(a, b, c, d, x, s, t) { return cmn(c ^ (b | (\~d)), a, b, x, s, t); }
+  function ii(a, b, c, d, x, s, t) { return cmn(c ^ (b | (~d)), a, b, x, s, t); }
   function md5cycle(x, k) {
     var a = x[0], b = x[1], c = x[2], d = x[3];
     a = ff(a, b, c, d, k[0], 7, -680876936);
