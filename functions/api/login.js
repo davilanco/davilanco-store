@@ -63,27 +63,43 @@ export async function onRequestPost(context) {
 }
 
 async function verifyPassword(password, stored) {
-  if (!stored || stored.indexOf(':') === -1) return false;
-  const parts = stored.split(':');
-  const saltHex = parts[0];
-  const hashHex = parts[1];
+  if (!stored || typeof stored !== 'string') return false;
+  
+  const colonIndex = stored.indexOf(':');
+  if (colonIndex === -1) return false;
+  
+  const saltHex = stored.substring(0, colonIndex);
+  const hashHex = stored.substring(colonIndex + 1);
+  
   if (!saltHex || !hashHex) return false;
 
-  const salt = new Uint8Array(saltHex.match(/.{1,2}/g).map(function(byte) {
-    return parseInt(byte, 16);
-  }));
+  // Safely parse the hex salt
+  let salt;
+  try {
+    const saltMatches = saltHex.match(/.{1,2}/g);
+    if (!saltMatches || saltMatches.length === 0) return false;
+    salt = new Uint8Array(saltMatches.map(byte => parseInt(byte, 16)));
+  } catch (e) {
+    // Malformed salt hex
+    return false;
+  }
 
-  const encoder = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']
-  );
-  const derivedBits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
-    keyMaterial,
-    256
-  );
-  const newHash = Array.from(new Uint8Array(derivedBits)).map(function(b) {
-    return b.toString(16).padStart(2, '0');
-  }).join('');
-  return newHash === hashHex;
-      }
+  try {
+    const encoder = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']
+    );
+    const derivedBits = await crypto.subtle.deriveBits(
+      { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+      keyMaterial,
+      256
+    );
+    const newHash = Array.from(new Uint8Array(derivedBits)).map(function(b) {
+      return b.toString(16).padStart(2, '0');
+    }).join('');
+    return newHash === hashHex;
+  } catch (e) {
+    // PBKDF2 or encoding error
+    return false;
+  }
+}
