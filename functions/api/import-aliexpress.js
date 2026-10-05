@@ -324,7 +324,7 @@ function md5(string) {
     a = add32(add32(a, q), add32(x, t));
     return add32((a << s) | (a >>> (32 - s)), b);
   }
-  function ff(a, b, c, d, x, s, t) { return cmn((b & c) | ((\~b) & d), a, b, x, s, t); }
+  function ff(a, b, c, d, x, s, t) { return cmn((b & c) | ((~b) & d), a, b, x, s, t); }
   function gg(a, b, c, d, x, s, t) { return cmn((b & d) | (c & (\~d)), a, b, x, s, t); }
   function hh(a, b, c, d, x, s, t) { return cmn(b ^ c ^ d, a, b, x, s, t); }
   function ii(a, b, c, d, x, s, t) { return cmn(c ^ (b | (\~d)), a, b, x, s, t); }
