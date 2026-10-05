@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AliExpress OAuth – Davilanco</title>
+  <style>
+    body { font-family: system-ui; background: #000; color: #fff; padding: 24px; max-width: 640px; margin: 0 auto; }
+    h1 { color: #FFD700; }
+    code, textarea { display: block; width: 100%; background: #111; color: #C4FF61; border: 1px solid #333; border-radius: 8px; padding: 12px; margin: 8px 0; word-break: break-all; }
+    textarea { height: 100px; color: #fff; }
+    button { background: #FFD700; color: #000; border: none; padding: 12px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+    .ok { color: #27ae60; }
+    .err { color: #e74c3c; }
+    a { color: #FFD700; }
+  </style>
+</head>
+<body>
+  <h1>AliExpress OAuth</h1>
+  <p id="status">Reading URL…</p>
+  <p><strong>Authorization code</strong></p>
+  <textarea id="codeBox" readonly placeholder="No code yet"></textarea>
+  <button type="button" onclick="copyCode()">Copy code</button>
+
+  <hr style="border-color:#333;margin:24px 0">
+
+  <p>After you have the code, exchange it for a token (uses your existing working API).</p>
+  <button type="button" id="btnToken" onclick="getToken()">Get Access Token</button>
+  <p id="tokenStatus"></p>
+  <p><strong>AE_ACCESS_TOKEN</strong></p>
+  <textarea id="accessBox" readonly></textarea>
+  <p><strong>AE_REFRESH_TOKEN</strong></p>
+  <textarea id="refreshBox" readonly></textarea>
+
+  <script>
+    var params = new URLSearchParams(location.search);
+    var code = params.get('code') || '';
+    var err = params.get('error') || '';
+    var status = document.getElementById('status');
+
+    if (err) {
+      status.className = 'err';
+      status.textContent = 'AliExpress error: ' + err;
+    } else if (code) {
+      status.className = 'ok';
+      status.textContent = 'Code received. Copy it or click Get Access Token.';
+      document.getElementById('codeBox').value = code;
+    } else {
+      status.textContent = 'No code yet. Set this page as Callback URL, then authorize.';
+      // Build authorize link if user pastes app key manually later; for now show instructions
+      status.innerHTML += '<br><br>Callback URL for AliExpress app:<br><code>https://shop.davilanco.com/oauth.html</code>';
+    }
+
+    function copyCode() {
+      var t = document.getElementById('codeBox');
+      t.select();
+      document.execCommand('copy');
+      alert('Code copied');
+    }
+
+    async function getToken() {
+      var c = document.getElementById('codeBox').value.trim();
+      var ts = document.getElementById('tokenStatus');
+      if (!c) {
+        ts.className = 'err';
+        ts.textContent = 'No code';
+        return;
+      }
+      ts.textContent = 'Requesting token…';
+      try {
+        var res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'ae_token', code: c })
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        document.getElementById('accessBox').value = data.access_token || '';
+        document.getElementById('refreshBox').value = data.refresh_token || '';
+        ts.className = 'ok';
+        ts.textContent = 'Success. Copy tokens into Cloudflare env, then redeploy.';
+      } catch (e) {
+        ts.className = 'err';
+        ts.textContent = e.message || 'Failed';
+      }
+    }
+  </script>
+</body>
+  </html>
