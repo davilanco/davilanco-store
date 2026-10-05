@@ -62,9 +62,14 @@ export async function onRequestPost(context) {
 
     const mapped = mapProduct(detail, productId, rawUrl, env);
     if (!mapped.name) {
+      // Temporary debug: top-level keys + a small sample (no secrets)
+      var raw = detail.raw || {};
+      var topKeys = Object.keys(raw);
+      var sample = JSON.stringify(raw).slice(0, 1500);
       return Response.json({
         error: 'Could not map product title from API response',
-        raw: detail.raw
+        top_keys: topKeys,
+        sample: sample
       }, { status: 502 });
     }
 
@@ -228,74 +233,145 @@ function toForm(obj) {
   for (var i = 0; i < keys.length; i++) {
     parts.push(encodeURIComponent(keys[i]) + '=' + encodeURIComponent(String(obj[keys[i]])));
   }
-  return parts.join('&');
-}
 
-function mapProduct(detail, productId, rawUrl, env) {
+  function mapProduct(detail, productId, rawUrl, env) {
   var raw = detail.raw || {};
   var rate = Number(env.AE_USD_TO_NGN) || 1600;
   var markup = Number(env.AE_MARKUP) || 1.3;
 
-  var node =
-    dig(raw, ['aliexpress_ds_product_get_response', 'result', 'ae_item_base_info_dto']) ||
+  // Prefer official DS paths
+  var result =
     dig(raw, ['aliexpress_ds_product_get_response', 'result']) ||
+    dig(raw, ['result']) ||
+    null;
+
+  var base =
+    dig(result, ['ae_item_base_info_dto']) ||
+    result ||
+    {};
+
+  // Affiliate shapes
+  var aff =
     dig(raw, ['aliexpress_affiliate_productdetail_get_response', 'resp_result', 'result', 'products', 'product']) ||
     dig(raw, ['aliexpress_affiliate_productdetail_get_response', 'resp_result', 'result']);
 
-  if (Array.isArray(node) && node.length) node = node[0];
-  if (node && node.products && Array.isArray(node.products.product)) node = node.products.product[0];
-  if (node && Array.isArray(node.product)) node = node.product[0];
-  node = node || {};
+  if (Array.isArray(aff) && aff.length) aff = aff[0];
+  if (aff && aff.products && Array.isArray(aff.products.product)) aff = aff.products.product[0];
+  if (aff && Array.isArray(aff.product)) aff = aff.product[0];
 
-  var name = node.subject || node.product_title || node.title || '';
+  var name =
+    base.subject ||
+    base.product_title ||
+    base.title ||
+    (aff && (aff.product_title || aff.subject || aff.title)) ||
+    deepFindString(raw, ['subject', 'product_title', 'title', 'product_title_name']) ||
+    '';
 
   var usdPrice = Number(
-    node.target_sale_price || node.sale_price || node.target_app_sale_price ||
-    node.product_price || node.min_price || 0
+    base.target_sale_price || base.sale_price || base.min_price || 0
   );
 
-  var usdOld = Number(node.target_original_price || node.original_price || node.product_original_price || 0);
+  if (!usdPrice && aff) {
+    usdPrice = Number(aff.target_sale_price || aff.sale_price || aff.product_price || aff.target_app_sale_price || 0);
+  }
 
-  if (!usdPrice) {
+  // SKU prices (DS)
+  if (!usdPrice && result) {
     var skus =
-      dig(raw, ['aliexpress_ds_product_get_response', 'result', 'ae_item_sku_info_dtos', 'ae_item_sku_info_d_t_o']) ||
-      dig(raw, ['aliexpress_ds_product_get_response', 'result', 'ae_item_sku_info_dtos']);
-    var skuList = Array.isArray(skus) ? skus : (skus ? [skus] : []);
-    if (skuList[0]) {
-      usdPrice = Number(skuList[0].offer_sale_price || skuList[0].sku_price || 0);
+      dig(result, ['ae_item_sku_info_dtos', 'ae_item_sku_info_d_t_o']) ||
+      dig(result, ['ae_item_sku_info_dtos']) ||
+      [];
+    if (!Array.isArray(skus)) skus = [skus];
+    for (var i = 0; i < skus.length; i++) {
+      var p = Number(skus[i] && (skus[i].offer_sale_price || skus[i].sku_price || skus[i].sku_price_cent || 0));
+      if (p > 0) { usdPrice = p; break; }
     }
   }
+
+  // Sometimes price is in cents as string
+  if (usdPrice > 10000 && String(usdPrice).indexOf('.') === -1) {
+    usdPrice = usdPrice / 100;
+  }
+
+  var usdOld = Number(
+    base.target_original_price || base.original_price ||
+    (aff && (aff.target_original_price || aff.original_price)) || 0
+  );
 
   var priceNgn = Math.round(usdPrice * rate * markup);
   var oldNgn = usdOld ? Math.round(usdOld * rate * markup) : 0;
 
-  var image = node.product_main_image_url || node.main_image || node.image_url || node.product_image || '';
-  if (!image && node.product_small_image_urls) {
-    var imgs = node.product_small_image_urls.string || node.product_small_image_urls;
+  var image =
+    dig(result, ['ae_multimedia_info_dto', 'image_urls']) ||
+    base.product_main_image_url ||
+    (aff && (aff.product_main_image_url || aff.product_image || aff.image_url)) ||
+    '';
+
+  if (typeof image === 'string' && image.indexOf(';') !== -1) {
+    image = image.split(';')[0].trim();
+  }
+  if (typeof image === 'string' && image.indexOf(',') !== -1 && image.indexOf('http') === 0) {
+    image = image.split(',')[0].trim();
+  }
+  if (!image && aff && aff.product_small_image_urls) {
+    var imgs = aff.product_small_image_urls.string || aff.product_small_image_urls;
     if (Array.isArray(imgs) && imgs[0]) image = imgs[0];
   }
-
-  // DS image list fallback
   if (!image) {
-    var imgDto = dig(raw, ['aliexpress_ds_product_get_response', 'result', 'ae_multimedia_info_dto', 'image_urls']);
-    if (typeof imgDto === 'string' && imgDto) image = imgDto.split(';')[0] || imgDto.split(',')[0] || '';
+    image = deepFindString(raw, ['image_urls', 'product_main_image_url', 'main_image']) || '';
+    if (image.indexOf(';') !== -1) image = image.split(';')[0].trim();
   }
 
-  var description = node.product_description || node.description || ('Imported from AliExpress #' + productId);
+  var description =
+    base.detail ||
+    base.product_description ||
+    (aff && aff.product_description) ||
+    ('Imported from AliExpress #' + productId);
+
+  // Strip simple HTML tags for description length
+  if (typeof description === 'string') {
+    description = description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
 
   return {
-    name: String(name).slice(0, 200),
-    description: String(description).slice(0, 4000),
+    name: String(name || '').slice(0, 200),
+    description: String(description || '').slice(0, 4000),
     price: priceNgn || 0,
     old_price: oldNgn || 0,
     category: 'imported',
-    image: image,
+    image: image || '',
     stock: 20,
-    source_url: rawUrl.indexOf('http') === 0 ? rawUrl : ('https://www.aliexpress.com/item/' + productId + '.html'),
+    source_url: rawUrl.indexOf('http') === 0
+      ? rawUrl.split('?')[0]
+      : ('https://www.aliexpress.com/item/' + productId + '.html'),
     aliexpress_id: productId,
     cost_usd: usdPrice
   };
 }
+
+function deepFindString(obj, keys, depth) {
+  if (depth === undefined) depth = 0;
+  if (!obj || typeof obj !== 'object' || depth > 8) return '';
+  if (Array.isArray(obj)) {
+    for (var i = 0; i < obj.length; i++) {
+      var a = deepFindString(obj[i], keys, depth + 1);
+      if (a) return a;
+    }
+    return '';
+  }
+  for (var k in obj) {
+    if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
+    var v = obj[k];
+    if (keys.indexOf(k) !== -1 && typeof v === 'string' && v.trim().length > 2) {
+      return v.trim();
+    }
+    if (v && typeof v === 'object') {
+      var f = deepFindString(v, keys, depth + 1);
+      if (f) return f;
+    }
+  }
+  return '';
+      }
 
 function dig(obj, path) {
   var cur = obj;
