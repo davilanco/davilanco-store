@@ -34,7 +34,6 @@ export async function onRequestPost(context) {
       return Response.json({ error: 'File too large (max 5MB)' }, { status: 400 });
     }
 
-    // Send to Cloudinary
     const out = new FormData();
     out.append('file', file);
     out.append('upload_preset', preset);
@@ -52,9 +51,7 @@ export async function onRequestPost(context) {
 
     if (!cloudRes.ok || !data.secure_url) {
       return Response.json({
-        error: data.error && data.error.message
-          ? data.error.message
-          : 'Cloudinary upload failed'
+        error: data.error && data.error.message ? data.error.message : 'Cloudinary upload failed'
       }, { status: 500 });
     }
 
@@ -63,8 +60,7 @@ export async function onRequestPost(context) {
       url: data.secure_url,
       public_id: data.public_id
     });
-
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }
-        }
+}

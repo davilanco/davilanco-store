@@ -1,7 +1,6 @@
 export async function onRequest(context) {
   const { request, env } = context;
 
-  // Allow AliExpress to verify the endpoint
   if (request.method === 'GET') {
     return Response.json({
       ok: true,
@@ -29,7 +28,6 @@ export async function onRequest(context) {
       }
     }
 
-    // Store last webhook events (optional table)
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS ae_webhooks (
         id TEXT PRIMARY KEY,
@@ -39,12 +37,9 @@ export async function onRequest(context) {
     `).run();
 
     const id = crypto.randomUUID();
-    await env.DB.prepare(
-      'INSERT INTO ae_webhooks (id, payload) VALUES (?, ?)'
-    ).bind(id, JSON.stringify(payload)).run();
+    await env.DB.prepare('INSERT INTO ae_webhooks (id, payload) VALUES (?, ?)').bind(id, JSON.stringify(payload)).run();
 
-    // AliExpress typically expects HTTP 200
-    return Response.json({ ok: true, id: id });
+    return Response.json({ ok: true, id });
   } catch (err) {
     return Response.json({ ok: false, error: err.message }, { status: 500 });
   }

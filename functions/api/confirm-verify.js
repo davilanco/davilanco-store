@@ -40,8 +40,7 @@ export async function onRequestPost(context) {
       ok: true,
       message: 'Email verified successfully. You can now log in.'
     });
-
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }
-    }
+}

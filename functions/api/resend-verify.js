@@ -36,11 +36,11 @@ export async function onRequestPost(context) {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + env.RESEND_API_KEY,
+        Authorization: 'Bearer ' + env.RESEND_API_KEY,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: from,
+        from,
         to: [email],
         subject: 'Your Davilanco verification code',
         html:
@@ -56,8 +56,7 @@ export async function onRequestPost(context) {
     }
 
     return Response.json({ ok: true, message: 'Verification code sent' });
-
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }
-         }
+}

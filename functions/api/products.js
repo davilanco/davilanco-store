@@ -25,7 +25,6 @@ export async function onRequest(context) {
   try { await env.DB.prepare('ALTER TABLE products ADD COLUMN status TEXT DEFAULT \'approved\'').run(); } catch (e) {}
   try { await env.DB.prepare('ALTER TABLE products ADD COLUMN seller_id TEXT').run(); } catch (e) {}
 
-  // ========== GET ==========
   if (request.method === 'GET') {
     try {
       const url = new URL(request.url);
@@ -42,13 +41,11 @@ export async function onRequest(context) {
       const params = [];
 
       if (all === '1') {
-        // admin: everything
         if (status) {
           query += ' WHERE status = ?';
           params.push(status);
         }
       } else {
-        // public storefront: approved only
         query += " WHERE status = 'approved'";
       }
 
@@ -68,13 +65,11 @@ export async function onRequest(context) {
     }
   }
 
-  // ========== POST create product ==========
   if (request.method === 'POST') {
     try {
       const body = await request.json();
       const action = body.action || 'create';
 
-      // Update existing
       if (action === 'update') {
         const productId = (body.id || '').trim();
         if (!productId) {
@@ -107,20 +102,16 @@ export async function onRequest(context) {
         return Response.json({ ok: true, message: 'Product updated', id: productId });
       }
 
-      // Approve / reject
       if (action === 'set_status') {
         const productId = (body.id || '').trim();
         const status = body.status || 'pending';
         if (!productId) {
           return Response.json({ error: 'id required' }, { status: 400 });
         }
-        await env.DB.prepare(
-          'UPDATE products SET status = ? WHERE id = ?'
-        ).bind(status, productId).run();
-        return Response.json({ ok: true, message: 'Status updated', id: productId, status: status });
+        await env.DB.prepare('UPDATE products SET status = ? WHERE id = ?').bind(status, productId).run();
+        return Response.json({ ok: true, message: 'Status updated', id: productId, status });
       }
 
-      // Delete
       if (action === 'delete') {
         const productId = (body.id || '').trim();
         if (!productId) {
@@ -130,7 +121,6 @@ export async function onRequest(context) {
         return Response.json({ ok: true, message: 'Product deleted' });
       }
 
-      // Create
       const name = String(body.name || '').trim();
       const price = Number(body.price);
       if (!name || !price || price <= 0) {
@@ -155,11 +145,11 @@ export async function onRequest(context) {
         body.seller_id || null
       ).run();
 
-      return Response.json({ ok: true, message: 'Product added', id: id });
+      return Response.json({ ok: true, message: 'Product added', id });
     } catch (err) {
       return Response.json({ error: err.message }, { status: 500 });
     }
   }
 
   return new Response('Method not allowed', { status: 405 });
-    }
+}

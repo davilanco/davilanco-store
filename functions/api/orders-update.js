@@ -9,17 +9,13 @@ export async function onRequestPost(context) {
       return Response.json({ error: 'order_id is required' }, { status: 400 });
     }
 
-    // Build update fields safely
     const status = body.status || null;
     const paymentStatus = body.payment_status || null;
     const trackingNumber = body.tracking_number || null;
     const logistics = body.logistics || null;
     const eta = body.eta || null;
 
-    // Check order exists
-    const existing = await env.DB.prepare(
-      'SELECT id FROM orders WHERE id = ?'
-    ).bind(orderId).first();
+    const existing = await env.DB.prepare('SELECT id FROM orders WHERE id = ?').bind(orderId).first();
 
     if (!existing) {
       return Response.json({ error: 'Order not found' }, { status: 404 });
@@ -47,7 +43,6 @@ export async function onRequestPost(context) {
       message: 'Order updated successfully',
       order_id: orderId
     });
-
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }

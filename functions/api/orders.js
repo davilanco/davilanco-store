@@ -1,7 +1,6 @@
 export async function onRequest(context) {
   const { request, env } = context;
 
-  // Ensure tables exist
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS orders (
       id TEXT PRIMARY KEY,
@@ -39,9 +38,7 @@ export async function onRequest(context) {
     )
   `).run();
 
-  // ========== GET – list orders for a user ==========
-
-if (request.method === 'GET') {
+  if (request.method === 'GET') {
     try {
       const url = new URL(request.url);
       const userId = url.searchParams.get('user_id') || '';
@@ -51,7 +48,6 @@ if (request.method === 'GET') {
       let results = [];
 
       if (all === '1') {
-        // Admin: all orders
         const data = await env.DB.prepare(`
           SELECT * FROM orders
           ORDER BY created_at DESC
@@ -77,9 +73,7 @@ if (request.method === 'GET') {
       }
 
       for (let i = 0; i < results.length; i++) {
-        const items = await env.DB.prepare(
-          'SELECT * FROM order_items WHERE order_id = ?'
-        ).bind(results[i].id).all();
+        const items = await env.DB.prepare('SELECT * FROM order_items WHERE order_id = ?').bind(results[i].id).all();
         results[i].items = items.results || [];
       }
 
@@ -87,9 +81,8 @@ if (request.method === 'GET') {
     } catch (err) {
       return Response.json({ error: err.message }, { status: 500 });
     }
-        }
+  }
 
-  // ========== POST – create order ==========
   if (request.method === 'POST') {
     try {
       const body = await request.json();
@@ -153,7 +146,7 @@ if (request.method === 'GET') {
         ok: true,
         order_id: orderId,
         reference: paymentRef,
-        total: total,
+        total,
         payment_method: paymentMethod
       });
     } catch (err) {
@@ -162,4 +155,4 @@ if (request.method === 'GET') {
   }
 
   return new Response('Method not allowed', { status: 405 });
-                       }
+}

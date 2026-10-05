@@ -15,7 +15,6 @@ export async function onRequest(context) {
     )
   `).run();
 
-  // ========== GET messages ==========
   if (request.method === 'GET') {
     try {
       const url = new URL(request.url);
@@ -25,7 +24,6 @@ export async function onRequest(context) {
       let results = [];
 
       if (all === '1') {
-        // Admin: latest messages
         const data = await env.DB.prepare(`
           SELECT * FROM messages
           ORDER BY created_at DESC
@@ -33,7 +31,6 @@ export async function onRequest(context) {
         `).all();
         results = data.results || [];
       } else if (userId) {
-        // User: messages to/from this user (admin thread)
         const data = await env.DB.prepare(`
           SELECT * FROM messages
           WHERE sender_id = ? OR receiver_id = ?
@@ -49,7 +46,6 @@ export async function onRequest(context) {
     }
   }
 
-  // ========== POST send message ==========
   if (request.method === 'POST') {
     try {
       const body = await request.json();
@@ -76,13 +72,12 @@ export async function onRequest(context) {
         text
       ).run();
 
-      return Response.json({ ok: true, message: 'Sent', id: id });
+      return Response.json({ ok: true, message: 'Sent', id });
     } catch (err) {
       return Response.json({ error: err.message }, { status: 500 });
     }
   }
 
-  // ========== PATCH mark read ==========
   if (request.method === 'PATCH') {
     try {
       const body = await request.json();
@@ -99,4 +94,4 @@ export async function onRequest(context) {
   }
 
   return new Response('Method not allowed', { status: 405 });
-    }
+}

@@ -2,11 +2,9 @@ export async function onRequestGet(context) {
   const { env } = context;
 
   try {
-    // Drop old tables
     await env.DB.prepare(`DROP TABLE IF EXISTS order_items`).run();
     await env.DB.prepare(`DROP TABLE IF EXISTS orders`).run();
 
-    // Create clean orders table
     await env.DB.prepare(`
       CREATE TABLE orders (
         id TEXT PRIMARY KEY,
@@ -32,7 +30,6 @@ export async function onRequestGet(context) {
       )
     `).run();
 
-    // Create clean order_items table
     await env.DB.prepare(`
       CREATE TABLE order_items (
         id TEXT PRIMARY KEY,
@@ -47,9 +44,8 @@ export async function onRequestGet(context) {
 
     return Response.json({
       ok: true,
-      message: "Orders tables reset successfully"
+      message: 'Orders tables reset successfully'
     });
-
   } catch (err) {
     return Response.json({
       ok: false,

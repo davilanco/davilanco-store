@@ -6,4 +6,4 @@ export async function onRequest() {
       'Cache-Control': 'no-store'
     }
   });
-      }
+}

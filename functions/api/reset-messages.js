@@ -2,7 +2,7 @@ export async function onRequestGet(context) {
   const { env } = context;
 
   try {
-    await env.DB.prepare(`DROP TABLE IF EXISTS messages`).run();
+    await env.DB.prepare('DROP TABLE IF EXISTS messages').run();
 
     await env.DB.prepare(`
       CREATE TABLE messages (
@@ -20,9 +20,9 @@ export async function onRequestGet(context) {
 
     return Response.json({
       ok: true,
-      message: "Messages table reset successfully"
+      message: 'Messages table reset successfully'
     });
   } catch (err) {
     return Response.json({ ok: false, error: err.message }, { status: 500 });
   }
-      }
+}
