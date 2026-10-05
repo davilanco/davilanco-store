@@ -1,6 +1,7 @@
 export async function onRequest(context) {
   const { request, env } = context;
 
+  // Ensure tables exist
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS orders (
       id TEXT PRIMARY KEY,
@@ -38,6 +39,8 @@ export async function onRequest(context) {
     )
   `).run();
 
+  // ========== GET – list orders for a user ==========
+
   if (request.method === 'GET') {
     try {
       const url = new URL(request.url);
@@ -47,7 +50,10 @@ export async function onRequest(context) {
 
       let results = [];
 
+      // SECURITY: 'all=1' should only be allowed for authenticated admins
+      // For now, we'll allow it but recommend adding auth checks in production
       if (all === '1') {
+        // Admin: all orders
         const data = await env.DB.prepare(`
           SELECT * FROM orders
           ORDER BY created_at DESC
@@ -55,6 +61,7 @@ export async function onRequest(context) {
         `).all();
         results = data.results || [];
       } else if (userId) {
+        // User-specific orders: should validate that userId belongs to authenticated user
         const data = await env.DB.prepare(`
           SELECT * FROM orders
           WHERE user_id = ?
@@ -63,6 +70,7 @@ export async function onRequest(context) {
         `).bind(userId).all();
         results = data.results || [];
       } else if (phone) {
+        // Phone lookup: should be rate-limited or require auth
         const data = await env.DB.prepare(`
           SELECT * FROM orders
           WHERE phone = ?
@@ -73,7 +81,9 @@ export async function onRequest(context) {
       }
 
       for (let i = 0; i < results.length; i++) {
-        const items = await env.DB.prepare('SELECT * FROM order_items WHERE order_id = ?').bind(results[i].id).all();
+        const items = await env.DB.prepare(
+          'SELECT * FROM order_items WHERE order_id = ?'
+        ).bind(results[i].id).all();
         results[i].items = items.results || [];
       }
 
@@ -83,6 +93,7 @@ export async function onRequest(context) {
     }
   }
 
+  // ========== POST – create order ==========
   if (request.method === 'POST') {
     try {
       const body = await request.json();
@@ -146,7 +157,7 @@ export async function onRequest(context) {
         ok: true,
         order_id: orderId,
         reference: paymentRef,
-        total,
+        total: total,
         payment_method: paymentMethod
       });
     } catch (err) {
