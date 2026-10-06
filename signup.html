@@ -48,14 +48,27 @@
     h1 { font-size: 1.5rem; margin-bottom: 6px; }
     .subtitle { font-size: 0.9rem; opacity: 0.75; margin-bottom: 20px; }
     input {
-      width: 100%; padding: 14px 16px; border-radius: 10px;
-      border: 1px solid var(--border); background: var(--grey);
-      color: var(--text); font-size: 15px; margin-bottom: 12px;
+      width: 100%; padding: 10px; margin-bottom: 14px;
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); border-radius: 4px; font-size: 14px;
+    }
+    .password-wrapper {
+      position: relative; margin-bottom: 14px;
+    }
+    .password-wrapper input {
+      width: 100%; margin-bottom: 0; padding-right: 40px;
+    }
+    .toggle-password {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--text); cursor: pointer;
+      font-size: 18px; padding: 4px;
     }
     button[type="submit"] {
-      width: 100%; padding: 15px; background: var(--gold); color: #000;
-      border: none; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer;
+      width: 100%; padding: 10px; background: var(--gold);
+      color: var(--bg); border: none; border-radius: 4px;
+      font-weight: 600; cursor: pointer; font-size: 14px;
     }
+    button[type="submit"]:hover { opacity: 0.9; }
     button[type="submit"]:disabled { opacity: 0.6; }
     #msg { margin-top: 14px; text-align: center; font-size: 14px; }
     .error { color: #e74c3c; }
@@ -93,8 +106,14 @@
       <input type="text" id="nickname" placeholder="Nickname *" required>
       <input type="tel" id="phone" placeholder="Phone Number *" required>
       <input type="email" id="email" placeholder="Email Address *" required>
-      <input type="password" id="password" placeholder="Password (8+, upper, number, symbol) *" required>
-      <input type="password" id="password2" placeholder="Confirm Password *" required>
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Password (8+, upper, number, symbol) *" required>
+        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password')">👁️</button>
+      </div>
+      <div class="password-wrapper">
+        <input type="password" id="password2" placeholder="Confirm Password *" required>
+        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password2')">👁️</button>
+      </div>
       <button type="submit" id="submitBtn">Create Account</button>
     </form>
     <p id="msg"></p>
@@ -116,6 +135,12 @@
 
     function toggleNav() {
       document.getElementById('navDrawer').classList.toggle('open');
+    }
+
+    function togglePasswordVisibility(fieldId) {
+      var field = document.getElementById(fieldId);
+      var newType = field.type === 'password' ? 'text' : 'password';
+      field.type = newType;
     }
 
     document.getElementById('signupForm').addEventListener('submit', async function(e) {
@@ -157,24 +182,21 @@
 
         if (data.ok) {
           msg.className = 'success';
-          msg.textContent = data.message || 'Account created. Check your email.';
-          var email = document.getElementById('email').value.trim();
-          setTimeout(function() {
-            window.location.href = '/verify.html?email=' + encodeURIComponent(email);
-          }, 1200);
+          msg.innerHTML = 'Account created! Check your email for verification code. <br><a href="/verify.html" style="color:var(--gold)">Verify now</a>';
+          document.getElementById('signupForm').reset();
         } else {
           msg.className = 'error';
-          msg.textContent = data.error || 'Something went wrong';
+          msg.textContent = data.error || 'Signup failed';
           btn.disabled = false;
           btn.textContent = 'Create Account';
         }
-      } catch (err) {
+      } catch (e) {
         msg.className = 'error';
-        msg.textContent = 'Network error. Please try again.';
+        msg.textContent = 'Network error: ' + e.message;
         btn.disabled = false;
         btn.textContent = 'Create Account';
       }
     });
   </script>
 </body>
-                  </html>
+</html>
