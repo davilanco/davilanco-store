@@ -169,6 +169,10 @@
      <p id="importMsg" style="font-size:13px;margin-top:8px"></p>
       <p style="font-size:12px;opacity:0.7;margin-top:8px">Paste an AliExpress product link (…/item/123….html). Imports as pending for review.</p>
 	</div>
+	  
+	  <input type="text" id="searchKw" placeholder="Search AliExpress by name">
+<button type="button" class="secondary" onclick="searchAe()">Search</button>
+<div id="searchResults"></div>
 
     <!-- List -->
     <div class="card">
@@ -353,6 +357,42 @@ async function onAdminFileSelected(e) {
           alert(err.message || 'Import failed');
         }
       }
+	  }
+
+	  async function searchAe() {
+  var q = document.getElementById('searchKw').value.trim();
+  var box = document.getElementById('searchResults');
+  if (!q) return alert('Enter a keyword');
+  box.innerHTML = 'Searching...';
+  var res = await fetch('/api/import-aliexpress', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'ae_search', keywords: q })
+  });
+  var data = await res.json();
+  if (!data.ok) {
+    box.innerHTML = '<p style="color:#e74c3c">' + (data.error || 'Failed') + '</p>';
+    return;
+  }
+  box.innerHTML = (data.items || []).map(function (it) {
+    return '<label style="display:flex;gap:8px;align-items:center;margin:8px 0">'
+      + '<input type="checkbox" class="aePick" value="' + it.product_id + '">'
+      + '<img src="' + (it.image || '') + '" width="40" height="40" style="object-fit:cover">'
+      + '<span>' + it.title.slice(0, 80) + ' — ₦' + it.price_ngn + '</span></label>';
+  }).join('') + '<button type="button" onclick="bulkImportAe()">Import selected</button>';
+}
+
+async function bulkImportAe() {
+  var ids = Array.from(document.querySelectorAll('.aePick:checked')).map(function (el) { return el.value; });
+  if (!ids.length) return alert('Select at least one');
+  var res = await fetch('/api/import-aliexpress', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'ae_bulk_import', product_ids: ids, status: 'pending' })
+  });
+  var data = await res.json();
+  alert(JSON.stringify(data.results || data, null, 2));
+  loadProducts();
 	  }
 
     async function loadProducts() {
