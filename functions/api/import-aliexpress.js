@@ -545,6 +545,16 @@ function mapProduct(detail, productId, rawUrl, env) {
     description = description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   }
 
+var skuAttr = '';
+  if (result) {
+    var skus0 =
+      dig(result, ['ae_item_sku_info_dtos', 'ae_item_sku_info_d_t_o']) ||
+      dig(result, ['ae_item_sku_info_dtos']) ||
+      [];
+    if (!Array.isArray(skus0)) skus0 = [skus0];
+    if (skus0[0] && skus0[0].id) skuAttr = String(skus0[0].id);
+     }
+
   return {
     name: String(name || '').slice(0, 200),
     description: String(description || '').slice(0, 4000),
@@ -557,6 +567,8 @@ function mapProduct(detail, productId, rawUrl, env) {
       ? rawUrl.split('?')[0]
       : ('https://www.aliexpress.com/item/' + productId + '.html'),
     aliexpress_id: productId,
-    cost_usd: usdPrice
+    cost_usd: usdPrice,
+    ae_product_id: productId,
+    ae_sku_attr: skuAttr
   };
         }
