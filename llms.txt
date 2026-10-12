@@ -1,0 +1,9 @@
+# Davilanco Shop
+> Fashion e-commerce store for E sales facilitation
+
+## Products
+- https://shop.davilanco.com/ : Main shop
+- https://shop.davilanco.com/products : Store items
+
+## About
+Davilanco is...
