@@ -129,6 +129,12 @@ export async function onRequestPost(context) {
       mapped.source_url
     ).run();
 
+    try {
+      await env.DB.prepare(
+        'UPDATE products SET ae_product_id = ?, ae_sku_attr = ? WHERE id = ?'
+      ).bind(mapped.ae_product_id || productId, mapped.ae_sku_attr || '', id).run();
+    } catch (e) {}
+
     return Response.json({
       ok: true,
       message: 'Product imported from AliExpress',
@@ -306,7 +312,12 @@ async function handleAeBulkImport(env, body) {
         id, mapped.name, mapped.description, mapped.price, mapped.old_price,
         mapped.category, mapped.image, mapped.stock, body.status || 'pending',
         null, 'aliexpress_search', mapped.source_url
-      ).run();
+       ).run();
+      try {
+        await env.DB.prepare(
+          'UPDATE products SET ae_product_id = ?, ae_sku_attr = ? WHERE id = ?'
+        ).bind(mapped.ae_product_id || pid, mapped.ae_sku_attr || '', id).run();
+      } catch (e) {}
       results.push({ product_id: pid, ok: true, id: id, name: mapped.name });
     } catch (e) {
       results.push({ product_id: pid, ok: false, error: e.message });
