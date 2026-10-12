@@ -138,6 +138,8 @@
     <div class="card" id="payments">
       <h3>All Orders</h3>
       <button class="secondary" type="button" onclick="loadOrders()">Refresh</button>
+      <button type="button" onclick="placeOnAe('ORDER_ID')">Place on AliExpress</button>
+      <button type="button" onclick="pullTracking('ORDER_ID')">Pull tracking</button>
       <div id="ordersBox" style="margin-top:14px">
         <p style="opacity:0.7">Loading orders...</p>
       </div>
@@ -172,6 +174,28 @@
   <div id="toast">Saved</div>
 
   <script>
+    async function placeOnAe(orderId) {
+  if (!confirm('Place this order on AliExpress?')) return;
+  var res = await fetch('/api/ae-place-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ order_id: orderId })
+  });
+  var data = await res.json();
+  alert(data.ok ? ('AE order: ' + (data.ae_order_id || 'ok')) : (data.error || 'Failed'));
+}
+
+async function pullTracking(orderId) {
+  var res = await fetch('/api/ae-tracking', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ order_id: orderId })
+  });
+  var data = await res.json();
+  alert(data.ok
+    ? ('Tracking: ' + (data.tracking && data.tracking.number ? data.tracking.number : 'none yet'))
+    : (data.error || 'Failed'));
+}
     var savedTheme = localStorage.getItem('theme');
     document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
 
