@@ -1,3 +1,4 @@
+import { requireAdmin } from '../lib/auth.js';
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -53,7 +54,8 @@ export async function onRequest(context) {
       // SECURITY: 'all=1' should only be allowed for authenticated admins
       // For now, we'll allow it but recommend adding auth checks in production
       if (all === '1') {
-        // Admin: all orders
+        const auth = await requireAdmin(request, env);
+        if (!auth.ok) return auth.response;
         const data = await env.DB.prepare(`
           SELECT * FROM orders
           ORDER BY created_at DESC
