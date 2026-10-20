@@ -386,23 +386,31 @@ async function searchAe() {
   var q = document.getElementById('searchKw').value.trim();
   var box = document.getElementById('searchResults');
   if (!q) return alert('Enter a keyword');
-  box.innerHTML = 'Searching...';
-  var res = await fetch('/api/import-aliexpress', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'ae_search', keywords: q })
-  });
-  var data = await res.json();
-  if (!data.ok) {
-    box.innerHTML = '<p style="color:#e74c3c">' + escapeHtml(data.error || 'Failed') + '</p>';
-    return;
+  box.innerHTML = '<p>Searching AliExpress…</p>';
+  try {
+    var res = await fetch('/api/import-aliexpress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'ae_search', keywords: q })
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || ('Search failed (HTTP ' + res.status + ').'));
+    }
+    var items = Array.isArray(data.items) ? data.items : [];
+    if (!items.length) {
+      box.innerHTML = '<p style="color:#e74c3c">AliExpress returned no products for this search. Try another keyword. If this happens for every search, the AliExpress API credentials or product-search permission may need checking.</p>';
+      return;
+    }
+    box.innerHTML = items.map(function (it) {
+      return '<label style="display:flex;gap:8px;align-items:center;margin:8px 0">'
+        + '<input type="checkbox" class="aePick" value="' + escapeHtml(it.product_id) + '">'
+        + '<img src="' + safeImageUrl(it.image) + '" width="48" height="48" style="object-fit:cover">'
+        + '<span>' + escapeHtml(String(it.title || 'Untitled product').slice(0, 100)) + ' — ₦' + Number(it.price_ngn || 0).toLocaleString() + '</span></label>';
+    }).join('') + '<button type="button" onclick="bulkImportAe()">Import selected</button>';
+  } catch (err) {
+    box.innerHTML = '<p style="color:#e74c3c">' + escapeHtml(err.message || 'AliExpress search failed. Please try again.') + '</p>';
   }
-  box.innerHTML = (data.items || []).map(function (it) {
-    return '<label style="display:flex;gap:8px;align-items:center;margin:8px 0">'
-      + '<input type="checkbox" class="aePick" value="' + escapeHtml(it.product_id) + '">'
-      + '<img src="' + safeImageUrl(it.image) + '" width="40" height="40" style="object-fit:cover">'
-      + '<span>' + escapeHtml(String(it.title || '').slice(0, 80)) + ' — ₦' + Number(it.price_ngn || 0).toLocaleString() + '</span></label>';
-  }).join('') + '<button type="button" onclick="bulkImportAe()">Import selected</button>';
 }
 
 async function bulkImportAe() {
