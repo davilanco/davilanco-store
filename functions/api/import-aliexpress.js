@@ -224,11 +224,15 @@ async function handleAeToken(env, code) {
 async function handleAeSearch(env, body) {
   var keywords = String(body.keywords || body.q || '').trim();
   var page = Number(body.page || 1) || 1;
-  if (!keywords) {
-    return Response.json({ error: 'keywords required' }, { status: 400 });
+  if (!keywords) return Response.json({ ok: false, error: 'Enter a search keyword.' }, { status: 400 });
+  if (!env.AE_APP_KEY || !env.AE_APP_SECRET) {
+    return Response.json({ ok: false, error: 'AliExpress search is not configured: AE_APP_KEY or AE_APP_SECRET is missing in Cloudflare.' }, { status: 503 });
+  }
+  if (!env.AE_ACCESS_TOKEN) {
+    return Response.json({ ok: false, error: 'AliExpress search needs AE_ACCESS_TOKEN. Add or refresh this secret in Cloudflare.' }, { status: 503 });
   }
 
-  var accessToken = env.AE_ACCESS_TOKEN || '';
+  var accessToken = env.AE_ACCESS_TOKEN;
   var detail = await callIop(env, 'aliexpress.affiliate.product.query', {
     keywords: keywords,
     page_no: String(page),
@@ -238,38 +242,65 @@ async function handleAeSearch(env, body) {
     target_language: 'EN',
     ship_to_country: 'NG',
     tracking_id: env.AE_TRACKING_ID || undefined,
-    access_token: accessToken || undefined,
-    session: accessToken || undefined
+    access_token: accessToken,
+    session: accessToken
   });
 
   if (detail.error) {
-    return Response.json({ error: detail.error, raw: detail.raw }, { status: 502 });
+    return Response.json({ ok: false, error: 'AliExpress search API error: ' + detail.error }, { status: 502 });
   }
 
   var raw = detail.raw || {};
-  var list =
-    dig(raw, ['aliexpress_affiliate_product_query_response', 'resp_result', 'result', 'products', 'product']) ||
-    dig(raw, ['aliexpress_affiliate_product_query_response', 'resp_result', 'result', 'products']) ||
-    [];
-
-  if (!Array.isArray(list)) list = list ? [list] : [];
-
+  var list = findAeProductList(raw);
   var rate = Number(env.AE_USD_TO_NGN) || 1600;
   var markup = Number(env.AE_MARKUP) || 1.3;
-
   var items = list.map(function (p) {
-    var usd = Number(p.target_sale_price || p.sale_price || p.product_price || 0);
+    var id = p.product_id || p.productId || p.productIdStr || p.product_id_str || '';
+    var usd = Number(p.target_sale_price || p.target_app_sale_price || p.sale_price || p.product_price || p.app_sale_price || 0);
+    var image = p.product_main_image_url || p.product_image || p.image_url || '';
+    if (!image && p.product_small_image_urls) {
+      var imgs = p.product_small_image_urls.string || p.product_small_image_urls;
+      if (Array.isArray(imgs)) image = imgs[0] || '';
+    }
     return {
-      product_id: String(p.product_id || p.productId || ''),
+      product_id: String(id),
       title: p.product_title || p.subject || p.title || '',
-      image: p.product_main_image_url || p.product_image || '',
+      image: typeof image === 'string' ? image.split(';')[0].split(',')[0] : '',
       price_usd: usd,
       price_ngn: Math.round(usd * rate * markup),
-      url: p.product_detail_url || ('https://www.aliexpress.com/item/' + (p.product_id || p.productId || '') + '.html')
+      url: p.product_detail_url || ('https://www.aliexpress.com/item/' + id + '.html')
     };
-  }).filter(function (x) { return x.product_id; });
+  }).filter(function (x) { return x.product_id && /^\\d{8,20}$/.test(x.product_id); });
 
   return Response.json({ ok: true, items: items, count: items.length });
+}
+
+function findAeProductList(value, depth) {
+  if (depth === undefined) depth = 0;
+  if (!value || typeof value !== 'object' || depth > 12) return [];
+  if (Array.isArray(value)) {
+    if (value.some(function (x) { return x && typeof x === 'object' && (x.product_id || x.productId || x.product_title || x.subject); })) return value;
+    for (var i = 0; i < value.length; i++) {
+      var foundInArray = findAeProductList(value[i], depth + 1);
+      if (foundInArray.length) return foundInArray;
+    }
+    return [];
+  }
+  var preferred = ['product', 'products', 'product_list', 'productList', 'products_list', 'product_dto'];
+  for (var k = 0; k < preferred.length; k++) {
+    if (Object.prototype.hasOwnProperty.call(value, preferred[k])) {
+      var candidate = value[preferred[k]];
+      var found = findAeProductList(candidate, depth + 1);
+      if (found.length) return found;
+    }
+  }
+  for (var key in value) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      var nested = findAeProductList(value[key], depth + 1);
+      if (nested.length) return nested;
+    }
+  }
+  return [];
 }
 
 async function handleAeBulkImport(env, body) {
