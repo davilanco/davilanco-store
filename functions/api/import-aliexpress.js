@@ -1,5 +1,8 @@
+import { requireAdmin } from '../lib/auth.js';
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const auth = await requireAdmin(request, env);
+  if (!auth.ok) return auth.response;
 
   try {
     const body = await request.json();
