@@ -1,3 +1,4 @@
+import { requireAdmin, requireSession } from '../lib/auth.js';
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -24,6 +25,8 @@ export async function onRequest(context) {
       let results = [];
 
       if (all === '1') {
+        const auth = await requireAdmin(request, env);
+        if (!auth.ok) return auth.response;
         const data = await env.DB.prepare(`
           SELECT * FROM messages
           ORDER BY created_at DESC
@@ -31,6 +34,11 @@ export async function onRequest(context) {
         `).all();
         results = data.results || [];
       } else if (userId) {
+        const auth = await requireSession(request, env);
+        if (!auth.ok) return auth.response;
+        if (auth.user.id !== userId && auth.user.role !== 'admin') {
+          return Response.json({ error: 'You may only view your own messages.' }, { status: 403 });
+        }
         const data = await env.DB.prepare(`
           SELECT * FROM messages
           WHERE sender_id = ? OR receiver_id = ?
@@ -50,11 +58,28 @@ export async function onRequest(context) {
     try {
       const body = await request.json();
       const text = String(body.message || '').trim();
-
-      if (!text) {
-        return Response.json({ error: 'Message is required' }, { status: 400 });
+      if (!text || text.length > 5000) {
+        return Response.json({ error: 'Message must contain 1–5000 characters.' }, { status: 400 });
       }
 
+      let senderId = null;
+      let senderRole = 'customer';
+      let senderName = String(body.sender_name || '').slice(0, 120);
+      let receiverId = null;
+      let receiverRole = 'admin';
+      if (body.sender_id) {
+        const auth = await requireSession(request, env);
+        if (!auth.ok) return auth.response;
+        if (auth.user.id !== String(body.sender_id) && auth.user.role !== 'admin') {
+          return Response.json({ error: 'You may only send messages as your own account.' }, { status: 403 });
+        }
+        senderId = auth.user.id;
+        senderRole = auth.user.role;
+        if (auth.user.role === 'admin') {
+          receiverId = body.receiver_id || null;
+          receiverRole = body.receiver_role || 'customer';
+        }
+      }
       const id = crypto.randomUUID();
 
       await env.DB.prepare(`
@@ -64,11 +89,11 @@ export async function onRequest(context) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, 0)
       `).bind(
         id,
-        body.sender_id || null,
-        body.sender_role || 'customer',
-        body.sender_name || '',
-        body.receiver_id || null,
-        body.receiver_role || 'admin',
+        senderId,
+        senderRole,
+        senderName,
+        receiverId,
+        receiverRole,
         text
       ).run();
 
@@ -81,7 +106,12 @@ export async function onRequest(context) {
   if (request.method === 'PATCH') {
     try {
       const body = await request.json();
+      const auth = await requireSession(request, env);
+      if (!auth.ok) return auth.response;
       if (body.action === 'mark_read' && body.user_id) {
+        if (auth.user.id !== String(body.user_id) && auth.user.role !== 'admin') {
+          return Response.json({ error: 'You may only mark your own messages as read.' }, { status: 403 });
+        }
         await env.DB.prepare(`
           UPDATE messages SET is_read = 1
           WHERE receiver_id = ? OR (receiver_role = 'admin' AND ? = 'admin')
