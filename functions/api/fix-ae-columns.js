@@ -1,5 +1,8 @@
+import { requireAdmin } from '../lib/auth.js';
 export async function onRequestGet(context) {
-  const { env } = context;
+  const { request, env } = context;
+  const auth = await requireAdmin(request, env);
+  if (!auth.ok) return auth.response;
   const steps = [];
 
   const alters = [
