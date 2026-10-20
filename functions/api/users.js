@@ -1,3 +1,4 @@
+import { requireAdmin } from '../lib/auth.js';
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -22,6 +23,8 @@ export async function onRequest(context) {
 
   // ========== GET all users ==========
   if (request.method === 'GET') {
+    const auth = await requireAdmin(request, env);
+    if (!auth.ok) return auth.response;
     try {
       const { results } = await env.DB.prepare(`
         SELECT id, firstname, lastname, nickname, phone, email, role, status, verified, created_at
@@ -38,6 +41,8 @@ export async function onRequest(context) {
 
   // ========== POST update user (role / status) ==========
   if (request.method === 'POST') {
+    const auth = await requireAdmin(request, env);
+    if (!auth.ok) return auth.response;
     try {
       const body = await request.json();
       const userId = (body.user_id || '').trim();
@@ -63,6 +68,8 @@ export async function onRequest(context) {
 
   // ========== DELETE user ==========
   if (request.method === 'DELETE') {
+    const auth = await requireAdmin(request, env);
+    if (!auth.ok) return auth.response;
     try {
       const url = new URL(request.url);
       const userId = url.searchParams.get('id') || '';
