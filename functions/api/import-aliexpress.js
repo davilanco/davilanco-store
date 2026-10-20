@@ -270,7 +270,7 @@ async function handleAeSearch(env, body) {
       price_ngn: Math.round(usd * rate * markup),
       url: p.product_detail_url || ('https://www.aliexpress.com/item/' + id + '.html')
     };
-  }).filter(function (x) { return x.product_id && /^\\d{8,20}$/.test(x.product_id); });
+  }).filter(function (x) { return x.product_id && /^\d{8,20}$/.test(x.product_id); });
 
   return Response.json({ ok: true, items: items, count: items.length });
 }
