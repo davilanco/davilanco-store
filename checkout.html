@@ -349,7 +349,7 @@
         // Save last order locally
         localStorage.setItem('lastOrder', JSON.stringify({
           reference: orderData.order_id,
-          total: total,
+          total: orderData.total,
           payment_method: payment,
           status: 'Pending'
         }));
@@ -362,7 +362,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               email: email,
-              amount: total,
+              amount: orderData.total,
               reference: orderData.order_id,
               order_id: orderData.order_id,
               callback_url: 'https://shop.davilanco.com/payment-success.html'
