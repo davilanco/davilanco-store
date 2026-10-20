@@ -319,7 +319,10 @@
         // 1. Create order
         const orderRes = await fetch('/api/orders', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+          },
           body: JSON.stringify({
             user_id: user ? user.id : null,
             firstname: firstname,
