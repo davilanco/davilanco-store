@@ -173,7 +173,16 @@
 
   <script>
     async function placeOnAe(orderId) {
-  if (!confirm('Submit a real supplier order to AliExpress for ' + orderId + '? Make sure payment is confirmed.')) return;
+  var order = (window.adminOrders || []).find(function(item) { return item.id === orderId; });
+  var itemSummary = order && Array.isArray(order.items)
+    ? order.items.map(function(item) { return (item.product_name || 'Item') + ' x' + item.quantity; }).join(', ')
+    : 'Review items in the order card';
+  var destination = order
+    ? [order.firstname, order.lastname, order.address, order.town, order.lga, order.state, order.phone].filter(Boolean).join(', ')
+    : 'Review delivery details in the order card';
+  if (!confirm('MANUAL REVIEW — this will submit a real supplier purchase.\n\nOrder: ' + orderId
+    + '\nItems: ' + itemSummary + '\nDeliver to: ' + destination
+    + '\n\nConfirm customer payment, product variant and delivery address before continuing.')) return;
   try {
     var res = await fetch('/api/ae-place-order', {
       method: 'POST',
@@ -326,6 +335,8 @@ function escapeHtml(value) {
             if (o.eta) html += ' · ETA ' + escapeHtml(o.eta);
           }
           if (o.ae_order_id) html += '<br>AliExpress order: ' + escapeHtml(o.ae_order_id);
+          if (o.ae_status === 'uncertain') html += '<br><strong>Supplier order needs a manual AliExpress history check before retrying.</strong>';
+          else if (o.ae_status === 'submitting') html += '<br>Supplier submission in progress; do not submit again yet.';
           html += '</div>';
           html += '<button type="button" onclick="selectOrderByIndex(' + i + ')">Select</button>';
           if ((o.payment_method || '') === 'bank_transfer' && (o.payment_status || '') !== 'paid') {
