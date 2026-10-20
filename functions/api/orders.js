@@ -119,6 +119,15 @@ export async function onRequest(context) {
   if (request.method === 'POST') {
     try {
       const body = await request.json();
+      let verifiedUserId = null;
+      if (body.user_id) {
+        const auth = await requireSession(request, env);
+        if (!auth.ok) return auth.response;
+        if (auth.user.id !== String(body.user_id) && auth.user.role !== 'admin') {
+          return Response.json({ error: 'You may only create orders for your own account.' }, { status: 403 });
+        }
+        verifiedUserId = auth.user.id;
+      }
       const items = body.items || [];
       const total = Number(body.total) || 0;
 
@@ -142,7 +151,7 @@ export async function onRequest(context) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         orderId,
-        body.user_id || null,
+        verifiedUserId,
         total,
         'Pending',
         paymentMethod,
