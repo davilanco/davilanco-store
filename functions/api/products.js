@@ -35,6 +35,10 @@ export async function onRequest(context) {
 
       if (id) {
         const row = await env.DB.prepare('SELECT * FROM products WHERE id = ?').bind(id).first();
+        if (row && row.status !== 'approved') {
+          const auth = await requireAdmin(request, env);
+          if (!auth.ok) return auth.response;
+        }
         return Response.json(row || { error: 'Not found' }, { status: row ? 200 : 404 });
       }
 
