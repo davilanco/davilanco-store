@@ -128,11 +128,43 @@ export async function onRequest(context) {
         }
         verifiedUserId = auth.user.id;
       }
-      const items = body.items || [];
-      const total = Number(body.total) || 0;
+      const requestedItems = Array.isArray(body.items) ? body.items : [];
+      if (!requestedItems.length || requestedItems.length > 50) {
+        return Response.json({ error: 'Cart is empty or contains too many line items.' }, { status: 400 });
+      }
 
-      if (!items.length || total <= 0) {
-        return Response.json({ error: 'Cart is empty' }, { status: 400 });
+      // Recalculate all prices and item details from the database; never trust browser totals.
+      const items = [];
+      let total = 0;
+      for (const requested of requestedItems) {
+        const productId = String(requested.id || requested.product_id || '').trim();
+        const quantity = Number(requested.quantity);
+        if (!productId || !Number.isInteger(quantity) || quantity < 1 || quantity > 50) {
+          return Response.json({ error: 'Invalid product or quantity in cart.' }, { status: 400 });
+        }
+        const product = await env.DB.prepare("SELECT id, name, price, image, stock, status FROM products WHERE id = ?").bind(productId).first();
+        if (!product || product.status !== 'approved') {
+          return Response.json({ error: 'A product in your cart is no longer available. Refresh your cart.' }, { status: 409 });
+        }
+        const price = Number(product.price);
+        if (!Number.isFinite(price) || price <= 0) {
+          return Response.json({ error: 'A product has an invalid price and cannot be ordered.' }, { status: 409 });
+        }
+        if (Number(product.stock) > 0 && quantity > Number(product.stock)) {
+          return Response.json({ error: 'There is not enough stock for ' + String(product.name || 'a product').slice(0, 80) + '.' }, { status: 409 });
+        }
+        items.push({
+          id: product.id,
+          name: product.name,
+          price: price,
+          quantity: quantity,
+          image: product.image || ''
+        });
+        total += price * quantity;
+      }
+      total = Math.round(total * 100) / 100;
+      if (!Number.isFinite(total) || total <= 0) {
+        return Response.json({ error: 'Order total is invalid.' }, { status: 400 });
       }
 
       if (!body.firstname || !body.lastname || !body.phone || !body.address || !body.state) {
