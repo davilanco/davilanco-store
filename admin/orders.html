@@ -211,6 +211,20 @@ async function pullTracking(orderId) {
     }
 
     var token = localStorage.getItem('token');
+    // Attach the signed session token to every same-origin API request from this admin page.
+    (function() {
+      var originalFetch = window.fetch.bind(window);
+      window.fetch = function(input, init) {
+        var target = typeof input === 'string' ? input : (input && input.url) || '';
+        if (target.indexOf('/api/') === 0 && token) {
+          init = init || {};
+          var headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+          headers.set('Authorization', 'Bearer ' + token);
+          init = Object.assign({}, init, { headers: headers });
+        }
+        return originalFetch(input, init);
+      };
+    })();
     var userStr = localStorage.getItem('user');
     if (!token || !userStr) {
       window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/orders.html');
