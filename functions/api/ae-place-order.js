@@ -5,9 +5,10 @@ export async function onRequestPost(context) {
   const auth = await requireAdmin(request, env);
   if (!auth.ok) return auth.response;
 
+  let orderId = '';
   try {
     const body = await request.json();
-    const orderId = String(body.order_id || '').trim();
+    orderId = String(body.order_id || '').trim();
     if (!orderId) return Response.json({ error: 'order_id required' }, { status: 400 });
 
     await ensureColumns(env);
@@ -68,11 +69,11 @@ export async function onRequestPost(context) {
     if (order.lga) address.address2 = String(order.lga);
 
     // Claim the order before calling the supplier API. This blocks double-clicks and retries.
-    await env.DB.prepare("UPDATE orders SET ae_status = 'submitting' WHERE id = ? AND (ae_order_id IS NULL OR ae_order_id = '') AND (ae_status IS NULL OR ae_status IN ('failed','ready'))").bind(orderId).run();
-    const claimed = await env.DB.prepare('SELECT ae_status, ae_order_id FROM orders WHERE id = ?').bind(orderId).first();
-    if (claimed.ae_order_id) return Response.json({ ok: true, already_placed: true, ae_order_id: String(claimed.ae_order_id) });
-    if (claimed.ae_status !== 'submitting') {
-      return Response.json({ error: 'This order is being processed by another request. Refresh the order list.' }, { status: 409 });
+    const claim = await env.DB.prepare("UPDATE orders SET ae_status = 'submitting' WHERE id = ? AND (ae_order_id IS NULL OR ae_order_id = '') AND (ae_status IS NULL OR ae_status IN ('failed','ready'))").bind(orderId).run();
+    if (!claim.meta || Number(claim.meta.changes) !== 1) {
+      const latest = await env.DB.prepare('SELECT ae_status, ae_order_id FROM orders WHERE id = ?').bind(orderId).first();
+      if (latest && latest.ae_order_id) return Response.json({ ok: true, already_placed: true, ae_order_id: String(latest.ae_order_id) });
+      return Response.json({ error: 'This order is already being processed or needs a manual supplier-history check. Do not retry until you confirm AliExpress has not created it.' }, { status: 409 });
     }
 
     const payload = { logistics_address: address, product_items: supplierItems };
@@ -83,8 +84,8 @@ export async function onRequestPost(context) {
     });
 
     if (result.error) {
-      await env.DB.prepare("UPDATE orders SET ae_status = 'failed' WHERE id = ? AND ae_status = 'submitting'").bind(orderId).run();
-      return Response.json({ error: 'AliExpress did not confirm the order. Check AliExpress order history before retrying.' , supplier_message: String(result.error).slice(0, 180) }, { status: 502 });
+      await env.DB.prepare("UPDATE orders SET ae_status = 'uncertain' WHERE id = ? AND ae_status = 'submitting'").bind(orderId).run();
+      return Response.json({ error: 'AliExpress did not confirm the result. Check AliExpress order history before retrying to avoid duplicate purchases.' }, { status: 502 });
     }
 
     const response = result.raw || {};
@@ -95,18 +96,20 @@ export async function onRequestPost(context) {
     const supplierOrderId = Array.isArray(ids) ? String(ids[0] || '') : String(ids || '');
 
     if (!success || !supplierOrderId) {
-      await env.DB.prepare("UPDATE orders SET ae_status = 'failed' WHERE id = ? AND ae_status = 'submitting'").bind(orderId).run();
-      return Response.json({ error: 'AliExpress did not confirm a supplier order. Check AliExpress order history before retrying.' }, { status: 502 });
+      await env.DB.prepare("UPDATE orders SET ae_status = 'uncertain' WHERE id = ? AND ae_status = 'submitting'").bind(orderId).run();
+      return Response.json({ error: 'AliExpress returned no clear order confirmation. Check AliExpress order history before retrying.' }, { status: 502 });
     }
 
     await env.DB.prepare("UPDATE orders SET ae_order_id = ?, ae_status = 'placed' WHERE id = ?").bind(supplierOrderId, orderId).run();
     return Response.json({ ok: true, ae_order_id: supplierOrderId, message: 'Supplier order submitted successfully.' });
-  } catch (error) {
-    // A network/runtime error can happen after AliExpress accepts an order. Do not auto-retry.
-    try {
-      const body = await Promise.resolve(null);
-      void body;
-    } catch (_) {}
+  } catch (_) {
+    // The supplier might have accepted the request before a network/runtime failure.
+    // Mark it uncertain and require a manual check rather than risk a duplicate purchase.
+    if (orderId) {
+      try {
+        await env.DB.prepare("UPDATE orders SET ae_status = 'uncertain' WHERE id = ? AND ae_status = 'submitting'").bind(orderId).run();
+      } catch (_) {}
+    }
     return Response.json({ error: 'Could not confirm the supplier order. Check AliExpress order history before retrying.' }, { status: 500 });
   }
 }
