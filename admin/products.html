@@ -400,7 +400,7 @@ async function searchAe() {
   box.innerHTML = (data.items || []).map(function (it) {
     return '<label style="display:flex;gap:8px;align-items:center;margin:8px 0">'
       + '<input type="checkbox" class="aePick" value="' + escapeHtml(it.product_id) + '">'
-      + '<img src="' + safeImageUrl(it.image) + '" width="40" height="40" style="object-fit:cover">';
+      + '<img src="' + safeImageUrl(it.image) + '" width="40" height="40" style="object-fit:cover">'
       + '<span>' + escapeHtml(String(it.title || '').slice(0, 80)) + ' — ₦' + Number(it.price_ngn || 0).toLocaleString() + '</span></label>';
   }).join('') + '<button type="button" onclick="bulkImportAe()">Import selected</button>';
 }
