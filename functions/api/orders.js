@@ -1,4 +1,4 @@
-import { requireAdmin } from '../lib/auth.js';
+import { requireAdmin, requireSession } from '../lib/auth.js';
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -63,7 +63,11 @@ export async function onRequest(context) {
         `).all();
         results = data.results || [];
       } else if (userId) {
-        // User-specific orders: should validate that userId belongs to authenticated user
+        const auth = await requireSession(request, env);
+        if (!auth.ok) return auth.response;
+        if (auth.user.id !== userId && auth.user.role !== 'admin') {
+          return Response.json({ error: 'You may only view your own orders.' }, { status: 403 });
+        }
         const data = await env.DB.prepare(`
           SELECT * FROM orders
           WHERE user_id = ?
@@ -72,7 +76,9 @@ export async function onRequest(context) {
         `).bind(userId).all();
         results = data.results || [];
       } else if (phone) {
-        // Phone lookup: should be rate-limited or require auth
+        // Phone numbers are not authentication; only administrators may search orders this way.
+        const auth = await requireAdmin(request, env);
+        if (!auth.ok) return auth.response;
         const data = await env.DB.prepare(`
           SELECT * FROM orders
           WHERE phone = ?
