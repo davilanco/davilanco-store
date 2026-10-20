@@ -26,24 +26,30 @@ export async function onRequestGet(context) {
       return Response.json({ error: data.message || 'Verification failed' }, { status: 400 });
     }
 
-    const paid = data.data.status === 'success';
+    const order = await env.DB.prepare(
+      'SELECT id, total, payment_status FROM orders WHERE id = ? OR payment_reference = ? LIMIT 1'
+    ).bind(reference, reference).first();
+    if (!order) return Response.json({ error: 'No Davilanco order matches this payment reference.' }, { status: 404 });
 
-    // Update order if paid
+    const amountMatches = Number(data.data.amount) === Math.round(Number(order.total) * 100);
+    const currencyMatches = String(data.data.currency || '').toUpperCase() === 'NGN';
+    const paid = data.data.status === 'success' && amountMatches && currencyMatches;
+
+    // Only mark paid when Paystack confirms success and the paid NGN amount matches our database order.
     if (paid) {
       await env.DB.prepare(`
-        UPDATE orders
-        SET payment_status = 'paid', status = 'Approved'
-        WHERE payment_reference = ? OR id = ?
-      `).bind(reference, reference).run();
+        UPDATE orders SET payment_status = 'paid', status = 'Approved'
+        WHERE id = ? AND payment_status <> 'paid'
+      `).bind(order.id).run();
     }
 
     return Response.json({
       ok: true,
       paid: paid,
       status: data.data.status,
-      amount: data.data.amount / 100,
+      amount: Number(data.data.amount) / 100,
       reference: data.data.reference,
-      gateway_response: data.data.gateway_response
+      message: !amountMatches ? 'Payment amount does not match the order total.' : (!currencyMatches ? 'Payment currency does not match NGN.' : undefined)
     });
 
   } catch (err) {
