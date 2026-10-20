@@ -50,18 +50,32 @@ export async function onRequest(context) {
       const all = url.searchParams.get('all') || '';
 
       let results = [];
+      let sellerScopedId = '';
 
-      // SECURITY: 'all=1' should only be allowed for authenticated admins
-      // For now, we'll allow it but recommend adding auth checks in production
       if (all === '1') {
-        const auth = await requireAdmin(request, env);
+        const auth = await requireSession(request, env);
         if (!auth.ok) return auth.response;
-        const data = await env.DB.prepare(`
-          SELECT * FROM orders
-          ORDER BY created_at DESC
-          LIMIT 100
-        `).all();
-        results = data.results || [];
+        if (auth.user.role === 'admin') {
+          const data = await env.DB.prepare(`
+            SELECT * FROM orders
+            ORDER BY created_at DESC
+            LIMIT 100
+          `).all();
+          results = data.results || [];
+        } else if (auth.user.role === 'seller') {
+          sellerScopedId = auth.user.id;
+          const data = await env.DB.prepare(`
+            SELECT DISTINCT o.* FROM orders o
+            JOIN order_items oi ON oi.order_id = o.id
+            JOIN products p ON p.id = oi.product_id
+            WHERE p.seller_id = ?
+            ORDER BY o.created_at DESC
+            LIMIT 100
+          `).bind(sellerScopedId).all();
+          results = data.results || [];
+        } else {
+          return Response.json({ error: 'Administrator or seller access required' }, { status: 403 });
+        }
       } else if (userId) {
         const auth = await requireSession(request, env);
         if (!auth.ok) return auth.response;
@@ -89,9 +103,9 @@ export async function onRequest(context) {
       }
 
       for (let i = 0; i < results.length; i++) {
-        const items = await env.DB.prepare(
-          'SELECT * FROM order_items WHERE order_id = ?'
-        ).bind(results[i].id).all();
+        const items = sellerScopedId
+          ? await env.DB.prepare('SELECT * FROM order_items WHERE order_id = ? AND product_id IN (SELECT id FROM products WHERE seller_id = ?)').bind(results[i].id, sellerScopedId).all()
+          : await env.DB.prepare('SELECT * FROM order_items WHERE order_id = ?').bind(results[i].id).all();
         results[i].items = items.results || [];
       }
 
