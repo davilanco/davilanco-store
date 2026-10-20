@@ -210,6 +210,20 @@
     }
 
     var token = localStorage.getItem('token');
+    // Attach the signed session token to every same-origin API request from this admin page.
+    (function() {
+      var originalFetch = window.fetch.bind(window);
+      window.fetch = function(input, init) {
+        var target = typeof input === 'string' ? input : (input && input.url) || '';
+        if (target.indexOf('/api/') === 0 && token) {
+          init = init || {};
+          var headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+          headers.set('Authorization', 'Bearer ' + token);
+          init = Object.assign({}, init, { headers: headers });
+        }
+        return originalFetch(input, init);
+      };
+    })();
     var userStr = localStorage.getItem('user');
     if (!token || !userStr) {
       window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/products.html');
@@ -358,7 +372,17 @@ async function onAdminFileSelected(e) {
       }
 	  }
 
-	  async function searchAe() {
+	  function escapeHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+  });
+}
+function safeImageUrl(value) {
+  var url = String(value || '');
+  return /^https?:\/\//i.test(url) ? escapeHtml(url) : 'https://via.placeholder.com/80?text=No+Img';
+}
+
+async function searchAe() {
   var q = document.getElementById('searchKw').value.trim();
   var box = document.getElementById('searchResults');
   if (!q) return alert('Enter a keyword');
@@ -370,14 +394,14 @@ async function onAdminFileSelected(e) {
   });
   var data = await res.json();
   if (!data.ok) {
-    box.innerHTML = '<p style="color:#e74c3c">' + (data.error || 'Failed') + '</p>';
+    box.innerHTML = '<p style="color:#e74c3c">' + escapeHtml(data.error || 'Failed') + '</p>';
     return;
   }
   box.innerHTML = (data.items || []).map(function (it) {
     return '<label style="display:flex;gap:8px;align-items:center;margin:8px 0">'
-      + '<input type="checkbox" class="aePick" value="' + it.product_id + '">'
-      + '<img src="' + (it.image || '') + '" width="40" height="40" style="object-fit:cover">'
-      + '<span>' + it.title.slice(0, 80) + ' — ₦' + it.price_ngn + '</span></label>';
+      + '<input type="checkbox" class="aePick" value="' + escapeHtml(it.product_id) + '">'
+      + '<img src="' + safeImageUrl(it.image) + '" width="40" height="40" style="object-fit:cover">'
+      + '<span>' + escapeHtml(String(it.title || '').slice(0, 80)) + ' — ₦' + Number(it.price_ngn || 0).toLocaleString() + '</span></label>';
   }).join('') + '<button type="button" onclick="bulkImportAe()">Import selected</button>';
 }
 
@@ -415,20 +439,20 @@ async function bulkImportAe() {
         for (var i = 0; i < products.length; i++) {
           var p = products[i];
           var id = p.id || '';
-          var status = p.status || 'approved';
-          var img = p.image || 'https://via.placeholder.com/80?text=No+Img';
+          var status = ['approved', 'pending', 'rejected'].includes(p.status) ? p.status : 'pending';
+          var img = safeImageUrl(p.image);
 
           html += '<div class="product-card">';
           html += '<img src="' + img + '" alt="" onerror="this.src=\'https://via.placeholder.com/80?text=No+Img\'">';
           html += '<div class="product-info">';
-          html += '<strong>' + (p.name || 'Unnamed') + '</strong> ';
+          html += '<strong>' + escapeHtml(p.name || 'Unnamed') + '</strong> ';
           html += '<span class="badge ' + status + '">' + status + '</span><br>';
           html += '₦' + Number(p.price || 0).toLocaleString();
           if (p.old_price && Number(p.old_price) > 0) {
             html += ' <s style="opacity:0.6">₦' + Number(p.old_price).toLocaleString() + '</s>';
           }
           html += '<br>Stock: ' + (p.stock != null ? p.stock : 0);
-          html += ' · ' + (p.category || '–');
+          html += ' · ' + escapeHtml(p.category || '–');
           html += '</div>';
           html += '<div style="width:100%">';
           html += '<button type="button" class="secondary" onclick="toggleEdit(\'' + id + '\')">Edit</button>';
@@ -443,17 +467,17 @@ async function bulkImportAe() {
           html += '</div>';
 
           html += '<div class="edit-panel" id="edit-' + id + '">';
-          html += '<input type="text" id="e_name_' + id + '" value="' + String(p.name || '').replace(/"/g, '&quot;') + '" placeholder="Name">';
+          html += '<input type="text" id="e_name_' + id + '" value="' + escapeHtml(p.name || '') + '" placeholder="Name">';
           html += '<div class="row2">';
           html += '<input type="number" id="e_price_' + id + '" value="' + (p.price || 0) + '" placeholder="Price">';
           html += '<input type="number" id="e_stock_' + id + '" value="' + (p.stock != null ? p.stock : 0) + '" placeholder="Stock">';
           html += '</div>';
           html += '<div class="row2">';
           html += '<input type="number" id="e_old_' + id + '" value="' + (p.old_price || 0) + '" placeholder="Old price">';
-          html += '<input type="text" id="e_cat_' + id + '" value="' + String(p.category || '').replace(/"/g, '&quot;') + '" placeholder="Category">';
+          html += '<input type="text" id="e_cat_' + id + '" value="' + escapeHtml(p.category || '') + '" placeholder="Category">';
           html += '</div>';
-          html += '<input type="text" id="e_img_' + id + '" value="' + String(p.image || '').replace(/"/g, '&quot;') + '" placeholder="Image URL">';
-          html += '<textarea id="e_desc_' + id + '" placeholder="Description">' + String(p.description || '') + '</textarea>';
+          html += '<input type="text" id="e_img_' + id + '" value="' + escapeHtml(p.image || '') + '" placeholder="Image URL">';
+          html += '<textarea id="e_desc_' + id + '" placeholder="Description">' + escapeHtml(p.description || '') + '</textarea>';
           html += '<select id="e_status_' + id + '">';
           html += '<option value="approved"' + (status === 'approved' ? ' selected' : '') + '>Approved</option>';
           html += '<option value="pending"' + (status === 'pending' ? ' selected' : '') + '>Pending</option>';

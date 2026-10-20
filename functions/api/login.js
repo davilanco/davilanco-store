@@ -1,3 +1,4 @@
+import { createSessionToken } from '../lib/auth.js';
 export async function onRequestPost(context) {
   const { request, env } = context;
 
@@ -43,9 +44,11 @@ export async function onRequestPost(context) {
       exp: Date.now() + 7 * 24 * 60 * 60 * 1000
     };
 
+    const token = await createSessionToken(tokenPayload, env);
+
     return Response.json({
       ok: true,
-      token: btoa(JSON.stringify(tokenPayload)),
+      token,
       user: {
         id: user.id,
         firstname: user.firstname,

@@ -13,6 +13,14 @@ export async function onRequest(context) {
     return new Response('Method not allowed', { status: 405 });
   }
 
+  // This endpoint only accepts posts carrying a separately configured shared secret.
+  // Do not enable it with a blank secret; verify the provider's signature scheme before production use.
+  const webhookSecret = String(env.AE_WEBHOOK_SECRET || '');
+  const presentedSecret = String(request.headers.get('X-AE-Webhook-Secret') || '');
+  if (!webhookSecret || presentedSecret.length !== webhookSecret.length || presentedSecret !== webhookSecret) {
+    return Response.json({ ok: false, error: 'Webhook authentication failed' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+  }
+
   try {
     const contentType = request.headers.get('content-type') || '';
     let payload = null;

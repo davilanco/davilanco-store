@@ -1,5 +1,11 @@
+import { requireSession } from '../lib/auth.js';
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const auth = await requireSession(request, env);
+  if (!auth.ok) return auth.response;
+  if (!['admin', 'seller'].includes(auth.user.role)) {
+    return Response.json({ error: 'Administrator or seller access required' }, { status: 403 });
+  }
 
   try {
     const cloudName = env.CLOUDINARY_CLOUD_NAME;
@@ -25,9 +31,9 @@ export async function onRequestPost(context) {
       return Response.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    const type = file.type || '';
-    if (!type.startsWith('image/')) {
-      return Response.json({ error: 'Only image files allowed' }, { status: 400 });
+    const type = String(file.type || '').toLowerCase();
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(type)) {
+      return Response.json({ error: 'Upload a JPG, PNG, WEBP or GIF image.' }, { status: 400 });
     }
 
     if (file.size > 5 * 1024 * 1024) {

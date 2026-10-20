@@ -1,5 +1,8 @@
+import { requireAdmin } from '../lib/auth.js';
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const auth = await requireAdmin(request, env);
+  if (!auth.ok) return auth.response;
 
   try {
     const body = await request.json();
@@ -106,6 +109,13 @@ export async function onRequestPost(context) {
 
     try { await env.DB.prepare('ALTER TABLE products ADD COLUMN source TEXT').run(); } catch (e) {}
     try { await env.DB.prepare('ALTER TABLE products ADD COLUMN source_url TEXT').run(); } catch (e) {}
+    try { await env.DB.prepare('ALTER TABLE products ADD COLUMN ae_product_id TEXT').run(); } catch (e) {}
+    try { await env.DB.prepare('ALTER TABLE products ADD COLUMN ae_sku_attr TEXT').run(); } catch (e) {}
+
+    const duplicate = await env.DB.prepare('SELECT id FROM products WHERE ae_product_id = ? LIMIT 1').bind(productId).first();
+    if (duplicate) {
+      return Response.json({ ok: true, duplicate: true, id: duplicate.id, message: 'This AliExpress product is already imported.' });
+    }
 
     const id = crypto.randomUUID();
 
@@ -268,13 +278,29 @@ async function handleAeBulkImport(env, body) {
     return Response.json({ error: 'product_ids array required' }, { status: 400 });
   }
 
+  for (var alter of [
+    'ALTER TABLE products ADD COLUMN ae_product_id TEXT',
+    'ALTER TABLE products ADD COLUMN ae_sku_attr TEXT',
+    'ALTER TABLE products ADD COLUMN source TEXT',
+    'ALTER TABLE products ADD COLUMN source_url TEXT'
+  ]) { try { await env.DB.prepare(alter).run(); } catch (e) {} }
+
   var accessToken = env.AE_ACCESS_TOKEN || '';
   var results = [];
 
   for (var i = 0; i < ids.length && i < 10; i++) {
     var pid = String(ids[i]);
+    if (!/^\d{8,20}$/.test(pid)) {
+      results.push({ product_id: pid.slice(0, 30), ok: false, error: 'invalid product id' });
+      continue;
+    }
     var url = 'https://www.aliexpress.com/item/' + pid + '.html';
     try {
+      var existing = await env.DB.prepare('SELECT id FROM products WHERE ae_product_id = ? LIMIT 1').bind(pid).first();
+      if (existing) {
+        results.push({ product_id: pid, ok: true, duplicate: true, id: existing.id });
+        continue;
+      }
       var detail = await callIop(env, 'aliexpress.ds.product.get', {
         product_id: pid,
         ship_to_country: 'NG',

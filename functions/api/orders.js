@@ -1,3 +1,4 @@
+import { requireAdmin, requireSession } from '../lib/auth.js';
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -49,19 +50,38 @@ export async function onRequest(context) {
       const all = url.searchParams.get('all') || '';
 
       let results = [];
+      let sellerScopedId = '';
 
-      // SECURITY: 'all=1' should only be allowed for authenticated admins
-      // For now, we'll allow it but recommend adding auth checks in production
       if (all === '1') {
-        // Admin: all orders
-        const data = await env.DB.prepare(`
-          SELECT * FROM orders
-          ORDER BY created_at DESC
-          LIMIT 100
-        `).all();
-        results = data.results || [];
+        const auth = await requireSession(request, env);
+        if (!auth.ok) return auth.response;
+        if (auth.user.role === 'admin') {
+          const data = await env.DB.prepare(`
+            SELECT * FROM orders
+            ORDER BY created_at DESC
+            LIMIT 100
+          `).all();
+          results = data.results || [];
+        } else if (auth.user.role === 'seller') {
+          sellerScopedId = auth.user.id;
+          const data = await env.DB.prepare(`
+            SELECT DISTINCT o.* FROM orders o
+            JOIN order_items oi ON oi.order_id = o.id
+            JOIN products p ON p.id = oi.product_id
+            WHERE p.seller_id = ?
+            ORDER BY o.created_at DESC
+            LIMIT 100
+          `).bind(sellerScopedId).all();
+          results = data.results || [];
+        } else {
+          return Response.json({ error: 'Administrator or seller access required' }, { status: 403 });
+        }
       } else if (userId) {
-        // User-specific orders: should validate that userId belongs to authenticated user
+        const auth = await requireSession(request, env);
+        if (!auth.ok) return auth.response;
+        if (auth.user.id !== userId && auth.user.role !== 'admin') {
+          return Response.json({ error: 'You may only view your own orders.' }, { status: 403 });
+        }
         const data = await env.DB.prepare(`
           SELECT * FROM orders
           WHERE user_id = ?
@@ -70,7 +90,9 @@ export async function onRequest(context) {
         `).bind(userId).all();
         results = data.results || [];
       } else if (phone) {
-        // Phone lookup: should be rate-limited or require auth
+        // Phone numbers are not authentication; only administrators may search orders this way.
+        const auth = await requireAdmin(request, env);
+        if (!auth.ok) return auth.response;
         const data = await env.DB.prepare(`
           SELECT * FROM orders
           WHERE phone = ?
@@ -81,9 +103,9 @@ export async function onRequest(context) {
       }
 
       for (let i = 0; i < results.length; i++) {
-        const items = await env.DB.prepare(
-          'SELECT * FROM order_items WHERE order_id = ?'
-        ).bind(results[i].id).all();
+        const items = sellerScopedId
+          ? await env.DB.prepare('SELECT * FROM order_items WHERE order_id = ? AND product_id IN (SELECT id FROM products WHERE seller_id = ?)').bind(results[i].id, sellerScopedId).all()
+          : await env.DB.prepare('SELECT * FROM order_items WHERE order_id = ?').bind(results[i].id).all();
         results[i].items = items.results || [];
       }
 
@@ -97,11 +119,52 @@ export async function onRequest(context) {
   if (request.method === 'POST') {
     try {
       const body = await request.json();
-      const items = body.items || [];
-      const total = Number(body.total) || 0;
+      let verifiedUserId = null;
+      if (body.user_id) {
+        const auth = await requireSession(request, env);
+        if (!auth.ok) return auth.response;
+        if (auth.user.id !== String(body.user_id) && auth.user.role !== 'admin') {
+          return Response.json({ error: 'You may only create orders for your own account.' }, { status: 403 });
+        }
+        verifiedUserId = auth.user.id;
+      }
+      const requestedItems = Array.isArray(body.items) ? body.items : [];
+      if (!requestedItems.length || requestedItems.length > 50) {
+        return Response.json({ error: 'Cart is empty or contains too many line items.' }, { status: 400 });
+      }
 
-      if (!items.length || total <= 0) {
-        return Response.json({ error: 'Cart is empty' }, { status: 400 });
+      // Recalculate all prices and item details from the database; never trust browser totals.
+      const items = [];
+      let total = 0;
+      for (const requested of requestedItems) {
+        const productId = String(requested.id || requested.product_id || '').trim();
+        const quantity = Number(requested.quantity);
+        if (!productId || !Number.isInteger(quantity) || quantity < 1 || quantity > 50) {
+          return Response.json({ error: 'Invalid product or quantity in cart.' }, { status: 400 });
+        }
+        const product = await env.DB.prepare("SELECT id, name, price, image, stock, status FROM products WHERE id = ?").bind(productId).first();
+        if (!product || product.status !== 'approved') {
+          return Response.json({ error: 'A product in your cart is no longer available. Refresh your cart.' }, { status: 409 });
+        }
+        const price = Number(product.price);
+        if (!Number.isFinite(price) || price <= 0) {
+          return Response.json({ error: 'A product has an invalid price and cannot be ordered.' }, { status: 409 });
+        }
+        if (Number(product.stock) > 0 && quantity > Number(product.stock)) {
+          return Response.json({ error: 'There is not enough stock for ' + String(product.name || 'a product').slice(0, 80) + '.' }, { status: 409 });
+        }
+        items.push({
+          id: product.id,
+          name: product.name,
+          price: price,
+          quantity: quantity,
+          image: product.image || ''
+        });
+        total += price * quantity;
+      }
+      total = Math.round(total * 100) / 100;
+      if (!Number.isFinite(total) || total <= 0) {
+        return Response.json({ error: 'Order total is invalid.' }, { status: 400 });
       }
 
       if (!body.firstname || !body.lastname || !body.phone || !body.address || !body.state) {
@@ -120,7 +183,7 @@ export async function onRequest(context) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         orderId,
-        body.user_id || null,
+        verifiedUserId,
         total,
         'Pending',
         paymentMethod,

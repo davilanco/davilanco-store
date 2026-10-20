@@ -1,3 +1,4 @@
+import { requireAdmin } from '../lib/auth.js';
 export async function onRequest(context) {
   const { request, env } = context;
   const headers = {
@@ -55,24 +56,8 @@ export async function onRequest(context) {
     }
 
     if (request.method === 'GET') {
-      // Verify the presented token against the database; never trust a client-supplied role alone.
-      const auth = request.headers.get('Authorization') || '';
-      const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-      let payload;
-      try {
-        payload = JSON.parse(atob(token));
-      } catch (e) {
-        return Response.json({ error: 'Admin sign-in required' }, { status: 401, headers });
-      }
-      if (!payload.id || !payload.exp || Number(payload.exp) < Date.now()) {
-        return Response.json({ error: 'Admin sign-in required' }, { status: 401, headers });
-      }
-      const account = await env.DB.prepare(
-        'SELECT id, role, status FROM users WHERE id = ?'
-      ).bind(String(payload.id)).first();
-      if (!account || account.role !== 'admin' || account.status === 'suspended') {
-        return Response.json({ error: 'Admin access required' }, { status: 403, headers });
-      }
+      const auth = await requireAdmin(request, env);
+      if (!auth.ok) return auth.response;
 
       const url = new URL(request.url);
       const days = Math.min(30, Math.max(1, Number(url.searchParams.get('days')) || 7));

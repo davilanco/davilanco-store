@@ -13,7 +13,7 @@ export async function onRequestGet(context) {
 
     if (id) {
       user = await env.DB.prepare(`
-        SELECT id, firstname, lastname, nickname, phone, email, role, photo, bio, store_name, created_at
+        SELECT id, firstname, lastname, nickname, role, photo, bio, store_name, created_at
         FROM users
         WHERE id = ? AND (role = 'seller' OR role = 'admin')
       `).bind(id).first();
