@@ -1,4 +1,4 @@
-import { requireAdmin } from '../lib/auth.js';
+import { requireAdmin, requireSession } from '../lib/auth.js';
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -46,11 +46,22 @@ export async function onRequest(context) {
       const params = [];
 
       if (all === '1') {
-        const auth = await requireAdmin(request, env);
+        const auth = await requireSession(request, env);
         if (!auth.ok) return auth.response;
-        if (status) {
-          query += ' WHERE status = ?';
-          params.push(status);
+        if (auth.user.role === 'admin') {
+          if (status) {
+            query += ' WHERE status = ?';
+            params.push(status);
+          }
+        } else if (auth.user.role === 'seller') {
+          query += ' WHERE seller_id = ?';
+          params.push(auth.user.id);
+          if (status) {
+            query += ' AND status = ?';
+            params.push(status);
+          }
+        } else {
+          return Response.json({ error: 'Administrator or seller access required' }, { status: 403 });
         }
       } else {
         query += " WHERE status = 'approved'";
@@ -73,11 +84,17 @@ export async function onRequest(context) {
   }
 
   if (request.method === 'POST') {
-    const auth = await requireAdmin(request, env);
+    const auth = await requireSession(request, env);
     if (!auth.ok) return auth.response;
+    if (auth.user.role !== 'admin' && auth.user.role !== 'seller') {
+      return Response.json({ error: 'Administrator or seller access required' }, { status: 403 });
+    }
     try {
       const body = await request.json();
       const action = body.action || 'create';
+      if (auth.user.role === 'seller' && action !== 'create') {
+        return Response.json({ error: 'Sellers may submit new products; only administrators may edit, approve or delete products.' }, { status: 403 });
+      }
 
       if (action === 'update') {
         const productId = (body.id || '').trim();
@@ -150,8 +167,8 @@ export async function onRequest(context) {
         String(body.category || 'others'),
         String(body.image || ''),
         Number(body.stock) || 0,
-        body.status || 'approved',
-        body.seller_id || null
+        auth.user.role === 'seller' ? 'pending' : (body.status || 'approved'),
+        auth.user.role === 'seller' ? auth.user.id : (body.seller_id || null)
       ).run();
 
       return Response.json({ ok: true, message: 'Product added', id });
