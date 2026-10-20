@@ -1,3 +1,4 @@
+import { requireAdmin } from '../lib/auth.js';
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -41,6 +42,8 @@ export async function onRequest(context) {
       const params = [];
 
       if (all === '1') {
+        const auth = await requireAdmin(request, env);
+        if (!auth.ok) return auth.response;
         if (status) {
           query += ' WHERE status = ?';
           params.push(status);
@@ -66,6 +69,8 @@ export async function onRequest(context) {
   }
 
   if (request.method === 'POST') {
+    const auth = await requireAdmin(request, env);
+    if (!auth.ok) return auth.response;
     try {
       const body = await request.json();
       const action = body.action || 'create';
