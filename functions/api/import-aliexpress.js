@@ -290,7 +290,7 @@ async function handleAeBulkImport(env, body) {
 
   for (var i = 0; i < ids.length && i < 10; i++) {
     var pid = String(ids[i]);
-    if (!/^\\d{8,20}$/.test(pid)) {
+    if (!/^\d{8,20}$/.test(pid)) {
       results.push({ product_id: pid.slice(0, 30), ok: false, error: 'invalid product id' });
       continue;
     }
