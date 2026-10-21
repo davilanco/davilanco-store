@@ -169,7 +169,11 @@
      <p id="importMsg" style="font-size:13px;margin-top:8px"></p>
       <p style="font-size:12px;opacity:0.7;margin-top:8px">Paste an AliExpress product link (…/item/123….html). Imports as pending for review.</p>
 	  <input type="text" id="searchKw" placeholder="Search AliExpress by name">
-<button type="button" class="secondary" onclick="searchAe()">Search</button>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+  <button type="button" onclick="searchAe()">Search</button>
+  <button type="button" class="secondary" onclick="testAeApi()">Test AliExpress API</button>
+</div>
+<p id="aeApiTestResult" role="status" aria-live="polite" style="font-size:13px;margin:8px 0"></p>
 <div id="searchResults"></div>
 	</div>
 
@@ -380,6 +384,33 @@ async function onAdminFileSelected(e) {
 function safeImageUrl(value) {
   var url = String(value || '');
   return /^https?:\/\//i.test(url) ? escapeHtml(url) : 'https://via.placeholder.com/80?text=No+Img';
+}
+
+async function testAeApi() {
+  var result = document.getElementById('aeApiTestResult');
+  var input = document.getElementById('searchKw');
+  var keyword = input.value.trim() || 'phone case';
+  result.style.color = 'var(--text)';
+  result.textContent = 'Testing the AliExpress search API with "' + keyword + '"…';
+  try {
+    var res = await fetch('/api/import-aliexpress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'ae_search', keywords: keyword })
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok || !data.ok) {
+      throw new Error('HTTP ' + res.status + ': ' + (data.error || 'The API request failed.'));
+    }
+    var count = Array.isArray(data.items) ? data.items.length : 0;
+    result.style.color = count ? '#27ae60' : '#f39c12';
+    result.textContent = count
+      ? 'API connection successful. AliExpress returned ' + count + ' product(s). Try Search to view them.'
+      : 'The API endpoint responded successfully, but returned 0 usable products. This usually points to AliExpress permissions, response format, or product filtering—not admin sign-in.';
+  } catch (err) {
+    result.style.color = '#e74c3c';
+    result.textContent = 'API test failed: ' + (err.message || 'Unknown error') + ' If it says authentication required, sign out of the admin panel and sign in again.';
+  }
 }
 
 async function searchAe() {
