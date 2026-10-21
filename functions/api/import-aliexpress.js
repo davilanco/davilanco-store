@@ -224,55 +224,106 @@ async function handleAeToken(env, code) {
 async function handleAeSearch(env, body) {
   var keywords = String(body.keywords || body.q || '').trim();
   var page = Number(body.page || 1) || 1;
-  if (!keywords) return Response.json({ ok: false, error: 'Enter a search keyword.' }, { status: 400 });
+
+  if (!keywords) {
+    return Response.json({ ok: false, error: 'Enter a search keyword.' }, { status: 400 });
+  }
   if (!env.AE_APP_KEY || !env.AE_APP_SECRET) {
-    return Response.json({ ok: false, error: 'AliExpress search is not configured: AE_APP_KEY or AE_APP_SECRET is missing in Cloudflare.' }, { status: 503 });
+    return Response.json({ ok: false, error: 'AliExpress API credentials are missing.' }, { status: 503 });
   }
   if (!env.AE_ACCESS_TOKEN) {
-    return Response.json({ ok: false, error: 'AliExpress search needs AE_ACCESS_TOKEN. Add or refresh this secret in Cloudflare.' }, { status: 503 });
+    return Response.json({ ok: false, error: 'AliExpress access token is missing.' }, { status: 503 });
   }
 
+  // This application uses the Dropshipping API for keyword search.
   var accessToken = env.AE_ACCESS_TOKEN;
-  var detail = await callIop(env, 'aliexpress.affiliate.product.query', {
-    keywords: keywords,
-    page_no: String(page),
+  var detail = await callIop(env, 'aliexpress.ds.text.search', {
+    keyword: keywords,
+    countryCode: 'NG',
+    currency: 'USD',
+    local: 'en_US',
     page_size: '20',
-    sort: 'LAST_VOLUME_DESC',
-    target_currency: 'USD',
-    target_language: 'EN',
-    ship_to_country: 'NG',
-    tracking_id: env.AE_TRACKING_ID || undefined,
+    page_index: String(page),
+    sort: 'salesDesc',
     access_token: accessToken,
     session: accessToken
   });
 
   if (detail.error) {
-    return Response.json({ ok: false, error: 'AliExpress search API error: ' + detail.error }, { status: 502 });
+    return Response.json({
+      ok: false,
+      error: 'AliExpress Dropshipping search failed: ' + detail.error,
+      api_method: 'aliexpress.ds.text.search'
+    }, { status: 502 });
   }
 
   var raw = detail.raw || {};
-  var list = findAeProductList(raw);
+  var response = raw.aliexpress_ds_text_search_response || {};
+  var data = response.data || {};
+  var productsContainer = data.products || {};
+  var list = productsContainer.selection_search_product ||
+    productsContainer.product ||
+    data.selection_search_product ||
+    [];
+
+  if (!Array.isArray(list)) list = list ? [list] : [];
+
+  var apiCode = String(response.code || response.rsp_code || '');
+  var apiMessage = response.message || response.msg || response.rsp_msg || '';
+  if (apiCode && !['00', '0', '200'].includes(apiCode)) {
+    return Response.json({
+      ok: false,
+      error: 'AliExpress returned code ' + apiCode + (apiMessage ? ': ' + apiMessage : ''),
+      api_method: 'aliexpress.ds.text.search'
+    }, { status: 502 });
+  }
+
   var rate = Number(env.AE_USD_TO_NGN) || 1600;
   var markup = Number(env.AE_MARKUP) || 1.3;
   var items = list.map(function (p) {
-    var id = p.product_id || p.productId || p.productIdStr || p.product_id_str || '';
-    var usd = Number(p.target_sale_price || p.target_app_sale_price || p.sale_price || p.product_price || p.app_sale_price || 0);
-    var image = p.product_main_image_url || p.product_image || p.image_url || '';
+    var id = p.itemId || p.item_id || p.product_id || p.productId || p.productIdStr || p.product_id_str || '';
+    var title = p.title || p.subject || p.product_title || p.name || '';
+    var usd = Number(p.targetSalePrice || p.target_sale_price || p.target_sale_price_currency_value ||
+      p.targetAppSalePrice || p.target_app_sale_price || p.sale_price || p.product_price || 0);
+    var image = p.itemMainPic || p.item_main_pic || p.product_main_image_url || p.product_image || p.image_url || '';
+    if (Array.isArray(image)) image = image[0] || '';
     if (!image && p.product_small_image_urls) {
       var imgs = p.product_small_image_urls.string || p.product_small_image_urls;
       if (Array.isArray(imgs)) image = imgs[0] || '';
     }
+    var url = p.productDetailUrl || p.product_detail_url || p.itemUrl || p.item_url ||
+      ('https://www.aliexpress.com/item/' + id + '.html');
     return {
       product_id: String(id),
-      title: p.product_title || p.subject || p.title || '',
+      title: String(title),
       image: typeof image === 'string' ? image.split(';')[0].split(',')[0] : '',
       price_usd: usd,
       price_ngn: Math.round(usd * rate * markup),
-      url: p.product_detail_url || ('https://www.aliexpress.com/item/' + id + '.html')
+      url: url
     };
-  }).filter(function (x) { return x.product_id && /^\d{8,20}$/.test(x.product_id); });
+  }).filter(function (p) {
+    return p.product_id && /^\\d{8,20}$/.test(p.product_id);
+  });
 
-  return Response.json({ ok: true, items: items, count: items.length });
+  if (!items.length) {
+    return Response.json({
+      ok: true,
+      items: [],
+      count: 0,
+      api_method: 'aliexpress.ds.text.search',
+      diagnostic: {
+        response_code: apiCode || null,
+        response_message: apiMessage || null,
+        top_level_keys: Object.keys(raw),
+        response_keys: Object.keys(response),
+        data_keys: Object.keys(data),
+        products_keys: Object.keys(productsContainer),
+        note: 'No recognized products were found. Inspect the response structure and AliExpress API parameters.'
+      }
+    });
+  }
+
+  return Response.json({ ok: true, items: items, count: items.length, api_method: 'aliexpress.ds.text.search' });
 }
 
 function findAeProductList(value, depth) {
