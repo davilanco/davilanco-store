@@ -14,6 +14,8 @@ async function ensureTables(env) {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `).run();
+  // Older Store databases may not yet have a profile-photo column.
+  try { await env.DB.prepare('ALTER TABLE users ADD COLUMN photo TEXT').run(); } catch (_) {}
 }
 
 export async function onRequest(context) {
@@ -75,7 +77,7 @@ export async function onRequest(context) {
     ).bind(id, auth.user.id).run();
     if (!result.meta?.changes) return json({ error: 'Comment not found or you do not own it' }, 404);
     return json({ ok: true });
-  } catch (error) {
+  } catch (_) {
     return json({ error: 'Unable to process music comments right now' }, 500);
   }
 }
