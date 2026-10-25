@@ -24,13 +24,13 @@
     <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
     <div>
       <button class="icon-btn" type="button" onclick="toggleTheme()">🌓</button>
-      <button class="icon-btn" type="button" onclick="toggleNav()">☰</button>
+      <button class="nav-menu-toggle" type="button" onclick="toggleNav()" aria-label="Open menu" aria-controls="navDrawer" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
     <nav id="navDrawer">
       <a href="/">Home</a>
       <a href="/login.html">Login</a>
       <a href="/signup.html">Create Account</a>
-      <a href="#" onclick="toggleNav();return false;">Close ✕</a>
+
     </nav>
   </header>
 
