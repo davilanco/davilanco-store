@@ -2,7 +2,7 @@
 #navDrawer {
   position: fixed;
   inset: 0 0 0 auto;
-  width: min(88vw, 360px);
+  width: 20vw;
   height: 100vh;
   height: 100dvh;
   max-height: 100dvh;
@@ -71,3 +71,19 @@
 @media (prefers-reduced-motion: reduce) {
   #navDrawer, #navDrawer a { transition: none; }
 }
+
+
+/* Hamburger menu button matching davilanco.com; spans animate into an X. */
+.nav-menu-toggle {
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  gap: 5px; width: 42px; height: 42px; padding: 8px; border: 0; border-radius: 8px;
+  background: transparent; cursor: pointer; flex: 0 0 auto; position: relative; z-index: 1300;
+}
+.nav-menu-toggle span {
+  display: block; width: 25px; height: 3px; border-radius: 2px; background: #fff;
+  transition: transform .3s ease, opacity .2s ease, background-color .2s ease; transform-origin: center;
+}
+.nav-menu-toggle.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); background: #ffd700; }
+.nav-menu-toggle.active span:nth-child(2) { opacity: 0; }
+.nav-menu-toggle.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); background: #ffd700; }
+@media (prefers-reduced-motion: reduce) { .nav-menu-toggle span { transition: none; } }
