@@ -1,0 +1,120 @@
+:root {
+      --gold: #FFD700; --lemon: #C4FF61; --navy: #001F3F;
+      --bg: #000; --text: #fff; --grey: #1a1a1a; --card: #111; --border: #333;
+    }
+    [data-theme="light"] {
+      --bg: #fff; --text: #001F3F; --grey: #f4f4f4; --card: #fff; --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 2px solid var(--gold);
+      position: sticky; top: 0; background: var(--bg); z-index: 50;
+    }
+    header img { height: 32px; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .icon-btn {
+      background: none; border: none; font-size: 20px;
+      cursor: pointer; color: var(--text); padding: 6px;
+    }
+    #navDrawer {
+      position: fixed; top: 0; right: -100%;
+      width: 25%; min-width: 260px; max-width: 320px;
+      height: 100vh; background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px; transition: right 0.3s; z-index: 100;
+      overflow-y: auto; box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+    }
+    #navDrawer.open { right: 0; }
+    #navDrawer a {
+      display: block; padding: 12px 0; color: var(--text);
+      text-decoration: none; font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+    #navDrawer a:hover { color: var(--gold); }
+    #navDrawer .nav-section {
+      margin-top: 16px; font-size: 12px;
+      text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;
+    }
+    main {
+      flex: 1; padding: 20px 16px;
+      max-width: 900px; margin: 0 auto; width: 100%;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 6px; }
+    .subtitle { font-size: 0.9rem; opacity: 0.75; margin-bottom: 18px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 720px) {
+      .layout { grid-template-columns: 240px 1fr; }
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px;
+    }
+    .card h3 { color: var(--gold); margin-bottom: 12px; font-size: 1rem; }
+    .user-item {
+      padding: 10px 8px; border-radius: 8px; cursor: pointer;
+      border-bottom: 1px solid var(--border); font-size: 14px;
+    }
+    .user-item:hover, .user-item.active {
+      background: var(--grey); border-color: var(--gold);
+    }
+    .user-item small { display: block; opacity: 0.7; font-size: 12px; }
+    #threadBox {
+      height: 320px; overflow-y: auto; background: var(--grey);
+      border-radius: 10px; padding: 12px; margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .bubble {
+      max-width: 85%; padding: 10px 12px; border-radius: 12px;
+      margin-bottom: 10px; line-height: 1.4;
+    }
+    .bubble.them {
+      background: #222; border: 1px solid var(--border);
+    }
+    .bubble.me {
+      background: rgba(255, 215, 0, 0.15);
+      border: 1px solid var(--gold);
+      margin-left: auto;
+    }
+    .bubble .meta {
+      font-size: 11px; opacity: 0.65; margin-bottom: 4px;
+    }
+    [data-theme="light"] .bubble.them { background: #eee; }
+    textarea {
+      width: 100%; min-height: 80px; padding: 12px;
+      border-radius: 10px; border: 1px solid var(--border);
+      background: var(--grey); color: var(--text);
+      font-size: 14px; margin-bottom: 10px; resize: vertical;
+    }
+    input, select {
+      width: 100%; padding: 11px 12px; border-radius: 9px;
+      border: 1px solid var(--border); background: var(--grey);
+      color: var(--text); font-size: 14px; margin-bottom: 10px;
+    }
+    button {
+      padding: 11px 16px; background: var(--gold); color: #000;
+      border: none; border-radius: 8px; font-weight: 700;
+      font-size: 14px; cursor: pointer;
+    }
+    button.secondary {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+    }
+    footer {
+      text-align: center; padding: 18px; font-size: 13px;
+      border-top: 1px solid var(--border); margin-top: auto;
+    }
+    #toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: var(--gold); color: #000; padding: 12px 20px;
+      border-radius: 30px; font-weight: 600; font-size: 14px;
+      display: none; z-index: 60;
+    }
