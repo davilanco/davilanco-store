@@ -1,0 +1,118 @@
+:root {
+      --gold: #FFD700; --lemon: #C4FF61; --navy: #001F3F;
+      --bg: #000; --text: #fff; --grey: #1a1a1a; --card: #111; --border: #333;
+    }
+    [data-theme="light"] {
+      --bg: #fff; --text: #001F3F; --grey: #f4f4f4; --card: #fff; --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 2px solid var(--gold);
+      position: sticky; top: 0; background: var(--bg); z-index: 50;
+    }
+    header img { height: 32px; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .icon-btn {
+      background: none; border: none; font-size: 20px;
+      cursor: pointer; color: var(--text); padding: 6px;
+    }
+    #navDrawer {
+      position: fixed; top: 0; right: -100%;
+      width: 25%; min-width: 260px; max-width: 320px;
+      height: 100vh; background: var(--bg);
+      border-left: 2px solid var(--gold);
+      padding: 24px 20px; transition: right 0.3s; z-index: 100;
+      overflow-y: auto; box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+    }
+    #navDrawer.open { right: 0; }
+    #navDrawer a {
+      display: block; padding: 12px 0; color: var(--text);
+      text-decoration: none; font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+    #navDrawer a:hover { color: var(--gold); }
+    #navDrawer .nav-section {
+      margin-top: 16px; font-size: 12px;
+      text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;
+    }
+    main {
+      flex: 1; padding: 20px 16px;
+      max-width: 900px; margin: 0 auto; width: 100%;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 6px; }
+    .subtitle { font-size: 0.9rem; opacity: 0.75; margin-bottom: 16px; }
+    .toolbar {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .toolbar input, .toolbar select {
+      flex: 1; min-width: 140px;
+      padding: 10px 12px; border-radius: 9px;
+      border: 1px solid var(--border); background: var(--grey);
+      color: var(--text); font-size: 14px;
+    }
+    button {
+      padding: 10px 14px; background: var(--gold); color: #000;
+      border: none; border-radius: 8px; font-weight: 600;
+      font-size: 13px; cursor: pointer; margin: 3px 3px 3px 0;
+    }
+    button.secondary {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+    }
+    button.danger { background: #e74c3c; color: #fff; }
+    button.success { background: #27ae60; color: #fff; }
+    .user-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px; margin-bottom: 12px;
+    }
+    .user-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 10px; flex-wrap: wrap; margin-bottom: 10px;
+    }
+    .user-name { font-size: 1.05rem; font-weight: 700; }
+    .user-meta { font-size: 13px; opacity: 0.9; line-height: 1.55; }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; margin-left: 4px;
+    }
+    .role-customer { background: #555; color: #fff; }
+    .role-seller { background: var(--lemon); color: #000; }
+    .role-admin { background: var(--gold); color: #000; }
+    .status-active { background: #27ae60; color: #fff; }
+    .status-suspended { background: #e74c3c; color: #fff; }
+    .verified { background: var(--navy); color: #fff; }
+    .unverified { background: #f39c12; color: #000; }
+    .actions { margin-top: 12px; }
+    .orders-box {
+      margin-top: 12px; padding: 12px; background: var(--grey);
+      border-radius: 10px; font-size: 13px; display: none;
+    }
+    .orders-box.open { display: block; }
+    .order-line {
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+    .order-line:last-child { border-bottom: none; }
+    .msg-box {
+      margin-top: 12px; display: none;
+    }
+    .msg-box.open { display: block; }
+    .msg-box textarea {
+      width: 100%; min-height: 70px; padding: 10px;
+      border-radius: 9px; border: 1px solid var(--border);
+      background: var(--grey); color: var(--text); margin-bottom: 8px;
+    }
+    footer {
+      text-align: center; padding: 18px; font-size: 13px;
+      border-top: 1px solid var(--border); margin-top: auto;
+    }
+    #toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: var(--gold); color: #000; padding: 12px 20px;
+      border-radius: 30px; font-weight: 600; font-size: 14px;
+      display: none; z-index: 60; white-space: nowrap;
+    }
