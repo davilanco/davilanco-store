@@ -1,0 +1,8 @@
+body { font-family: system-ui; background: #000; color: #fff; padding: 24px; max-width: 640px; margin: 0 auto; }
+    h1 { color: #FFD700; }
+    code, textarea { display: block; width: 100%; background: #111; color: #C4FF61; border: 1px solid #333; border-radius: 8px; padding: 12px; margin: 8px 0; word-break: break-all; }
+    textarea { height: 100px; color: #fff; }
+    button { background: #FFD700; color: #000; border: none; padding: 12px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+    .ok { color: #27ae60; }
+    .err { color: #e74c3c; }
+    a { color: #FFD700; }

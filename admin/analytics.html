@@ -6,19 +6,9 @@
   <title>Store Analytics – Davilanco Admin</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/images/logo.jpg">
-  <style>
-    :root{--gold:#FFD700;--bg:#080808;--text:#fff;--card:#151515;--border:#333;--muted:#aaa}
-    [data-theme="light"]{--bg:#f5f6f8;--text:#152238;--card:#fff;--border:#ddd;--muted:#5e6875}
-    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text)}
-    header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:2px solid var(--gold);background:var(--bg);gap:12px}
-    header img{height:32px}.header-actions{display:flex;align-items:center;gap:12px}a{color:var(--gold)}button,select{font:inherit;border-radius:8px;padding:9px 12px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer}
-    main{max-width:1100px;margin:auto;padding:24px 16px 48px}h1{margin:0 0 5px;font-size:1.65rem}.sub{color:var(--muted);margin:0 0 20px}.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
-    .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;min-width:0}.label{font-size:.85rem;color:var(--muted)}.value{font-size:2rem;font-weight:750;margin-top:7px;overflow-wrap:anywhere}.unit{font-size:.78rem;color:var(--muted);margin-top:2px}
-    .section{margin-top:18px}.section h2{font-size:1.1rem;margin:0 0 12px}.chart{display:flex;align-items:flex-end;gap:8px;min-height:180px;padding:18px 4px 0;overflow-x:auto;border-bottom:1px solid var(--border)}.bar-col{flex:1;min-width:24px;max-width:100px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:150px;gap:7px}.bar{width:min(38px,70%);min-height:3px;background:var(--gold);border-radius:5px 5px 0 0}.bar-num{font-size:11px;color:var(--muted)}.bar-date{font-size:10px;color:var(--muted);white-space:nowrap;transform:rotate(-25deg);transform-origin:center top;margin-top:6px}
-    table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--border);font-size:.9rem}th{color:var(--muted);font-weight:600}td:first-child{overflow-wrap:anywhere}.table-wrap{overflow-x:auto}.status{color:var(--muted);font-size:.9rem;min-height:24px}.note{font-size:.83rem;color:var(--muted);line-height:1.6;margin-top:18px}.error{color:#e74c3c}
-    @media(max-width:760px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.value{font-size:1.6rem}main{padding-top:18px}}
-    @media(max-width:380px){.cards{grid-template-columns:1fr 1fr;gap:8px}.card{padding:12px}}
-  </style>
+  
+<link rel="stylesheet" href="/css/pages/admin-analytics.css">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 <header>
@@ -50,47 +40,8 @@
   </section>
   <p class="note">This dashboard counts visits recorded after analytics was installed; it cannot reconstruct earlier traffic. Visitors are estimated using a random browser identifier, so people using multiple browsers or clearing storage may count more than once. Google Analytics provides additional reports at <a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer">Google Analytics</a>. The first-party dashboard and Google Analytics use separate counting methods and may show different totals.</p>
 </main>
-<script>
-(function(){
-  var token=localStorage.getItem('token');
-  var storedUser=null;
-  try{storedUser=JSON.parse(localStorage.getItem('user')||'null')}catch(e){}
-  if(!token||!storedUser){window.location.replace('/login.html?redirect='+encodeURIComponent('/admin/analytics.html'));return}
-  var status=document.getElementById('status');
-  function number(v){return Number(v||0).toLocaleString('en-NG')}
-  function escapeText(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  async function load(){
-    status.className='status';status.textContent='Loading…';
-    try{
-      var days=Number(document.getElementById('range').value)||7;
-      var response=await fetch('/api/analytics?days='+days,{headers:{'Authorization':'Bearer '+token},cache:'no-store'});
-      var data=await response.json();
-      if(!response.ok)throw new Error(data.error||'Could not load analytics');
-      document.getElementById('todayViews').textContent=number(data.today.page_views);
-      document.getElementById('todayVisitors').textContent=number(data.today.visitors);
-      document.getElementById('todayProducts').textContent=number(data.today.product_views);
-      var total=(data.daily||[]).reduce(function(sum,d){return sum+Number(d.page_views||0)},0);
-      document.getElementById('rangeViews').textContent=number(total);
-      var rows=data.daily||[];
-      var max=Math.max(1,...rows.map(function(d){return Number(d.page_views||0)}));
-      document.getElementById('chart').innerHTML=rows.length?rows.map(function(d){
-        var date=String(d.event_date||'').slice(5);
-        var count=Number(d.page_views||0);
-        var height=Math.max(3,Math.round(count/max*112));
-        return '<div class="bar-col" title="'+escapeText(d.event_date)+': '+number(count)+' page views"><div class="bar-num">'+number(count)+'</div><div class="bar" style="height:'+height+'px"></div><div class="bar-date">'+escapeText(date)+'</div></div>';
-      }).join(''):'<p class="status">No visits recorded yet. Visit the public store to create the first test entry.</p>';
-      document.getElementById('popular').innerHTML=(data.popular_pages||[]).length?(data.popular_pages||[]).map(function(p){return '<tr><td>'+escapeText(p.path)+'</td><td>'+number(p.views)+'</td></tr>'}).join(''):'<tr><td colspan="2">No page-view data yet.</td></tr>';
-      status.textContent='Updated just now';
-    }catch(e){
-      status.className='status error';
-      status.textContent=e.message||'Could not load analytics';
-      if(/Admin|sign-in|access required/i.test(status.textContent)){status.textContent='Please sign in again with an admin account.'}
-    }
-  }
-  document.getElementById('refresh').addEventListener('click',load);
-  document.getElementById('range').addEventListener('change',load);
-  load();
-})();
-</script>
+
+<script src="/script.js"></script>
+  <script src="/js/pages/admin-analytics.js"></script>
 </body>
 </html>
