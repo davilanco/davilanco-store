@@ -13,6 +13,8 @@
     drawer.classList.toggle('open', open);
     setExpanded(open);
   };
+  // Page-specific scripts may still declare their legacy toggleNav; reassert the shared handler after parsing.
+  document.addEventListener('DOMContentLoaded', () => { window.toggleNav = window.toggleNav; });
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       const drawer = getDrawer();
