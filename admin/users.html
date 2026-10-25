@@ -16,7 +16,7 @@
     <div class="header-right">
       <span style="font-size:13px;opacity:0.8">ADMIN</span>
       <button class="icon-btn" type="button" onclick="toggleTheme()" aria-label="Theme">🌓</button>
-      <button class="icon-btn" type="button" onclick="toggleNav()" aria-label="Menu">☰</button>
+      <button class="nav-menu-toggle" type="button" onclick="toggleNav()" aria-label="Open menu" aria-controls="navDrawer" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
     <nav id="navDrawer" aria-label="Admin menu">
       <a href="/admin/">Admin Home</a>
@@ -28,9 +28,9 @@
       <div class="nav-section">Site</div>
       <a href="/">Shop Home</a>
       <a href="/dashboard.html">User Dashboard</a>
-      <br>
+
       <a href="#" id="logoutBtn">Logout</a>
-      <a href="#" onclick="toggleNav();return false;">Close ✕</a>
+
     </nav>
   </header>
 
