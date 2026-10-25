@@ -18,7 +18,7 @@
     <input type="text" id="searchBar" placeholder="Search products..." onkeydown="if(event.key==='Enter') location.href='/?q='+this.value">
     <div class="header-actions">
       <button class="icon-btn" onclick="toggleTheme()">🌓</button>
-      <button class="icon-btn" onclick="toggleNav()">☰</button>
+      <button class="nav-menu-toggle" type="button" onclick="toggleNav()" aria-label="Open menu" aria-controls="navDrawer" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
 
   <nav id="navDrawer">
@@ -29,8 +29,7 @@
     <a href="/seller/" id="sellerLink" class="hidden">Seller Panel</a>
     <a href="/admin/" id="adminLink" class="hidden">Admin Panel</a>
     <a href="#" id="logoutBtn">Logout</a>
-    <br>
-    <a href="#" onclick="toggleNav()">Close ✕</a>
+
   </nav>
   </header>
   <main>
