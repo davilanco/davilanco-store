@@ -6,7 +6,7 @@
       button.setAttribute('aria-expanded', String(open));
     });
   }
-  window.toggleNav = function toggleNav() {
+  const sharedToggleNav = function toggleNav() {
     const drawer = getDrawer();
     if (!drawer) return;
     const open = !drawer.classList.contains('open');
@@ -14,7 +14,8 @@
     setExpanded(open);
   };
   // Page-specific scripts may still declare their legacy toggleNav; reassert the shared handler after parsing.
-  document.addEventListener('DOMContentLoaded', () => { window.toggleNav = window.toggleNav; });
+  window.toggleNav = sharedToggleNav;
+  document.addEventListener('DOMContentLoaded', () => { window.toggleNav = sharedToggleNav; });
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       const drawer = getDrawer();
