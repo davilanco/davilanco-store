@@ -68,7 +68,7 @@
         <span class="cart-count" id="cartCount">0</span>
       </a>
       <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
-      <button class="icon-btn" onclick="toggleNav()" title="Menu">☰</button>
+      <button class="nav-menu-toggle" type="button" onclick="toggleNav()" aria-label="Open menu" aria-controls="navDrawer" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
 
   <nav id="navDrawer">
@@ -84,8 +84,6 @@
     <a href="/signup.html" id="signupLink">Create Account</a>
     <a href="#" id="logoutLink" style="display:none">Logout</a>
 
-    <br>
-    <a href="#" onclick="toggleNav()">Close ✕</a>
   </nav>
   </header>
 
