@@ -4,6 +4,8 @@
   function setExpanded(open) {
     document.querySelectorAll('[onclick*="toggleNav"], [aria-controls="navDrawer"]').forEach((button) => {
       button.setAttribute('aria-expanded', String(open));
+      button.classList.toggle('active', open);
+      button.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
     });
   }
   const sharedToggleNav = function toggleNav() {
