@@ -6,13 +6,10 @@
   <title>Dashboard – Davilanco</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/images/logo.jpg">
-
-  
-<link rel="stylesheet" href="/css/pages/dashboard.css">
+  <link rel="stylesheet" href="/css/pages/dashboard.css">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-
   <header>
     <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
     <input type="text" id="searchBar" placeholder="Search products..." onkeydown="if(event.key==='Enter') location.href='/?q='+this.value">
@@ -20,23 +17,19 @@
       <button class="icon-btn" onclick="toggleTheme()">🌓</button>
       <button class="nav-menu-toggle" type="button" onclick="toggleNav()" aria-label="Open menu" aria-controls="navDrawer" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
-
-  <nav id="navDrawer">
-    <a href="/">Home</a>
-    <a href="/categories.html">Categories</a>
-    <a href="/cart.html">Cart</a>
-    <a href="/dashboard.html">Dashboard</a>
-    <a href="/seller/" id="sellerLink" class="hidden">Seller Panel</a>
-    <a href="/admin/" id="adminLink" class="hidden">Admin Panel</a>
-    <a href="#" id="logoutBtn">Logout</a>
-
-  </nav>
+    <nav id="navDrawer">
+      <a href="/">Home</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/cart.html">Cart</a>
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/seller/" id="sellerLink" class="hidden">Seller Panel</a>
+      <a href="/admin/" id="adminLink" class="hidden">Admin Panel</a>
+      <a href="#" id="logoutBtn">Logout</a>
+    </nav>
   </header>
   <main>
     <h1>Dashboard</h1>
     <p class="welcome">Welcome back, <strong id="nicknameDisplay">User</strong></p>
-
-    <!-- Details -->
     <div class="card">
       <h3>My Details</h3>
       <div id="userDetails">
@@ -46,21 +39,31 @@
         <p><strong>Email:</strong> <span id="email">–</span></p>
         <p><strong>Role:</strong> <span id="role">–</span></p>
       </div>
-      <div class="btn-row">
-        <button onclick="toggleEdit()">Edit Details</button>
-      </div>
+      <div class="btn-row"><button onclick="toggleEdit()">Edit Details</button></div>
       <div id="editForm" class="hidden" style="margin-top:14px">
         <input type="text" id="e_firstname" placeholder="First Name">
         <input type="text" id="e_lastname" placeholder="Last Name">
         <input type="tel" id="e_phone" placeholder="Phone">
-        <div class="btn-row">
-          <button onclick="saveDetails()">Save Changes</button>
-          <button class="secondary" onclick="toggleEdit()">Cancel</button>
-        </div>
+        <div class="btn-row"><button onclick="saveDetails()">Save Changes</button><button class="secondary" onclick="toggleEdit()">Cancel</button></div>
       </div>
     </div>
 
-    <!-- Password -->
+    <!-- Referral tracking: tracking only, no rewards or wallet. -->
+    <div class="card" id="referralCard">
+      <h3>Refer Friends</h3>
+      <p style="font-size:13px;opacity:.8">Share your link. We will count new accounts created through it. No rewards are attached yet.</p>
+      <p><strong>Your referral code:</strong> <span id="myReferralCode">Loading…</span></p>
+      <label for="myReferralLink">Your referral link</label>
+      <input type="text" id="myReferralLink" readonly>
+      <div class="btn-row">
+        <button type="button" onclick="copyReferralLink()">Copy referral link</button>
+        <button type="button" class="secondary" onclick="shareReferralLink()">Share</button>
+      </div>
+      <p><strong>Successful sign-ups tracked:</strong> <span id="referralCount">0</span></p>
+      <div id="referralList" style="font-size:13px;opacity:.85">Loading referrals…</div>
+      <p id="referralMsg" style="font-size:13px"></p>
+    </div>
+
     <div class="card">
       <h3>Change Password</h3>
       <input type="password" id="oldPass" placeholder="Current Password">
@@ -69,31 +72,12 @@
       <button onclick="changePassword()">Update Password</button>
       <p id="passMsg" style="font-size:13px;margin-top:8px"></p>
     </div>
-
-    <!-- Cart -->
-    <div class="card">
-      <h3>Cart</h3>
-      <div id="cartCard">
-        <p>Loading cart...</p>
-      </div>
-    </div>
-
-    <!-- Orders -->
+    <div class="card"><h3>Cart</h3><div id="cartCard"><p>Loading cart...</p></div></div>
     <div class="card">
       <h3>My Orders</h3>
-      <p style="font-size:13px;margin-bottom:12px;opacity:0.8">
-        Status:
-        <span class="status pending">Pending</span> →
-        <span class="status approved">Approved</span> →
-        <span class="status shipping">Shipping</span> →
-        <span class="status delivered">Delivered</span>
-      </p>
-      <div id="ordersList">
-        <p style="opacity:0.7">Loading orders...</p>
-      </div>
+      <p style="font-size:13px;margin-bottom:12px;opacity:0.8">Status: <span class="status pending">Pending</span> → <span class="status approved">Approved</span> → <span class="status shipping">Shipping</span> → <span class="status delivered">Delivered</span></p>
+      <div id="ordersList"><p style="opacity:0.7">Loading orders...</p></div>
     </div>
-
-    <!-- Tracking -->
     <div class="card">
       <h3>Tracking</h3>
       <div id="trackingCard">
@@ -102,55 +86,30 @@
         <p><strong>Expected Arrival:</strong> <span id="eta">–</span></p>
       </div>
     </div>
-
-    <!-- Messages (Admin only) -->
     <div class="card">
       <h3>Messages (Admin)</h3>
-      <p style="font-size:13px;opacity:0.75;margin-bottom:10px">
-        Contact admin only from here. To message a seller, open their seller profile.
-      </p>
-      <div id="messagesBox">
-        <p style="opacity:0.7">No messages yet.</p>
-      </div>
+      <p style="font-size:13px;opacity:0.75;margin-bottom:10px">Contact admin only from here. To message a seller, open their seller profile.</p>
+      <div id="messagesBox"><p style="opacity:0.7">No messages yet.</p></div>
       <textarea id="msgInput" placeholder="Type your message to admin..."></textarea>
       <button onclick="sendMessage()" style="margin-top:8px">Send to Admin</button>
     </div>
-
-    <!-- Notifications -->
-    <div class="card">
-      <h3>Notifications</h3>
-      <div id="notifsBox">
-        <p style="opacity:0.7">No notifications.</p>
-      </div>
-    </div>
-
-    <!-- Seller application -->
-    <div class="card" style="border: 2px dashed var(--gold)">
+    <div class="card"><h3>Notifications (Email)</h3><p style="font-size:13px;opacity:.8">Davilanco will use email for notifications for now. Check the email address shown in My Details.</p><div id="notifsBox"><p style="opacity:0.7">Email notifications are used where configured.</p></div></div>
+    <div class="card" style="border:2px dashed var(--gold)">
       <h3>Apply for Seller Account</h3>
-      <p style="font-size:13px;margin-bottom:12px;opacity:0.8">
-        Your Nickname will be used as your Store Name if approved.
-      </p>
+      <p style="font-size:13px;margin-bottom:12px;opacity:0.8">Your Nickname will be used as your Store Name if approved.</p>
       <textarea id="s_products" placeholder="Products you plan to sell *"></textarea>
       <textarea id="s_address" placeholder="Full Address *"></textarea>
       <input type="text" id="s_idnumber" placeholder="ID Number *">
       <input type="file" id="s_idphoto" accept="image/*">
-      <p style="font-size:12px;opacity:0.7;margin:6px 0 10px">
-        Upload ID / Business document photo
-      </p>
+      <p style="font-size:12px;opacity:0.7;margin:6px 0 10px">Upload ID / Business document photo</p>
       <button onclick="applySeller()">Submit Application</button>
       <p id="sellerMsg" style="font-size:13px;margin-top:8px"></p>
     </div>
   </main>
-
-  <footer>
-    Davilanco © 2026 · shop.davilanco.com
-  </footer>
-
+  <footer>Davilanco © 2026 · shop.davilanco.com</footer>
   <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-
-  
   <script src="/analytics.js" defer></script>
-<script src="/script.js"></script>
+  <script src="/script.js"></script>
   <script src="/js/pages/dashboard.js"></script>
 </body>
-  </html>
+</html>
