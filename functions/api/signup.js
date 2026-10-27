@@ -27,6 +27,7 @@ export async function onRequestPost(context) {
     try { await env.DB.prepare('ALTER TABLE users ADD COLUMN verify_expires TEXT').run(); } catch (e) {}
     try { await env.DB.prepare('ALTER TABLE users ADD COLUMN referral_code TEXT').run(); } catch (e) {}
     try { await env.DB.prepare('ALTER TABLE users ADD COLUMN referred_by TEXT').run(); } catch (e) {}
+    await env.DB.prepare('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_referral_code_unique ON users(UPPER(referral_code))').run();
 
     const body = await request.json();
     const firstname = String(body.firstname || '').trim();
@@ -130,7 +131,8 @@ export async function onRequestPost(context) {
 }
 
 async function makeUniqueReferralCode(env, nickname) {
-  const base = String(nickname || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'DAVILAN';
+  let base = String(nickname || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'DAVILAN';
+  if (base.length < 4) base = ('DAV' + base).slice(0, 8);
   for (let attempt = 0; attempt < 12; attempt++) {
     const suffix = attempt === 0 ? '' : String(crypto.getRandomValues(new Uint32Array(1))[0] % 90 + 10);
     const candidate = (base.slice(0, 10 - suffix.length) + suffix).slice(0, 10);
