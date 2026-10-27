@@ -9,14 +9,12 @@
   gtag("js", new Date());
   gtag("config", "G-PVEHSCE72P");
 </script>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Account – Davilanco</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/images/logo.jpg">
-  
-<link rel="stylesheet" href="/css/pages/signup.css">
+  <link rel="stylesheet" href="/css/pages/signup.css">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -30,20 +28,18 @@
       <a href="/">Home</a>
       <a href="/login.html">Login</a>
       <a href="/signup.html">Create Account</a>
-
     </nav>
   </header>
-
   <main>
     <h1>Create Account</h1>
     <p class="subtitle">New accounts start as Customer. We will email a verification code.</p>
-
     <form id="signupForm">
       <input type="text" id="firstname" placeholder="First Name *" required>
       <input type="text" id="lastname" placeholder="Last Name *" required>
       <input type="text" id="nickname" placeholder="Nickname *" required>
       <input type="tel" id="phone" placeholder="Phone Number *" required>
       <input type="email" id="email" placeholder="Email Address *" required>
+      <input type="text" id="referralCode" placeholder="Referral code (optional)" maxlength="10" autocomplete="off">
       <div class="password-wrapper">
         <input type="password" id="password" placeholder="Password (8+, upper, number, symbol) *" required>
         <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password')">👁️</button>
@@ -57,12 +53,9 @@
     <p id="msg"></p>
     <p class="login-link">Already have an account? <a href="/login.html">Login</a></p>
   </main>
-
   <footer>Davilanco © 2026</footer>
-
-  
   <script src="/analytics.js" defer></script>
-<script src="/script.js"></script>
+  <script src="/script.js"></script>
   <script src="/js/pages/signup.js"></script>
 </body>
 </html>
