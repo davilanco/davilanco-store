@@ -9,13 +9,15 @@ export async function onRequestGet(context) {
     // Older D1 databases are upgraded safely on first use.
     try { await env.DB.prepare('ALTER TABLE users ADD COLUMN referral_code TEXT').run(); } catch (e) {}
     try { await env.DB.prepare('ALTER TABLE users ADD COLUMN referred_by TEXT').run(); } catch (e) {}
+    await env.DB.prepare('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_referral_code_unique ON users(UPPER(referral_code))').run();
 
     const user = await env.DB.prepare('SELECT id, nickname, referral_code FROM users WHERE id = ?').bind(auth.user.id).first();
     if (!user) return Response.json({ error: 'Account not found.' }, { status: 404 });
 
     let referralCode = user.referral_code;
     if (!referralCode) {
-      const base = String(user.nickname || 'DAVILAN').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'DAVILAN';
+      let base = String(user.nickname || 'DAVILAN').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'DAVILAN';
+      if (base.length < 4) base = ('DAV' + base).slice(0, 8);
       for (let attempt = 0; attempt < 20; attempt++) {
         const suffix = attempt === 0 ? '' : String(crypto.getRandomValues(new Uint32Array(1))[0] % 90 + 10);
         const candidate = (base.slice(0, 10 - suffix.length) + suffix).slice(0, 10);
@@ -29,6 +31,7 @@ export async function onRequestGet(context) {
       if (!referralCode) return Response.json({ error: 'Could not create a referral code. Please try again.' }, { status: 500 });
     }
 
+    const countRow = await env.DB.prepare('SELECT COUNT(*) AS total FROM users WHERE referred_by = ?').bind(user.id).first();
     const data = await env.DB.prepare(`
       SELECT nickname, created_at
       FROM users
@@ -46,7 +49,7 @@ export async function onRequestGet(context) {
       ok: true,
       referral_code: referralCode,
       referral_link: referralLink,
-      referral_count: referrals.length,
+      referral_count: Number(countRow && countRow.total || 0),
       referrals
     });
   } catch (e) {
