@@ -16,13 +16,17 @@ export async function onRequestPost(context) {
         verified INTEGER DEFAULT 0,
         verify_code TEXT,
         verify_expires TEXT,
+        referral_code TEXT,
+        referred_by TEXT,
         created_at TEXT DEFAULT (datetime('now'))
       )
     `).run();
 
-    // Add columns if table already existed without them
+    // Safe migrations for databases created before referral tracking.
     try { await env.DB.prepare('ALTER TABLE users ADD COLUMN verify_code TEXT').run(); } catch (e) {}
     try { await env.DB.prepare('ALTER TABLE users ADD COLUMN verify_expires TEXT').run(); } catch (e) {}
+    try { await env.DB.prepare('ALTER TABLE users ADD COLUMN referral_code TEXT').run(); } catch (e) {}
+    try { await env.DB.prepare('ALTER TABLE users ADD COLUMN referred_by TEXT').run(); } catch (e) {}
 
     const body = await request.json();
     const firstname = String(body.firstname || '').trim();
@@ -31,37 +35,44 @@ export async function onRequestPost(context) {
     const phone = String(body.phone || '').trim();
     const email = String(body.email || '').trim().toLowerCase();
     const password = String(body.password || '');
+    const suppliedReferralCode = String(body.referral_code || '').trim().toUpperCase();
 
     if (!firstname || !lastname || !nickname || !phone || !email || !password) {
       return Response.json({ error: 'All fields are required' }, { status: 400 });
     }
 
-    if (
-      password.length < 8 ||
-      !/[A-Z]/.test(password) ||
-      !/[0-9]/.test(password) ||
-      !/[^A-Za-z0-9]/.test(password)
-    ) {
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
       return Response.json({
         error: 'Password must be at least 8 characters and contain uppercase, number and symbol'
       }, { status: 400 });
     }
 
-    const hashedPassword = await hashPassword(password);
+    let referrer = null;
+    if (suppliedReferralCode) {
+      referrer = await env.DB.prepare(
+        'SELECT id FROM users WHERE UPPER(referral_code) = ? LIMIT 1'
+      ).bind(suppliedReferralCode).first();
+      if (!referrer) {
+        return Response.json({ error: 'That referral code was not found. Check it or leave the field blank.' }, { status: 400 });
+      }
+    }
+
     const id = crypto.randomUUID();
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const referralCode = await makeUniqueReferralCode(env, nickname);
+    const hashedPassword = await hashPassword(password);
+    const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 900000 + 100000);
     const expires = new Date(Date.now() + 30 * 60 * 1000).toISOString();
 
     await env.DB.prepare(`
       INSERT INTO users (
         id, firstname, lastname, nickname, phone, email, password,
-        role, status, verified, verify_code, verify_expires
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'customer', 'active', 0, ?, ?)
+        role, status, verified, verify_code, verify_expires, referral_code, referred_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'customer', 'active', 0, ?, ?, ?, ?)
     `).bind(
-      id, firstname, lastname, nickname, phone, email, hashedPassword, code, expires
+      id, firstname, lastname, nickname, phone, email, hashedPassword, code, expires, referralCode, referrer ? referrer.id : null
     ).run();
 
-    // Send verification email via Resend
+    // Email verification remains the only notification channel for now.
     let emailSent = false;
     let emailError = null;
 
@@ -75,13 +86,13 @@ export async function onRequestPost(context) {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            from: from,
+            from,
             to: [email],
             subject: 'Verify your Davilanco account',
             html:
               '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto">' +
               '<h2 style="color:#000">Welcome to Davilanco</h2>' +
-              '<p>Hi ' + firstname + ',</p>' +
+              '<p>Hi ' + escapeHtml(firstname) + ',</p>' +
               '<p>Your verification code is:</p>' +
               '<p style="font-size:28px;font-weight:700;letter-spacing:4px;color:#B8860B">' + code + '</p>' +
               '<p>This code expires in 30 minutes.</p>' +
@@ -91,12 +102,8 @@ export async function onRequestPost(context) {
           })
         });
 
-        if (res.ok) {
-          emailSent = true;
-        } else {
-          const errBody = await res.text();
-          emailError = errBody;
-        }
+        if (res.ok) emailSent = true;
+        else emailError = await res.text();
       } catch (e) {
         emailError = e.message;
       }
@@ -109,7 +116,7 @@ export async function onRequestPost(context) {
       message: emailSent
         ? 'Account created. Check your email for the verification code.'
         : 'Account created, but email could not be sent. Use Resend later or contact support.',
-      email: email,
+      email,
       email_sent: emailSent,
       email_error: emailError
     });
@@ -122,22 +129,31 @@ export async function onRequestPost(context) {
   }
 }
 
+async function makeUniqueReferralCode(env, nickname) {
+  const base = String(nickname || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'DAVILAN';
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const suffix = attempt === 0 ? '' : String(crypto.getRandomValues(new Uint32Array(1))[0] % 90 + 10);
+    const candidate = (base.slice(0, 10 - suffix.length) + suffix).slice(0, 10);
+    const existing = await env.DB.prepare('SELECT id FROM users WHERE UPPER(referral_code) = ? LIMIT 1').bind(candidate).first();
+    if (!existing) return candidate;
+  }
+  throw new Error('Could not generate a unique referral code. Please try again.');
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, function(ch) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+  });
+}
+
 async function hashPassword(password) {
   const encoder = new TextEncoder();
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']
-  );
+  const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
   const derivedBits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
-    keyMaterial,
-    256
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, keyMaterial, 256
   );
-  const hashHex = Array.from(new Uint8Array(derivedBits)).map(function(b) {
-    return b.toString(16).padStart(2, '0');
-  }).join('');
-  const saltHex = Array.from(salt).map(function(b) {
-    return b.toString(16).padStart(2, '0');
-  }).join('');
+  const hashHex = Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2, '0')).join('');
+  const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join('');
   return saltHex + ':' + hashHex;
-  }
+}
