@@ -18,6 +18,16 @@
   // Page-specific scripts may still declare their legacy toggleNav; reassert the shared handler after parsing.
   window.toggleNav = sharedToggleNav;
   document.addEventListener('DOMContentLoaded', () => { window.toggleNav = sharedToggleNav; });
+  document.addEventListener('click', async (event) => {
+    const logout = event.target.closest && event.target.closest('#logoutBtn');
+    if (!logout) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    try { await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }); } catch (_) {}
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.replace('/login.html');
+  }, true);
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       const drawer = getDrawer();
@@ -565,7 +575,8 @@ var savedTheme = localStorage.getItem('theme');
     }
 
     var urlParams = new URLSearchParams(window.location.search);
-    var redirectTo = urlParams.get('redirect') || '/dashboard.html';
+    var requestedRedirect = urlParams.get('redirect') || '';
+    var redirectTo = requestedRedirect.startsWith('/') && !requestedRedirect.startsWith('//') ? requestedRedirect : '';
 
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
@@ -589,6 +600,7 @@ var savedTheme = localStorage.getItem('theme');
         if (data.ok) {
           localStorage.setItem('token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
+          if (!redirectTo) redirectTo = data.user.role === 'admin' ? '/admin/' : (data.user.role === 'seller' ? '/seller/' : '/dashboard.html');
           msg.className = 'success';
           msg.textContent = 'Login successful! Redirecting...';
           setTimeout(() => window.location.href = redirectTo, 500);
