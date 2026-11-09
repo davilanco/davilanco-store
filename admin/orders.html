@@ -11,27 +11,28 @@
 </head>
 <body>
   <header>
-    <a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
-    <div class="header-right">
-      <span style="font-size:13px;opacity:0.8">ADMIN</span>
-      <button class="icon-btn" type="button" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
-      <button class="nav-menu-toggle" type="button" onclick="toggleNav()" aria-label="Open menu" aria-controls="navDrawer" aria-expanded="false"><span></span><span></span><span></span></button>
-    </div>
-    <nav id="navDrawer" aria-label="Admin menu">
-      <a href="/admin/">Admin Home</a>
-      <div class="nav-section">Manage</div>
-      <a href="/admin/orders.html">Orders & Tracking</a>
-      <a href="/admin/users.html">Users</a>
-      <a href="/admin/products.html">Products</a>
-      <a href="/admin/messages.html">Messages</a>
-      <div class="nav-section">Site</div>
-      <a href="/">Shop Home</a>
-      <a href="/dashboard.html">User Dashboard</a>
-
-      <a href="#" id="logoutBtn">Logout</a>
-
-    </nav>
-  </header>
+  <a href="/admin/" aria-label="Davilanco admin home"><img src="/images/logo.jpg" alt="Davilanco"></a>
+  <div class="header-right">
+    <span style="font-size:13px;opacity:0.8">ADMIN</span>
+    <button class="icon-btn" type="button" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
+    <button class="nav-menu-toggle" type="button" onclick="toggleNav()" aria-label="Open menu" aria-controls="navDrawer" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+  <nav id="navDrawer" aria-label="Admin menu">
+    <a href="/admin/">Admin Home</a>
+    <div class="nav-section">Manage</div>
+    <a href="/admin/orders.html">Orders &amp; Tracking</a>
+    <a href="/admin/users.html">Users</a>
+    <a href="/admin/products.html">Products</a>
+    <a href="/admin/messages.html">Messages</a>
+    <a href="/admin/analytics.html">Store Analytics</a>
+    <a href="/admin/api.html">API Console</a>
+    <div class="nav-section">Site</div>
+    <a href="/">Shop Home</a>
+    <a href="/dashboard.html">User Dashboard</a>
+    <a href="/seller/">Seller Panel</a>
+    <a href="#" id="logoutBtn">Logout</a>
+  </nav>
+</header>
 
   <main>
     <h1>Orders</h1>
