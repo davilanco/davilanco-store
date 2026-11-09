@@ -333,7 +333,6 @@ if (["/","/index.html"].includes(window.location.pathname)) {
   if (typeof addToCart === "function") window.addToCart = addToCart;
   if (typeof filterProducts === "function") window.filterProducts = filterProducts;
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   })();
 }
 
@@ -478,7 +477,6 @@ if (["/cart.html"].includes(window.location.pathname)) {
     // Load cart when page opens
     renderCart();
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   })();
 }
 
@@ -611,7 +609,6 @@ var savedTheme = localStorage.getItem('theme');
       }
     });
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   if (typeof togglePasswordVisibility === "function") window.togglePasswordVisibility = togglePasswordVisibility;
   })();
 }
@@ -783,7 +780,6 @@ document.getElementById('signupForm').addEventListener('submit', async function(
 });
 
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   if (typeof togglePasswordVisibility === "function") window.togglePasswordVisibility = togglePasswordVisibility;
   })();
 }
@@ -1022,7 +1018,6 @@ if (["/product.html"].includes(window.location.pathname)) {
     // Load product when page opens
     loadProduct();
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   })();
 }
 
@@ -1636,7 +1631,6 @@ async function sendMessage(userId, nickname) {
 
     loadUsers();
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   if (typeof filterUsers === "function") window.filterUsers = filterUsers;
   if (typeof loadUsers === "function") window.loadUsers = loadUsers;
   })();
@@ -1682,7 +1676,6 @@ var savedTheme = localStorage.getItem('theme');
       window.location.href = '/login.html';
     });
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   })();
 }
 
@@ -1914,7 +1907,6 @@ loadOrders();
 loadMessages();
 
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   if (typeof toggleEdit === "function") window.toggleEdit = toggleEdit;
   if (typeof saveDetails === "function") window.saveDetails = saveDetails;
   if (typeof copyReferralLink === "function") window.copyReferralLink = copyReferralLink;
@@ -2264,7 +2256,6 @@ async function loadMyProducts() {
     loadMyProducts();
     loadMyOrders();
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   if (typeof onFileSelected === "function") window.onFileSelected = onFileSelected;
   if (typeof addProduct === "function") window.addProduct = addProduct;
   if (typeof loadMyProducts === "function") window.loadMyProducts = loadMyProducts;
@@ -2522,7 +2513,6 @@ function escapeHtml(value) {
     window.quickConfirm = quickConfirm;
     loadOrders();
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   if (typeof loadOrders === "function") window.loadOrders = loadOrders;
   if (typeof updateOrder === "function") window.updateOrder = updateOrder;
   if (typeof markPaidAndApprove === "function") window.markPaidAndApprove = markPaidAndApprove;
@@ -2738,7 +2728,6 @@ var savedTheme = localStorage.getItem('theme');
     loadUsers();
     loadAllMessages();
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   if (typeof filterUserList === "function") window.filterUserList = filterUserList;
   if (typeof sendAdminReply === "function") window.sendAdminReply = sendAdminReply;
   if (typeof loadThread === "function") window.loadThread = loadThread;
@@ -3319,7 +3308,6 @@ async function bulkImportAe() {
 
     loadProducts();
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   if (typeof onAdminFileSelected === "function") window.onAdminFileSelected = onAdminFileSelected;
   if (typeof addProduct === "function") window.addProduct = addProduct;
   if (typeof importProduct === "function") window.importProduct = importProduct;
@@ -3388,7 +3376,6 @@ function toggleTheme(){const n=document.documentElement.getAttribute('data-theme
 const search=document.getElementById('searchBar');search.addEventListener('keydown',e=>{if(e.key==='Enter'&&search.value.trim())location.href='/?q='+encodeURIComponent(search.value.trim())});
 (async function(){const grid=document.getElementById('categoryGrid');try{const r=await fetch('/api/products');if(!r.ok)throw new Error('Products unavailable');const d=await r.json();const products=Array.isArray(d)?d:(d.results||[]);grid.innerHTML=categoryItems.map(c=>{const count=products.filter(p=>(p.category||'').toLowerCase()===c.key).length;return '<a class="category-card" href="/category.html?cat='+encodeURIComponent(c.key)+'"><span class="category-icon">'+c.icon+'</span><div><h2>'+c.name+'</h2><p>'+c.description+'</p><div class="count">'+count+' product'+(count===1?'':'s')+'</div></div></a>'}).join('')}catch(e){grid.innerHTML=categoryItems.map(c=>'<a class="category-card" href="/category.html?cat='+c.key+'"><span class="category-icon">'+c.icon+'</span><div><h2>'+c.name+'</h2><p>'+c.description+'</p><div class="count">Browse category →</div></div></a>').join('')}})();
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   })();
 }
 
@@ -3405,7 +3392,6 @@ grid.addEventListener('click',e=>{const b=e.target.closest('.add-btn');if(!b)ret
 document.getElementById('searchBar').addEventListener('input',render);document.getElementById('sortProducts').addEventListener('change',render);
 (async()=>{try{const r=await fetch('/api/products');if(!r.ok)throw new Error();const d=await r.json();const allProducts=Array.isArray(d)?d:(d.results||[]);const primaryCategories=['fashion','electronics','home','beauty'];products=category==='others'?allProducts.filter(p=>!primaryCategories.includes(String(p.category||'').trim().toLowerCase())):allProducts.filter(p=>String(p.category||'').trim().toLowerCase()===category);render()}catch(e){grid.innerHTML='<div class="state-box">Could not load products. Please refresh.</div>';count.textContent='Unavailable'}})();
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
-  if (typeof toggleNav === "function") window.toggleNav = toggleNav;
   })();
 }
 
