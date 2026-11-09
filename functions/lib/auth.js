@@ -13,7 +13,7 @@ function noStoreJson(body, status) {
 function b64url(bytes) {
   let binary = '';
   for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/g, '');
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
 
 function fromB64url(value) {
@@ -37,9 +37,9 @@ export async function createSessionToken(payload, env) {
 
 export async function requireSession(request, env) {
   const authorization = request.headers.get('Authorization') || '';
-  const bearer = authorization.match(/^Bearer\\s+([A-Za-z0-9_.-]+)$/i);
+  const bearer = authorization.match(/^Bearer\s+([A-Za-z0-9_.-]+)$/i);
   const cookie = request.headers.get('Cookie') || '';
-  const cookieMatch = cookie.match(/(?:^|;\\s*)davilanco_session=([^;]+)/);
+  const cookieMatch = cookie.match(/(?:^|;\s*)davilanco_session=([^;]+)/);
   const token = bearer ? bearer[1] : (cookieMatch ? cookieMatch[1] : '');
 
   if (!token || token.length > 4096) return unauthorized();
