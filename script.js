@@ -1,15 +1,3 @@
-/* Google Analytics 4 is initialized here so every page uses this single JavaScript file. */
-(function () {
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
-  window.gtag('js', new Date());
-  window.gtag('config', 'G-PVEHSCE72P');
-  var gaScript = document.createElement('script');
-  gaScript.async = true;
-  gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-PVEHSCE72P';
-  document.head.appendChild(gaScript);
-})();
-
 /* Shared store navigation behavior. */
 (() => {
   function getDrawer() { return document.getElementById('navDrawer'); }
@@ -327,8 +315,12 @@ if (["/","/index.html"].includes(window.location.pathname)) {
         renderProducts(allProducts);
         document.getElementById('productCount').textContent = allProducts.length + ' product' + (allProducts.length !== 1 ? 's' : '');
       } else {
+        const knownCategories = ['fashion', 'electronics', 'home', 'beauty'];
         const filtered = allProducts.filter(function(p) {
-          return (p.category || '').toLowerCase() === cat.toLowerCase();
+          const productCategory = String(p.category || '').trim().toLowerCase();
+          return cat.toLowerCase() === 'others'
+            ? productCategory !== '' && !knownCategories.includes(productCategory)
+            : productCategory === cat.toLowerCase();
         });
         renderProducts(filtered);
         document.getElementById('productCount').textContent = filtered.length + ' product' + (filtered.length !== 1 ? 's' : '');
@@ -338,6 +330,7 @@ if (["/","/index.html"].includes(window.location.pathname)) {
     // Start
     updateCartCount();
     loadProducts();
+  if (typeof addToCart === "function") window.addToCart = addToCart;
   if (typeof filterProducts === "function") window.filterProducts = filterProducts;
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
   if (typeof toggleNav === "function") window.toggleNav = toggleNav;
