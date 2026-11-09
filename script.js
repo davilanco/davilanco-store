@@ -580,7 +580,7 @@ var savedTheme = localStorage.getItem('theme');
     try {
       var redirectUrl = new URL(requestedRedirect, window.location.origin);
       if (requestedRedirect.startsWith('/') && !requestedRedirect.startsWith('//') &&
-          !requestedRedirect.includes('\\\\') && redirectUrl.origin === window.location.origin) {
+          requestedRedirect.indexOf(String.fromCharCode(92)) === -1 && redirectUrl.origin === window.location.origin) {
         redirectTo = redirectUrl.pathname + redirectUrl.search + redirectUrl.hash;
       }
     } catch (_) {}
