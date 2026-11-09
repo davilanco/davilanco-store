@@ -1,3 +1,5 @@
+import { requireSession } from '../../lib/auth.js';
+
 export async function onRequestPost(context) {
   const { request, env } = context;
 
@@ -13,6 +15,14 @@ export async function onRequestPost(context) {
 
     const order = await env.DB.prepare('SELECT id, user_id, total, payment_status FROM orders WHERE id = ?').bind(orderId).first();
     if (!order) return Response.json({ error: 'Order not found.' }, { status: 404 });
+    // Registered-account orders can only be paid by that account (or an administrator).
+    if (order.user_id) {
+      const auth = await requireSession(request, env);
+      if (!auth.ok) return auth.response;
+      if (auth.user.id !== String(order.user_id) && auth.user.role !== 'admin') {
+        return Response.json({ error: 'You may only initialize payment for your own order.' }, { status: 403 });
+      }
+    }
     if (String(order.payment_status || '').toLowerCase() === 'paid') {
       return Response.json({ error: 'This order is already marked as paid.' }, { status: 409 });
     }
