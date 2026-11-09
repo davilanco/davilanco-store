@@ -30,7 +30,12 @@ export async function createSessionToken(payload, env) {
 export async function requireSession(request, env) {
   const secret = secretFor(env);
   if (!secret) return { ok: false, response: Response.json({ error: 'Server authentication is not configured' }, { status: 503 }) };
-  const match = (request.headers.get('Authorization') || '').match(/^Bearer\s+([A-Za-z0-9_.-]+)$/i);
+  const authorization = request.headers.get('Authorization') || '';
+  const bearer = authorization.match(/^Bearer\s+([A-Za-z0-9_.-]+)$/i);
+  const cookie = request.headers.get('Cookie') || '';
+  const cookieToken = cookie.split(';').map(part => part.trim()).find(part => part.startsWith('davilanco_session='));
+  const token = bearer ? bearer[1] : (cookieToken ? cookieToken.slice('davilanco_session='.length) : '');
+  const match = token ? [token, token] : null;
   if (!match) return unauthorized();
   const parts = match[1].split('.');
   if (parts.length !== 2) return unauthorized();

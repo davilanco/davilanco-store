@@ -13,8 +13,8 @@ export async function onRequestPost(context) {
 
     const user = await env.DB.prepare(`
       SELECT * FROM users
-      WHERE nickname = ? OR email = ? OR phone = ?
-    `).bind(login, login, login).first();
+      WHERE LOWER(nickname) = ? OR LOWER(email) = ? OR phone = ?
+    `).bind(login.toLowerCase(), login.toLowerCase(), login).first();
 
     if (!user) {
       return Response.json({ error: 'Invalid login or password' }, { status: 401 });
@@ -46,7 +46,7 @@ export async function onRequestPost(context) {
 
     const token = await createSessionToken(tokenPayload, env);
 
-    return Response.json({
+    const response = Response.json({
       ok: true,
       token,
       user: {
@@ -59,6 +59,9 @@ export async function onRequestPost(context) {
         role: user.role
       }
     });
+    response.headers.append('Set-Cookie', 'davilanco_session=' + token + '; Path=/; Max-Age=604800; HttpOnly; Secure; SameSite=Lax');
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
 
   } catch (e) {
     return Response.json({ error: e.message }, { status: 500 });
