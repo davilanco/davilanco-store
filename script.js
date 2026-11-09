@@ -576,48 +576,78 @@ var savedTheme = localStorage.getItem('theme');
 
     var urlParams = new URLSearchParams(window.location.search);
     var requestedRedirect = urlParams.get('redirect') || '';
-    var redirectTo = requestedRedirect.startsWith('/') && !requestedRedirect.startsWith('//') ? requestedRedirect : '';
+    var redirectTo = '';
+    try {
+      var redirectUrl = new URL(requestedRedirect, window.location.origin);
+      if (requestedRedirect.startsWith('/') && !requestedRedirect.startsWith('//') &&
+          !requestedRedirect.includes('\\\\') && redirectUrl.origin === window.location.origin) {
+        redirectTo = redirectUrl.pathname + redirectUrl.search + redirectUrl.hash;
+      }
+    } catch (_) {}
 
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       var msg = document.getElementById('msg');
       var btn = document.getElementById('submitBtn');
+      var succeeded = false;
       btn.disabled = true;
       btn.textContent = 'Logging in...';
-      msg.textContent = '';
+      msg.className = '';
+      msg.textContent = 'Connecting to the login service...';
 
       try {
         var res = await fetch('/api/login', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({
             login: document.getElementById('login').value.trim(),
             password: document.getElementById('password').value
           })
         });
-        var data = await res.json();
+        var raw = await res.text();
+        var data;
+        try {
+          data = raw ? JSON.parse(raw) : {};
+        } catch (_) {
+          throw new Error('The login API returned a non-JSON response (HTTP ' + res.status + '). Check that /api/login is deployed as a Cloudflare Function.');
+        }
 
-        if (data.ok) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          if (!redirectTo) redirectTo = data.user.role === 'admin' ? '/admin/' : (data.user.role === 'seller' ? '/seller/' : '/dashboard.html');
-          msg.className = 'success';
-          msg.textContent = 'Login successful! Redirecting...';
-          setTimeout(() => window.location.href = redirectTo, 500);
-        } else if (data.needs_verification) {
+        if (!res.ok || !data.ok) {
           msg.className = 'error';
-          msg.innerHTML = data.error + ' <br><a href="/verify.html?email=' + encodeURIComponent(data.email) + '" style="color:var(--gold)">Verify now</a>';
-        } else {
-          msg.className = 'error';
-          msg.textContent = data.error || 'Login failed';
+          msg.textContent = (data.error || 'Login failed.') + ' (HTTP ' + res.status + ')';
+          if (data.needs_verification && data.email) {
+            var verifyLink = document.createElement('a');
+            verifyLink.href = '/verify.html?email=' + encodeURIComponent(data.email);
+            verifyLink.textContent = 'Verify your email';
+            verifyLink.style.color = 'var(--gold)';
+            msg.appendChild(document.createElement('br'));
+            msg.appendChild(verifyLink);
+          }
+          return;
+        }
+
+        if (!data.token || !data.user || !data.user.id) {
+          throw new Error('The login API responded successfully but did not return the session details.');
+        }
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        if (!redirectTo) redirectTo = data.user.role === 'admin' ? '/admin/' : (data.user.role === 'seller' ? '/seller/' : '/dashboard.html');
+        msg.className = 'success';
+        msg.textContent = 'Login successful! Redirecting...';
+        succeeded = true;
+        setTimeout(function() { window.location.assign(redirectTo); }, 500);
+      } catch (error) {
+        console.error('[Davilanco login]', error);
+        msg.className = 'error';
+        msg.textContent = error.message || 'Could not connect to the login service. Check your internet connection and try again.';
+      } finally {
+        if (!succeeded) {
           btn.disabled = false;
           btn.textContent = 'Login';
         }
-      } catch (e) {
-        msg.className = 'error';
-        msg.textContent = 'Network error: ' + e.message;
-        btn.disabled = false;
-        btn.textContent = 'Login';
       }
     });
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
@@ -1697,24 +1727,36 @@ var savedTheme = localStorage.getItem('theme');
 if (["/dashboard.html"].includes(window.location.pathname)) {
   (function () {
 // ========== AUTH ==========
-const token = localStorage.getItem('token');
-(function() {
-  var originalFetch = window.fetch.bind(window);
-  window.fetch = function(input, init) {
-    var target = typeof input === 'string' ? input : (input && input.url) || '';
-    if (target.indexOf('/api/') === 0 && token) {
-      init = init || {};
-      var headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
-      headers.set('Authorization', 'Bearer ' + token);
-      init = Object.assign({}, init, { headers: headers });
-    }
-    return originalFetch(input, init);
-  };
-})();
-const userStr = localStorage.getItem('user');
-if (!token || !userStr) window.location.href = '/login.html?redirect=' + encodeURIComponent('/dashboard.html');
+// The HttpOnly server cookie is authoritative; never trust a role or user ID from localStorage.
 let user = {};
-try { user = JSON.parse(userStr); } catch (e) { localStorage.clear(); window.location.href = '/login.html'; }
+async function loadDashboardSession() {
+  try {
+    const response = await fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' });
+    const data = await response.json();
+    if (!response.ok || !data.ok || !data.user || !data.user.id) {
+      throw new Error(data.error || 'Your session has expired. Please sign in again.');
+    }
+    user = data.user;
+    localStorage.setItem('user', JSON.stringify(user));
+    if (user.role === 'seller' || user.role === 'admin') document.getElementById('sellerLink').classList.remove('hidden');
+    if (user.role === 'admin') document.getElementById('adminLink').classList.remove('hidden');
+    document.getElementById('nicknameDisplay').textContent = user.nickname || 'User';
+    document.getElementById('fullName').textContent = (user.firstname || '') + ' ' + (user.lastname || '');
+    document.getElementById('nick').textContent = user.nickname || '–';
+    document.getElementById('phone').textContent = user.phone || '–';
+    document.getElementById('email').textContent = user.email || '–';
+    document.getElementById('role').textContent = user.role || 'customer';
+    loadReferralStats();
+    loadCartSummary();
+    loadOrders();
+    loadMessages();
+  } catch (error) {
+    console.error('[Davilanco dashboard session]', error);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.replace('/login.html?redirect=' + encodeURIComponent('/dashboard.html'));
+  }
+}
 
 const savedTheme = localStorage.getItem('theme');
 document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
@@ -1725,21 +1767,16 @@ function toggleTheme() {
   localStorage.setItem('theme', next);
 }
 function toggleNav() { document.getElementById('navDrawer').classList.toggle('open'); }
-if (user.role === 'seller' || user.role === 'admin') document.getElementById('sellerLink').classList.remove('hidden');
-if (user.role === 'admin') document.getElementById('adminLink').classList.remove('hidden');
-document.getElementById('logoutBtn').addEventListener('click', function(e) {
-  e.preventDefault(); localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/login.html';
+document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+  e.preventDefault();
+  try { await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }); } catch (_) {}
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.replace('/login.html');
 });
 window.addEventListener('scroll', function() {
   document.getElementById('backToTop').style.display = window.scrollY > 300 ? 'block' : 'none';
 });
-
-document.getElementById('nicknameDisplay').textContent = user.nickname || 'User';
-document.getElementById('fullName').textContent = (user.firstname || '') + ' ' + (user.lastname || '');
-document.getElementById('nick').textContent = user.nickname || '–';
-document.getElementById('phone').textContent = user.phone || '–';
-document.getElementById('email').textContent = user.email || '–';
-document.getElementById('role').textContent = user.role || 'customer';
 
 function toggleEdit() {
   const form = document.getElementById('editForm');
@@ -1913,10 +1950,7 @@ function applySeller() {
   msg.style.color = '#27ae60'; msg.textContent = 'Application submitted (API connection coming next).';
 }
 
-loadReferralStats();
-loadCartSummary();
-loadOrders();
-loadMessages();
+loadDashboardSession();
 
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
   if (typeof toggleEdit === "function") window.toggleEdit = toggleEdit;
