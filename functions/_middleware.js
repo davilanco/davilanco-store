@@ -2,7 +2,7 @@ import { requireSession } from './lib/auth.js';
 
 export async function onRequest({ request, env, next }) {
   const url = new URL(request.url);
-  const path = url.pathname.replace(/\\/+$/, '') || '/';
+  const path = url.pathname.replace(/\/+$/, '') || '/';
   const isAdminRoute = path === '/admin' || path.startsWith('/admin/');
   const isSellerRoute = path === '/seller' || path.startsWith('/seller/');
   const isDashboardRoute = path === '/dashboard.html';
@@ -11,8 +11,6 @@ export async function onRequest({ request, env, next }) {
 
   const auth = await requireSession(request, env);
   if (!auth.ok) {
-    // A server/database configuration failure is not an unauthenticated visit.
-    // Return it clearly instead of redirecting into a confusing login loop.
     if (auth.response && auth.response.status >= 500) return auth.response;
     const destination = isAdminRoute ? '/admin/' : (isSellerRoute ? '/seller/' : '/dashboard.html');
     return Response.redirect(new URL('/login.html?redirect=' + encodeURIComponent(destination), url), 302);
