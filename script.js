@@ -3,6 +3,7 @@
   var path = window.location.pathname;
   var isAdminPage = path === '/admin/' || path.indexOf('/admin/') === 0;
   var isDashboard = path === '/dashboard.html';
+  if (isAdminPage) document.documentElement.classList.add('davilanco-admin-page');
   var nativeFetch = window.fetch.bind(window);
   var adminSessionPromise = null;
 
@@ -60,8 +61,6 @@
 
     init = Object.assign({}, init || {});
     var headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
-    var storedToken = localStorage.getItem('token');
-    if (storedToken && !headers.has('Authorization')) headers.set('Authorization', 'Bearer ' + storedToken);
     if (!headers.has('Accept')) headers.set('Accept', 'application/json');
     init.headers = headers;
     init.credentials = init.credentials || 'same-origin';
@@ -104,6 +103,26 @@
   };
   // Page-specific scripts may still declare their legacy toggleNav; reassert the shared handler after parsing.
   window.toggleNav = sharedToggleNav;
+  function updateAccountNavigation() {
+    const dashboardLinks = document.querySelectorAll('a[href="/dashboard.html"]');
+    const sellerLinks = document.querySelectorAll('a[href="/seller/"]');
+    const adminLinks = document.querySelectorAll('a[href="/admin/"], a[href="/admin"]');
+    dashboardLinks.forEach((link) => { link.hidden = true; link.classList.add('hidden'); });
+    sellerLinks.forEach((link) => { link.hidden = true; link.classList.add('hidden'); });
+    adminLinks.forEach((link) => { link.hidden = true; link.classList.add('hidden'); });
+    fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (!data || !data.ok || !data.user || !data.user.id) return;
+        dashboardLinks.forEach((link) => { link.hidden = false; link.classList.remove('hidden'); });
+        if (data.user.role === 'seller' || data.user.role === 'admin')
+          sellerLinks.forEach((link) => { link.hidden = false; link.classList.remove('hidden'); });
+        if (data.user.role === 'admin')
+          adminLinks.forEach((link) => { link.hidden = false; link.classList.remove('hidden'); });
+      }).catch(() => {});
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', updateAccountNavigation);
+  else updateAccountNavigation();
   document.addEventListener('DOMContentLoaded', () => { window.toggleNav = sharedToggleNav; });
   document.addEventListener('click', async (event) => {
     const logout = event.target.closest && event.target.closest('#logoutBtn');
@@ -1463,10 +1482,6 @@ if (["/admin/api.html"].includes(window.location.pathname)) {
   (function () {
 /* Extracted script 1 from admin/api.html */
 (function(){
-  var token=localStorage.getItem('token'), storedUser=null;
-  try{storedUser=JSON.parse(localStorage.getItem('user')||'null')}catch(e){}
-  if(!token||!storedUser){window.location.replace('/login.html?redirect='+encodeURIComponent('/admin/api.html'));return}
-  if(storedUser.role!=='admin'){alert('Access denied. Admin only.');window.location.replace('/dashboard.html');return}
 
   // File list mirrors functions/api/*.js and functions/api/paystack/*.js in the repository.
   // "Risky" routes are explicitly marked and require typing RUN before this console sends a request.
@@ -1541,7 +1556,7 @@ if (["/admin/api.html"].includes(window.location.pathname)) {
     button.disabled=true;status.className='status';status.textContent='Sending request…';out.textContent='Waiting for response…';
     var started=Date.now();
     try{
-      var options={method:verb,headers:{'Accept':'application/json','Authorization':'Bearer '+token,'Cache-Control':'no-store'}};
+      var options={method:verb,headers:{'Accept':'application/json','Accept':'application/json','Cache-Control':'no-store'}};
       if(payload!==undefined){options.headers['Content-Type']='application/json';options.body=JSON.stringify(payload)}
       var response=await fetch(url,options);
       var text=await response.text(), shown=text;
@@ -1558,6 +1573,11 @@ if (["/admin/api.html"].includes(window.location.pathname)) {
   choose(0);
 })();
 
+
+  // Make page handlers available to HTML inline event attributes.
+  if (typeof esc === 'function') window.esc = esc;
+  if (typeof choose === 'function') window.choose = choose;
+  if (typeof renderCatalog === 'function') window.renderCatalog = renderCatalog;
   })();
 }
 
@@ -1579,42 +1599,12 @@ var savedTheme = localStorage.getItem('theme');
       document.getElementById('navDrawer').classList.toggle('open');
     }
 
-    var token = localStorage.getItem('token');
-    // Attach the signed session token to every same-origin API request from this admin page.
-    (function() {
-      var originalFetch = window.fetch.bind(window);
-      window.fetch = function(input, init) {
-        var target = typeof input === 'string' ? input : (input && input.url) || '';
-        if (target.indexOf('/api/') === 0 && token) {
-          init = init || {};
-          var headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
-          headers.set('Authorization', 'Bearer ' + token);
-          init = Object.assign({}, init, { headers: headers });
-        }
-        return originalFetch(input, init);
-      };
-    })();
-    var userStr = localStorage.getItem('user');
-    if (!token || !userStr) {
-      window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/users.html');
-    }
     var adminUser = {};
-    try { adminUser = JSON.parse(userStr); } catch (e) {
-      localStorage.clear();
-      window.location.href = '/login.html';
-    }
-    if (adminUser.role !== 'admin') {
-      alert('Access denied. Admin only.');
-      window.location.href = '/dashboard.html';
-    }
-
-    document.getElementById('logoutBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login.html';
-    });
-
+    fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
+      .then(function(response) { return response.json(); })
+      .then(function(data) { if (data && data.ok && data.user) adminUser = data.user; })
+      .catch(function() {});
+    
     function showToast(text) {
       var t = document.getElementById('toast');
       t.textContent = text || 'Done';
@@ -1842,6 +1832,21 @@ async function sendMessage(userId, nickname) {
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
   if (typeof filterUsers === "function") window.filterUsers = filterUsers;
   if (typeof loadUsers === "function") window.loadUsers = loadUsers;
+
+  // Make page handlers available to HTML inline event attributes.
+  if (typeof toggleTheme === 'function') window.toggleTheme = toggleTheme;
+  if (typeof toggleNav === 'function') window.toggleNav = toggleNav;
+  if (typeof showToast === 'function') window.showToast = showToast;
+  if (typeof loadUsers === 'function') window.loadUsers = loadUsers;
+  if (typeof filterUsers === 'function') window.filterUsers = filterUsers;
+  if (typeof renderUsers === 'function') window.renderUsers = renderUsers;
+  if (typeof toggleOrders === 'function') window.toggleOrders = toggleOrders;
+  if (typeof loadUserOrders === 'function') window.loadUserOrders = loadUserOrders;
+  if (typeof toggleMessage === 'function') window.toggleMessage = toggleMessage;
+  if (typeof sendMessage === 'function') window.sendMessage = sendMessage;
+  if (typeof setStatus === 'function') window.setStatus = setStatus;
+  if (typeof setRole === 'function') window.setRole = setRole;
+  if (typeof deleteUser === 'function') window.deleteUser = deleteUser;
   })();
 }
 
@@ -1863,28 +1868,11 @@ var savedTheme = localStorage.getItem('theme');
       document.getElementById('navDrawer').classList.toggle('open');
     }
 
-    var token = localStorage.getItem('token');
-    var userStr = localStorage.getItem('user');
-    if (!token || !userStr) {
-      window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/');
-    }
-    var user = {};
-    try { user = JSON.parse(userStr); } catch (e) {
-      localStorage.clear();
-      window.location.href = '/login.html';
-    }
-    if (user.role !== 'admin') {
-      alert('Access denied. Admin only.');
-      window.location.href = '/dashboard.html';
-    }
-
-    document.getElementById('logoutBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login.html';
-    });
   if (typeof toggleTheme === "function") window.toggleTheme = toggleTheme;
+
+  // Make page handlers available to HTML inline event attributes.
+  if (typeof toggleTheme === 'function') window.toggleTheme = toggleTheme;
+  if (typeof toggleNav === 'function') window.toggleNav = toggleNav;
   })();
 }
 
@@ -2543,42 +2531,6 @@ function escapeHtml(value) {
       document.getElementById('navDrawer').classList.toggle('open');
     }
 
-    var token = localStorage.getItem('token');
-    // Attach the signed session token to every same-origin API request from this admin page.
-    (function() {
-      var originalFetch = window.fetch.bind(window);
-      window.fetch = function(input, init) {
-        var target = typeof input === 'string' ? input : (input && input.url) || '';
-        if (target.indexOf('/api/') === 0 && token) {
-          init = init || {};
-          var headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
-          headers.set('Authorization', 'Bearer ' + token);
-          init = Object.assign({}, init, { headers: headers });
-        }
-        return originalFetch(input, init);
-      };
-    })();
-    var userStr = localStorage.getItem('user');
-    if (!token || !userStr) {
-      window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/orders.html');
-    }
-    var user = {};
-    try { user = JSON.parse(userStr); } catch (e) {
-      localStorage.clear();
-      window.location.href = '/login.html';
-    }
-    if (user.role !== 'admin') {
-      alert('Access denied. Admin only.');
-      window.location.href = '/dashboard.html';
-    }
-
-    document.getElementById('logoutBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login.html';
-    });
-
     function showToast(text) {
       var t = document.getElementById('toast');
       t.textContent = text || 'Saved';
@@ -2730,6 +2682,24 @@ function escapeHtml(value) {
   if (typeof loadOrders === "function") window.loadOrders = loadOrders;
   if (typeof updateOrder === "function") window.updateOrder = updateOrder;
   if (typeof markPaidAndApprove === "function") window.markPaidAndApprove = markPaidAndApprove;
+
+  // Make page handlers available to HTML inline event attributes.
+  if (typeof placeOnAe === 'function') window.placeOnAe = placeOnAe;
+  if (typeof pullTracking === 'function') window.pullTracking = pullTracking;
+  if (typeof selectOrderByIndex === 'function') window.selectOrderByIndex = selectOrderByIndex;
+  if (typeof quickConfirmByIndex === 'function') window.quickConfirmByIndex = quickConfirmByIndex;
+  if (typeof placeOnAeByIndex === 'function') window.placeOnAeByIndex = placeOnAeByIndex;
+  if (typeof pullTrackingByIndex === 'function') window.pullTrackingByIndex = pullTrackingByIndex;
+  if (typeof escapeHtml === 'function') window.escapeHtml = escapeHtml;
+  if (typeof toggleTheme === 'function') window.toggleTheme = toggleTheme;
+  if (typeof toggleNav === 'function') window.toggleNav = toggleNav;
+  if (typeof showToast === 'function') window.showToast = showToast;
+  if (typeof badgeClass === 'function') window.badgeClass = badgeClass;
+  if (typeof selectOrder === 'function') window.selectOrder = selectOrder;
+  if (typeof loadOrders === 'function') window.loadOrders = loadOrders;
+  if (typeof updateOrder === 'function') window.updateOrder = updateOrder;
+  if (typeof markPaidAndApprove === 'function') window.markPaidAndApprove = markPaidAndApprove;
+  if (typeof quickConfirm === 'function') window.quickConfirm = quickConfirm;
   })();
 }
 
@@ -2751,41 +2721,12 @@ var savedTheme = localStorage.getItem('theme');
       document.getElementById('navDrawer').classList.toggle('open');
     }
 
-    var token = localStorage.getItem('token');
-    (function() {
-      var originalFetch = window.fetch.bind(window);
-      window.fetch = function(input, init) {
-        var target = typeof input === 'string' ? input : (input && input.url) || '';
-        if (target.indexOf('/api/') === 0 && token) {
-          init = init || {};
-          var headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
-          headers.set('Authorization', 'Bearer ' + token);
-          init = Object.assign({}, init, { headers: headers });
-        }
-        return originalFetch(input, init);
-      };
-    })();
-    var userStr = localStorage.getItem('user');
-    if (!token || !userStr) {
-      window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/messages.html');
-    }
     var adminUser = {};
-    try { adminUser = JSON.parse(userStr); } catch (e) {
-      localStorage.clear();
-      window.location.href = '/login.html';
-    }
-    if (adminUser.role !== 'admin') {
-      alert('Access denied. Admin only.');
-      window.location.href = '/dashboard.html';
-    }
-
-    document.getElementById('logoutBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login.html';
-    });
-
+    fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
+      .then(function(response) { return response.json(); })
+      .then(function(data) { if (data && data.ok && data.user) adminUser = data.user; })
+      .catch(function() {});
+    
     function showToast(text) {
       var t = document.getElementById('toast');
       t.textContent = text || 'Sent';
@@ -2946,6 +2887,19 @@ var savedTheme = localStorage.getItem('theme');
   if (typeof sendAdminReply === "function") window.sendAdminReply = sendAdminReply;
   if (typeof loadThread === "function") window.loadThread = loadThread;
   if (typeof loadAllMessages === "function") window.loadAllMessages = loadAllMessages;
+
+  // Make page handlers available to HTML inline event attributes.
+  if (typeof toggleTheme === 'function') window.toggleTheme = toggleTheme;
+  if (typeof toggleNav === 'function') window.toggleNav = toggleNav;
+  if (typeof showToast === 'function') window.showToast = showToast;
+  if (typeof loadUsers === 'function') window.loadUsers = loadUsers;
+  if (typeof filterUserList === 'function') window.filterUserList = filterUserList;
+  if (typeof renderUserList === 'function') window.renderUserList = renderUserList;
+  if (typeof selectUser === 'function') window.selectUser = selectUser;
+  if (typeof loadThread === 'function') window.loadThread = loadThread;
+  if (typeof escapeHtml === 'function') window.escapeHtml = escapeHtml;
+  if (typeof sendAdminReply === 'function') window.sendAdminReply = sendAdminReply;
+  if (typeof loadAllMessages === 'function') window.loadAllMessages = loadAllMessages;
   })();
 }
 
@@ -3074,10 +3028,6 @@ if (["/admin/analytics.html"].includes(window.location.pathname)) {
   (function () {
 /* Extracted script 1 from admin/analytics.html */
 (function(){
-  var token=localStorage.getItem('token');
-  var storedUser=null;
-  try{storedUser=JSON.parse(localStorage.getItem('user')||'null')}catch(e){}
-  if(!token||!storedUser){window.location.replace('/login.html?redirect='+encodeURIComponent('/admin/analytics.html'));return}
   var status=document.getElementById('status');
   function number(v){return Number(v||0).toLocaleString('en-NG')}
   function escapeText(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -3085,7 +3035,7 @@ if (["/admin/analytics.html"].includes(window.location.pathname)) {
     status.className='status';status.textContent='Loading…';
     try{
       var days=Number(document.getElementById('range').value)||7;
-      var response=await fetch('/api/analytics?days='+days,{headers:{'Authorization':'Bearer '+token},cache:'no-store'});
+      var response=await fetch('/api/analytics?days='+days,{credentials:'same-origin',cache:'no-store'});
       var data=await response.json();
       if(!response.ok)throw new Error(data.error||'Could not load analytics');
       document.getElementById('todayViews').textContent=number(data.today.page_views);
@@ -3114,6 +3064,11 @@ if (["/admin/analytics.html"].includes(window.location.pathname)) {
   load();
 })();
 
+
+  // Make page handlers available to HTML inline event attributes.
+  if (typeof number === 'function') window.number = number;
+  if (typeof escapeText === 'function') window.escapeText = escapeText;
+  if (typeof load === 'function') window.load = load;
   })();
 }
 
@@ -3134,42 +3089,6 @@ var savedTheme = localStorage.getItem('theme');
     function toggleNav() {
       document.getElementById('navDrawer').classList.toggle('open');
     }
-
-    var token = localStorage.getItem('token');
-    // Attach the signed session token to every same-origin API request from this admin page.
-    (function() {
-      var originalFetch = window.fetch.bind(window);
-      window.fetch = function(input, init) {
-        var target = typeof input === 'string' ? input : (input && input.url) || '';
-        if (target.indexOf('/api/') === 0 && token) {
-          init = init || {};
-          var headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
-          headers.set('Authorization', 'Bearer ' + token);
-          init = Object.assign({}, init, { headers: headers });
-        }
-        return originalFetch(input, init);
-      };
-    })();
-    var userStr = localStorage.getItem('user');
-    if (!token || !userStr) {
-      window.location.href = '/login.html?redirect=' + encodeURIComponent('/admin/products.html');
-    }
-    var user = {};
-    try { user = JSON.parse(userStr); } catch (e) {
-      localStorage.clear();
-      window.location.href = '/login.html';
-    }
-    if (user.role !== 'admin') {
-      alert('Access denied. Admin only.');
-      window.location.href = '/dashboard.html';
-    }
-
-    document.getElementById('logoutBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login.html';
-    });
 
     function showToast(text) {
       var t = document.getElementById('toast');
@@ -3528,6 +3447,24 @@ async function bulkImportAe() {
   if (typeof searchAe === "function") window.searchAe = searchAe;
   if (typeof testAeApi === "function") window.testAeApi = testAeApi;
   if (typeof loadProducts === "function") window.loadProducts = loadProducts;
+
+  // Make page handlers available to HTML inline event attributes.
+  if (typeof toggleTheme === 'function') window.toggleTheme = toggleTheme;
+  if (typeof toggleNav === 'function') window.toggleNav = toggleNav;
+  if (typeof showToast === 'function') window.showToast = showToast;
+  if (typeof onAdminFileSelected === 'function') window.onAdminFileSelected = onAdminFileSelected;
+  if (typeof addProduct === 'function') window.addProduct = addProduct;
+  if (typeof importProduct === 'function') window.importProduct = importProduct;
+  if (typeof escapeHtml === 'function') window.escapeHtml = escapeHtml;
+  if (typeof safeImageUrl === 'function') window.safeImageUrl = safeImageUrl;
+  if (typeof testAeApi === 'function') window.testAeApi = testAeApi;
+  if (typeof searchAe === 'function') window.searchAe = searchAe;
+  if (typeof bulkImportAe === 'function') window.bulkImportAe = bulkImportAe;
+  if (typeof loadProducts === 'function') window.loadProducts = loadProducts;
+  if (typeof toggleEdit === 'function') window.toggleEdit = toggleEdit;
+  if (typeof saveProduct === 'function') window.saveProduct = saveProduct;
+  if (typeof setStatus === 'function') window.setStatus = setStatus;
+  if (typeof deleteProduct === 'function') window.deleteProduct = deleteProduct;
   })();
 }
 

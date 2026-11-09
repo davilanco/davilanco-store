@@ -2514,3 +2514,15 @@ footer { width:100%; }
   .product-price { font-size:15px; }
   .add-btn { min-height:38px; }
 }
+
+
+/* Admin pages use the full available viewport; prevent leftover login-card widths from constraining admin panels. */
+html, body { max-width: 100%; }
+body.davilanco-admin-page main { width: 100%; max-width: none; }
+body.davilanco-admin-page main > .card,
+body.davilanco-admin-page main > .toolbar,
+body.davilanco-admin-page main > #usersList { width: 100%; max-width: none; }
+body.davilanco-admin-page main > .card { min-width: 0; }
+body.davilanco-admin-page main input,
+body.davilanco-admin-page main select,
+body.davilanco-admin-page main textarea { max-width: 100%; }
