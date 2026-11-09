@@ -1846,7 +1846,7 @@ async function sendMessage(userId, nickname) {
 }
 
 /* ===== js/pages/admin-index.js ===== */
-if (["/admin/index.html"].includes(window.location.pathname)) {
+if (["/admin/","/admin/index.html"].includes(window.location.pathname)) {
   (function () {
 /* Extracted script 1 from admin/index.html */
 var savedTheme = localStorage.getItem('theme');
