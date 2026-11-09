@@ -3,6 +3,7 @@
   var path = window.location.pathname;
   var isAdminPage = path === '/admin/' || path.indexOf('/admin/') === 0;
   var isDashboard = path === '/dashboard.html';
+  if (isAdminPage) document.documentElement.classList.add('davilanco-admin-page');
   var nativeFetch = window.fetch.bind(window);
   var adminSessionPromise = null;
 
