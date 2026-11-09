@@ -1603,6 +1603,12 @@ var savedTheme = localStorage.getItem('theme');
       document.getElementById('navDrawer').classList.toggle('open');
     }
 
+    var adminUser = {};
+    fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
+      .then(function(response) { return response.json(); })
+      .then(function(data) { if (data && data.ok && data.user) adminUser = data.user; })
+      .catch(function() {});
+    
     function showToast(text) {
       var t = document.getElementById('toast');
       t.textContent = text || 'Done';
@@ -2719,6 +2725,12 @@ var savedTheme = localStorage.getItem('theme');
       document.getElementById('navDrawer').classList.toggle('open');
     }
 
+    var adminUser = {};
+    fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
+      .then(function(response) { return response.json(); })
+      .then(function(data) { if (data && data.ok && data.user) adminUser = data.user; })
+      .catch(function() {});
+    
     function showToast(text) {
       var t = document.getElementById('toast');
       t.textContent = text || 'Sent';
