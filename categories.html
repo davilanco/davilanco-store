@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop by Category | Davilanco</title>
+<meta name="description" content="Explore fashion, electronics, home, beauty and more at Davilanco.">
+<link rel="canonical" href="https://shop.davilanco.com/categories.html">
+<link rel="icon" href="/images/logo.jpg">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/pages/categories.css">
+</head>
+<body>
+<header>
+<a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
+<input id="searchBar" type="search" placeholder="Search products..." aria-label="Search products">
+<div class="header-actions">
+<a href="/cart.html" class="icon-btn" aria-label="Cart">🛒</a>
+<button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
+<button class="nav-menu-toggle" type="button" onclick="toggleNav()" aria-label="Open menu" aria-controls="navDrawer" aria-expanded="false"><span></span><span></span><span></span></button>
+</div>
+<nav id="navDrawer">
+<a href="/">Home</a><a href="/categories.html">Categories</a><a href="/cart.html">Cart</a><a href="/dashboard.html">Dashboard</a>
+<a href="/login.html">Login</a><a href="/signup.html">Create Account</a>
+</nav>
+</header>
+<main>
+<div class="intro"><a href="/">← Back to shop</a><h1>Shop by Category</h1><p>Find what you are looking for.</p></div>
+<div id="categoryGrid" class="category-grid"><div class="state-box">Loading categories…</div></div>
+</main>
+<footer><p>Davilanco © 2026 · <a href="/">Back to shop</a></p></footer>
+<script src="/script.js"></script><script src="/js/pages/categories.js"></script>
+</body></html>

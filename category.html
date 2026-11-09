@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Category Products | Davilanco</title>
+<meta name="description" content="Browse products by category at Davilanco.">
+<link rel="icon" href="/images/logo.jpg"><link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/pages/categories.css">
+</head>
+<body>
+<header>
+<a href="/"><img src="/images/logo.jpg" alt="Davilanco"></a>
+<input id="searchBar" type="search" placeholder="Search this category…" aria-label="Search products">
+<div class="header-actions"><a href="/cart.html" class="icon-btn" aria-label="Cart">🛒</a><button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button><button class="nav-menu-toggle" type="button" onclick="toggleNav()" aria-label="Open menu" aria-controls="navDrawer" aria-expanded="false"><span></span><span></span><span></span></button></div>
+<nav id="navDrawer"><a href="/">Home</a><a href="/categories.html">Categories</a><a href="/cart.html">Cart</a><a href="/dashboard.html">Dashboard</a><a href="/login.html">Login</a><a href="/signup.html">Create Account</a></nav>
+</header>
+<main>
+<div class="intro"><a href="/categories.html">← All categories</a><h1 id="categoryTitle">Category</h1><p id="categoryDescription">Browse available products.</p></div>
+<div class="toolbar"><span id="productCount">Loading products…</span><select id="sortProducts" aria-label="Sort products"><option value="newest">Newest first</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></div>
+<div id="productsGrid" class="products-grid"><div class="state-box">Loading products…</div></div>
+</main>
+<footer><p>Davilanco © 2026 · <a href="/">Back to shop</a></p></footer>
+<script src="/script.js"></script><script src="/js/pages/category.js"></script>
+</body></html>
