@@ -2377,3 +2377,101 @@ main{width:min(1120px,100%);margin:0 auto;padding:26px 16px 48px;flex:1}.intro{m
 .nav-menu-toggle.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); background: #ffd700; }
 @media (prefers-reduced-motion: reduce) { .nav-menu-toggle span { transition: none; } }
 
+
+
+/* ===== Second repair pass: responsive layout and compact controls ===== */
+:root {
+  --store-content-width: 1480px;
+  --store-page-gutter: clamp(14px, 2.2vw, 34px);
+}
+
+/* Let content use modern wide screens without creating horizontal overflow. */
+html { min-height: 100%; }
+body {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow-x: clip;
+}
+main {
+  width: 100%;
+  max-width: var(--store-content-width);
+  padding-left: var(--store-page-gutter);
+  padding-right: var(--store-page-gutter);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Keep authentication forms deliberately narrow while other pages expand. */
+main:has(#loginForm),
+main:has(#signupForm),
+main:has(#msg):not(:has(#checkoutContent)) {
+  max-width: 480px;
+}
+
+/* Wider product grids make better use of desktop and tablet landscape space. */
+@media (min-width: 1200px) {
+  #productsGrid,
+  .products-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 18px;
+  }
+}
+@media (min-width: 1600px) {
+  #productsGrid,
+  .products-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+/* Reduce oversized primary buttons, while preserving comfortable touch targets. */
+button:not(.nav-menu-toggle):not(.icon-btn) {
+  min-height: 36px;
+  padding: 7px 11px;
+  font-size: 13px;
+  line-height: 1.25;
+}
+.add-btn {
+  min-height: 36px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.checkout-btn {
+  min-height: 40px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+.empty a,
+a.btn {
+  padding: 9px 16px;
+  font-size: 13px;
+}
+#backToTop {
+  width: 42px;
+  height: 42px;
+  font-size: 18px;
+}
+
+/* Keep the drawer usable on phones and keep its close (X) control above it. */
+header { z-index: 1301; }
+#navDrawer {
+  width: min(340px, 86vw);
+  min-width: 0;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 1300;
+}
+.nav-menu-toggle {
+  width: 40px;
+  height: 40px;
+}
+@media (max-width: 600px) {
+  main {
+    padding-top: 18px;
+    padding-bottom: 28px;
+  }
+  #productsGrid,
+  .products-grid {
+    gap: 10px;
+  }
+}
