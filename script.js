@@ -1,3 +1,15 @@
+/* Google Analytics 4 is initialized here so every page uses this single JavaScript file. */
+(function () {
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+  window.gtag('js', new Date());
+  window.gtag('config', 'G-PVEHSCE72P');
+  var gaScript = document.createElement('script');
+  gaScript.async = true;
+  gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-PVEHSCE72P';
+  document.head.appendChild(gaScript);
+})();
+
 /* Shared store navigation behavior. */
 (() => {
   function getDrawer() { return document.getElementById('navDrawer'); }
