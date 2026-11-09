@@ -19,8 +19,8 @@ export async function onRequestPost({ request, env }) {
     return json({ error: 'The login request was not valid JSON. Refresh the page and try again.', code: 'INVALID_JSON' }, 400);
   }
 
-  const login = String(body.login || '').trim();
-  const password = String(body.password || '');
+  const login = String(body && body.login || '').trim();
+  const password = String(body && body.password || '');
   if (!login || !password) return json({ error: 'Nickname, email or phone and password are required.' }, 400);
 
   try {
