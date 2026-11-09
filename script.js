@@ -1482,10 +1482,6 @@ if (["/admin/api.html"].includes(window.location.pathname)) {
   (function () {
 /* Extracted script 1 from admin/api.html */
 (function(){
-  var token=localStorage.getItem('token'), storedUser=null;
-  try{storedUser=JSON.parse(localStorage.getItem('user')||'null')}catch(e){}
-  if(!token||!storedUser){window.location.replace('/login.html?redirect='+encodeURIComponent('/admin/api.html'));return}
-  if(storedUser.role!=='admin'){alert('Access denied. Admin only.');window.location.replace('/dashboard.html');return}
 
   // File list mirrors functions/api/*.js and functions/api/paystack/*.js in the repository.
   // "Risky" routes are explicitly marked and require typing RUN before this console sends a request.
@@ -1560,7 +1556,7 @@ if (["/admin/api.html"].includes(window.location.pathname)) {
     button.disabled=true;status.className='status';status.textContent='Sending request…';out.textContent='Waiting for response…';
     var started=Date.now();
     try{
-      var options={method:verb,headers:{'Accept':'application/json','Authorization':'Bearer '+token,'Cache-Control':'no-store'}};
+      var options={method:verb,headers:{'Accept':'application/json','Accept':'application/json','Cache-Control':'no-store'}};
       if(payload!==undefined){options.headers['Content-Type']='application/json';options.body=JSON.stringify(payload)}
       var response=await fetch(url,options);
       var text=await response.text(), shown=text;
