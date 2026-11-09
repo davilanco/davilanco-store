@@ -28,6 +28,86 @@
     localStorage.removeItem('user');
     window.location.replace('/login.html');
   }, true);
+  // Reliable shared login controls. This capture-phase fallback runs before page-specific handlers.
+  window.togglePasswordVisibility = function (fieldId) {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+    field.type = field.type === 'password' ? 'text' : 'password';
+  };
+
+  document.addEventListener('submit', async (event) => {
+    const form = event.target;
+    if (!form || form.id !== 'loginForm') return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const msg = document.getElementById('msg');
+    const button = document.getElementById('submitBtn');
+    const login = document.getElementById('login');
+    const password = document.getElementById('password');
+    if (!msg || !button || !login || !password) return;
+
+    button.disabled = true;
+    button.textContent = 'Logging in...';
+    msg.className = '';
+    msg.textContent = 'Connecting to the login service...';
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ login: login.value.trim(), password: password.value })
+      });
+      const raw = await response.text();
+      let data;
+      try { data = raw ? JSON.parse(raw) : {}; }
+      catch (_) { throw new Error('The login service returned an unexpected response (HTTP ' + response.status + ').'); }
+
+      if (!response.ok || !data.ok) {
+        msg.className = 'error';
+        msg.textContent = (data.error || 'Login failed.') + ' (HTTP ' + response.status + ')';
+        if (data.needs_verification && data.email) {
+          const link = document.createElement('a');
+          link.href = '/verify.html?email=' + encodeURIComponent(data.email);
+          link.textContent = 'Verify your email';
+          msg.append(document.createElement('br'), link);
+        }
+        return;
+      }
+
+      if (!data.token || !data.user || !data.user.id) {
+        throw new Error('The login service did not return the expected session details.');
+      }
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      const params = new URLSearchParams(window.location.search);
+      const requested = params.get('redirect') || '';
+      let destination = data.user.role === 'admin' ? '/admin/' :
+        (data.user.role === 'seller' ? '/seller/' : '/dashboard.html');
+      try {
+        const target = new URL(requested, window.location.origin);
+        if (requested.startsWith('/') && !requested.startsWith('//') &&
+            !requested.includes(String.fromCharCode(92)) && target.origin === window.location.origin) {
+          destination = target.pathname + target.search + target.hash;
+        }
+      } catch (_) {}
+
+      msg.className = 'success';
+      msg.textContent = 'Login successful! Redirecting...';
+      window.setTimeout(() => window.location.assign(destination), 500);
+    } catch (error) {
+      console.error('[Davilanco login fallback]', error);
+      msg.className = 'error';
+      msg.textContent = error.message || 'Could not connect to the login service. Please try again.';
+    } finally {
+      button.disabled = false;
+      if (button.textContent === 'Logging in...') button.textContent = 'Login';
+    }
+  }, true);
+
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       const drawer = getDrawer();
