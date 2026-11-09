@@ -1,3 +1,90 @@
+/* Shared authenticated API transport and route guards. */
+(function () {
+  var path = window.location.pathname;
+  var isAdminPage = path === '/admin/' || path.indexOf('/admin/') === 0;
+  var isDashboard = path === '/dashboard.html';
+  var nativeFetch = window.fetch.bind(window);
+  var adminSessionPromise = null;
+
+  function goToLogin(destination) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.replace('/login.html?redirect=' + encodeURIComponent(destination));
+  }
+
+  if (isAdminPage || isDashboard) {
+    document.documentElement.classList.add('davilanco-auth-pending');
+    var style = document.createElement('style');
+    style.textContent = '.davilanco-auth-pending body > main{visibility:hidden}.davilanco-auth-pending body:after{content:"Checking your secure session…";display:block;text-align:center;padding:48px 16px;font:16px sans-serif}';
+    document.head.appendChild(style);
+  }
+
+  if (isAdminPage) {
+    adminSessionPromise = nativeFetch('/api/session', {
+      credentials: 'same-origin', cache: 'no-store',
+      headers: { 'Accept': 'application/json' }
+    }).then(async function (response) {
+      var data = await response.json().catch(function () { return {}; });
+      if (!response.ok || !data.ok || !data.user || !data.user.id) {
+        goToLogin(path + window.location.search);
+        throw new Error(data.error || 'Please sign in to continue.');
+      }
+      if (data.user.role !== 'admin') {
+        window.location.replace('/dashboard.html');
+        throw new Error('Administrator access required.');
+      }
+      localStorage.setItem('user', JSON.stringify(data.user));
+      document.documentElement.classList.remove('davilanco-auth-pending');
+      return data.user;
+    }).catch(function (error) {
+      if (!document.documentElement.classList.contains('davilanco-auth-pending')) throw error;
+      if (error && error.message && !/Failed to fetch/i.test(error.message)) throw error;
+      document.documentElement.classList.remove('davilanco-auth-pending');
+      var main = document.querySelector('body > main');
+      if (main) main.innerHTML = '<p role="alert">Could not verify your administrator session. Check your connection and refresh this page.</p>';
+      throw error;
+    });
+  }
+
+  if (isDashboard) {
+    // The dashboard's own /api/session check removes this class after successful verification.
+    // On failure it redirects to login, so private dashboard content stays hidden meanwhile.
+  }
+
+  window.fetch = function (input, init) {
+    var requestUrl = typeof input === 'string' ? input : (input && input.url) || '';
+    var parsed;
+    try { parsed = new URL(requestUrl, window.location.href); } catch (_) {}
+    var isApi = parsed && parsed.origin === window.location.origin && parsed.pathname.indexOf('/api/') === 0;
+    if (!isApi) return nativeFetch(input, init);
+
+    init = Object.assign({}, init || {});
+    var headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+    var storedToken = localStorage.getItem('token');
+    if (storedToken && !headers.has('Authorization')) headers.set('Authorization', 'Bearer ' + storedToken);
+    if (!headers.has('Accept')) headers.set('Accept', 'application/json');
+    init.headers = headers;
+    init.credentials = init.credentials || 'same-origin';
+    if (!init.cache) init.cache = 'no-store';
+
+    var perform = function () {
+      var controller = new AbortController();
+      var timer = setTimeout(function () { controller.abort(); }, 25000);
+      if (init.signal) {
+        if (init.signal.aborted) controller.abort();
+        else init.signal.addEventListener('abort', function () { controller.abort(); }, { once: true });
+      }
+      init.signal = controller.signal;
+      return nativeFetch(input, init).finally(function () { clearTimeout(timer); });
+    };
+
+    if (isAdminPage && parsed.pathname !== '/api/session' && parsed.pathname !== '/api/login' && parsed.pathname !== '/api/logout') {
+      return (adminSessionPromise || Promise.resolve()).then(perform);
+    }
+    return perform();
+  };
+})();
+
 /* Shared store navigation behavior. */
 (() => {
   function getDrawer() { return document.getElementById('navDrawer'); }
@@ -1817,6 +1904,7 @@ async function loadDashboardSession() {
       throw new Error(data.error || 'Your session has expired. Please sign in again.');
     }
     user = data.user;
+    document.documentElement.classList.remove('davilanco-auth-pending');
     localStorage.setItem('user', JSON.stringify(user));
     if (user.role === 'seller' || user.role === 'admin') document.getElementById('sellerLink').classList.remove('hidden');
     if (user.role === 'admin') document.getElementById('adminLink').classList.remove('hidden');
