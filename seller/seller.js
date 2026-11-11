@@ -47,7 +47,7 @@
     });
   function runSellerPage() {
 /* ===== js/pages/seller-index.js ===== */
-if (["/seller/index.html"].includes(window.location.pathname)) {
+if (["/seller/","/seller/index.html"].includes(window.location.pathname)) {
   (function () {
 /* Extracted script 1 from seller/index.html */
 var savedTheme = localStorage.getItem('theme');
