@@ -1090,9 +1090,9 @@ if (["/product.html"].includes(window.location.pathname)) {
         // For now we fetch all and find the matching one
         const res = await fetch('/api/products');
         const data = await res.json();
-        const products = Array.isArray(data) ? data : (data.results || []);
+        const products = Array.isArray(data) ? data : (data.results || data.products || []);
 
-        const product = products.find(p => p.id === productId);
+        const product = products.find(p => String(p.id) === String(productId));
 
         if (!product) {
           container.innerHTML = `
@@ -1111,7 +1111,9 @@ if (["/product.html"].includes(window.location.pathname)) {
 
         const price = Number(product.price || 0).toLocaleString();
         const oldPrice = product.old_price ? Number(product.old_price).toLocaleString() : null;
-        const safeName = (product.name || '').replace(/'/g, "\\'");
+        const safeName = String(product.name || '');
+        const escapeHtml = function(value) { return String(value == null ? '' : value).replace(/[&<>\"']/g, function(ch) { if (ch === '&') return '&amp;'; if (ch === '<') return '&lt;'; if (ch === '>') return '&gt;'; if (ch === '\"') return '&quot;'; return '&#39;'; }); };
+        const imageUrl = /^https?:\/\//i.test(String(product.image || '')) ? String(product.image) : 'https://via.placeholder.com/500x500?text=No+Image';
 
         let oldPriceHtml = '';
         if (oldPrice) {
@@ -1125,11 +1127,9 @@ if (["/product.html"].includes(window.location.pathname)) {
           ? (stockNum > 0 ? stockNum + ' in stock' : 'Out of stock')
           : 'Available';
 
-        const safeImage = (product.image || '').replace(/'/g, "\\'");
-
         const cartButton = inStock
-          ? `<button onclick="addToCart('\( {product.id}', ' \){safeName}', \( {product.price || 0}, ' \){safeImage}')">Add to Cart</button>`
-          : `<button class="out-of-stock" disabled>Out of Stock</button>`;
+          ? '<button id="productAddToCart">Add to Cart</button>'
+          : '<button class="out-of-stock" disabled>Out of Stock</button>';
 
         const sellerBadgeHtml = product.seller_id
           ? `<div id="sellerBadgeWrap" style="margin-top:8px"><span class="seller-badge">Seller</span></div>`
@@ -1140,14 +1140,13 @@ if (["/product.html"].includes(window.location.pathname)) {
             <div>
               <img 
                 class="product-image" 
-                src="${product.image || 'https://via.placeholder.com/500x500?text=No+Image'}" 
-                alt="${product.name || 'Product'}"
+                src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name || 'Product')}"
                 onerror="this.src='https://via.placeholder.com/500x500?text=No+Image'"
               >
             </div>
 
             <div class="product-info">
-              <h1>${product.name || 'Unnamed Product'}</h1>
+              <h1>${escapeHtml(product.name || 'Unnamed Product')}</h1>
               
               <div class="price">
                 ₦${price}
@@ -1155,14 +1154,14 @@ if (["/product.html"].includes(window.location.pathname)) {
               </div>
 
               <div class="meta">
-                Category: ${product.category || 'General'}<br>
+                Category: ${escapeHtml(product.category || 'General')}<br>
                 Stock: ${stockLabel}
               </div>
 
               ${sellerBadgeHtml}
 
               <div class="description">
-                ${product.description || 'No description available for this product.'}
+                ${escapeHtml(product.description || 'No description available for this product.')}
               </div>
 
               <div class="qty-row">
@@ -1179,6 +1178,9 @@ if (["/product.html"].includes(window.location.pathname)) {
             </div>
           </div>
         `;
+
+        var addButton = document.getElementById('productAddToCart');
+        if (addButton) addButton.addEventListener('click', function() { addToCart(String(product.id), safeName, Number(product.price || 0), imageUrl); });
 
         // Load seller name into badge (clickable)
         if (product.seller_id) {
@@ -2154,18 +2156,21 @@ var savedTheme = localStorage.getItem('theme');
     })();
     var userStr = localStorage.getItem('user');
     if (!token || !userStr) {
-      window.location.href = '/login.html?redirect=' + encodeURIComponent('/seller/');
+      window.location.replace('/login.html?redirect=' + encodeURIComponent('/seller/'));
+      return;
     }
 
     var user = {};
     try { user = JSON.parse(userStr); } catch (e) {
-      localStorage.clear();
-      window.location.href = '/login.html';
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.replace('/login.html?redirect=' + encodeURIComponent('/seller/'));
+      return;
     }
 
-    if (user.role !== 'seller' && user.role !== 'admin') {
-      alert('Seller access only. Apply from your dashboard or ask admin to promote you.');
-      window.location.href = '/dashboard.html';
+    if (!user || (user.role !== 'seller' && user.role !== 'admin')) {
+      window.location.replace('/dashboard.html');
+      return;
     }
 
     if (user.role === 'admin') {

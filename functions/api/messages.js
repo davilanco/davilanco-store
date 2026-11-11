@@ -15,6 +15,10 @@ export async function onRequest(context) {
       created_at TEXT DEFAULT (datetime('now'))
     )
   `).run();
+  // Upgrade older installations created before sender metadata columns existed.
+  try { await env.DB.prepare('ALTER TABLE messages ADD COLUMN sender_role TEXT').run(); } catch (_) {}
+  try { await env.DB.prepare('ALTER TABLE messages ADD COLUMN sender_name TEXT').run(); } catch (_) {}
+  try { await env.DB.prepare('ALTER TABLE messages ADD COLUMN sender_id TEXT').run(); } catch (_) {}
 
   if (request.method === 'GET') {
     try {
@@ -62,23 +66,23 @@ export async function onRequest(context) {
         return Response.json({ error: 'Message must contain 1–5000 characters.' }, { status: 400 });
       }
 
-      let senderId = null;
-      let senderRole = 'customer';
-      let senderName = String(body.sender_name || '').slice(0, 120);
+      const auth = await requireSession(request, env);
+      if (!auth.ok) return auth.response;
+      const senderId = auth.user.id;
+      const senderRole = auth.user.role;
+      const senderName = String(auth.user.nickname || [auth.user.firstname, auth.user.lastname].filter(Boolean).join(' ') || '').slice(0, 120);
       let receiverId = null;
       let receiverRole = 'admin';
-      if (body.sender_id) {
-        const auth = await requireSession(request, env);
-        if (!auth.ok) return auth.response;
-        if (auth.user.id !== String(body.sender_id) && auth.user.role !== 'admin') {
-          return Response.json({ error: 'You may only send messages as your own account.' }, { status: 403 });
-        }
-        senderId = auth.user.id;
-        senderRole = auth.user.role;
-        if (auth.user.role === 'admin') {
-          receiverId = body.receiver_id || null;
-          receiverRole = body.receiver_role || 'customer';
-        }
+      if (auth.user.role === 'admin') {
+        receiverId = body.receiver_id ? String(body.receiver_id) : null;
+        receiverRole = body.receiver_role || 'customer';
+      } else if (body.receiver_role === 'seller' && body.receiver_id) {
+        const seller = await env.DB.prepare(
+          "SELECT id FROM users WHERE id = ? AND role IN ('seller','admin')"
+        ).bind(String(body.receiver_id)).first();
+        if (!seller) return Response.json({ error: 'Seller not found.' }, { status: 404 });
+        receiverId = seller.id;
+        receiverRole = 'seller';
       }
       const id = crypto.randomUUID();
 
