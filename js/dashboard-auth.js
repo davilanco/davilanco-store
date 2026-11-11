@@ -10,9 +10,11 @@
     .then(function (response) { return response.json().catch(function(){return {};}).then(function(data){
       if (!response.ok || !data.ok || !data.user || !data.user.id) throw new Error('LOGIN_REQUIRED');
       window.dvlDashboardSessionUser = data.user;
-      if (main) main.hidden = false;
+      if (main) { main.hidden = false; main.style.removeProperty('display'); }
       var dash = document.querySelector('a[href="/dashboard.html"]');
       if (dash) dash.hidden = false;
+      var logout = document.getElementById('logoutBtn');
+      if (logout) logout.hidden = false;
       var seller = document.getElementById('sellerLink');
       var admin = document.getElementById('adminLink');
       if (seller) seller.hidden = !(data.user.role === 'seller' || data.user.role === 'admin');
