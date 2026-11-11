@@ -302,7 +302,7 @@ async function handleAeSearch(env, body) {
       url: url
     };
   }).filter(function (p) {
-    return p.product_id && /^\\d{8,20}$/.test(p.product_id);
+    return p.product_id && /^\d{8,20}$/.test(p.product_id);
   });
 
   if (!items.length) {
