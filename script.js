@@ -1113,7 +1113,7 @@ if (["/product.html"].includes(window.location.pathname)) {
         const oldPrice = product.old_price ? Number(product.old_price).toLocaleString() : null;
         const safeName = String(product.name || '');
         const escapeHtml = function(value) { return String(value == null ? '' : value).replace(/[&<>\"']/g, function(ch) { if (ch === '&') return '&amp;'; if (ch === '<') return '&lt;'; if (ch === '>') return '&gt;'; if (ch === '\"') return '&quot;'; return '&#39;'; }); };
-        const imageUrl = /^https?:\\/\\//i.test(String(product.image || '')) ? String(product.image) : 'https://via.placeholder.com/500x500?text=No+Image';
+        const imageUrl = /^https?:\/\//i.test(String(product.image || '')) ? String(product.image) : 'https://via.placeholder.com/500x500?text=No+Image';
 
         let oldPriceHtml = '';
         if (oldPrice) {
