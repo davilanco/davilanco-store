@@ -8,12 +8,14 @@
   function showPrivateContent() { html.classList.remove('dvl-admin-auth-pending'); }
   hidePrivateContent();
 
-  function setMenuExpanded(open) {
-    document.querySelectorAll('[aria-controls="navDrawer"]').forEach(function (button) {
-      button.setAttribute('aria-expanded', String(open));
-      button.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-    });
-  }
+function setMenuExpanded(open) {
+  document.querySelectorAll('[aria-controls="navDrawer"], [onclick*="toggleNav"]').forEach(function (button) {
+    button.setAttribute('aria-expanded', String(open));
+    button.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    button.classList.toggle('active', open);   // ← add
+  });
+						}
+	
   window.toggleNav = function () {
     var drawer = document.getElementById('navDrawer');
     if (!drawer) return;
