@@ -3,6 +3,13 @@ import { requireSession } from './lib/auth.js';
 export async function onRequest({ request, env, next }) {
   const url = new URL(request.url);
   const path = url.pathname.replace(/\/+$/, '') || '/';
+
+  // 1. BYPASS MIDDLEWARE FOR STATIC ASSETS
+  // This prevents /admin/admin.js and /admin/admin.css from being intercepted.
+  if (/\.(js|css|png|jpg|jpeg|gif|svg|ico|json|txt|xml|webmanifest)$/i.test(path)) {
+    return next();
+  }
+
   const isAdminRoute = path === '/admin' || path.startsWith('/admin/');
   const isSellerRoute = path === '/seller' || path.startsWith('/seller/');
   const isDashboardRoute = path === '/dashboard.html';
