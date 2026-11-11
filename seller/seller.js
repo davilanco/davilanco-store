@@ -357,6 +357,7 @@ async function loadMyProducts() {
   if (typeof loadMyProducts === "function") window.loadMyProducts = loadMyProducts;
   if (typeof loadMyOrders === "function") window.loadMyOrders = loadMyOrders;
   if (typeof messageAdmin === "function") window.messageAdmin = messageAdmin;
+  if (typeof saveTracking === "function") window.saveTracking = saveTracking;
   })();
 }
 
