@@ -150,7 +150,7 @@ if (["/admin/api.html"].includes(window.location.pathname)) {
     button.disabled=true;status.className='status';status.textContent='Sending request…';out.textContent='Waiting for response…';
     var started=Date.now();
     try{
-      var options={method:verb,headers:{'Accept':'application/json','Accept':'application/json','Cache-Control':'no-store'}};
+      var options={method:verb,headers:{'Accept':'application/json','Cache-Control':'no-store'}};
       if(payload!==undefined){options.headers['Content-Type']='application/json';options.body=JSON.stringify(payload)}
       var response=await fetch(url,options);
       var text=await response.text(), shown=text;
@@ -195,11 +195,8 @@ var savedTheme = localStorage.getItem('theme');
       document.getElementById('navDrawer').classList.toggle('open');
     }
 
-    var adminUser = {};
-    fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
-      .then(function(response) { return response.json(); })
-      .then(function(data) { if (data && data.ok && data.user) adminUser = data.user; })
-      .catch(function() {});
+    // admin.js completes the session gate before page-specific code runs.
+    var adminUser = window.dvlAdminUser || {};
     
     function showToast(text) {
       var t = document.getElementById('toast');
@@ -238,70 +235,61 @@ var savedTheme = localStorage.getItem('theme');
       renderUsers(filtered);
     }
 
+    function escapeHtml(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+      });
+    }
+    function safeId(value) { return String(value == null ? '' : value).replace(/[^A-Za-z0-9_-]/g, ''); }
+    function safeToken(value, fallback) {
+      var token = String(value || fallback).toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      return token || fallback;
+    }
     function renderUsers(users) {
       var box = document.getElementById('usersList');
-      if (!users.length) {
-        box.innerHTML = '<p style="opacity:0.7">No users found.</p>';
-        return;
-      }
-
+      if (!users.length) { box.innerHTML = '<p style="opacity:0.7">No users found.</p>'; return; }
       var html = '';
       for (var i = 0; i < users.length; i++) {
-        var u = users[i];
-        var id = u.id || '';
-        var role = u.role || 'customer';
-        var status = u.status || 'active';
-        var verified = Number(u.verified) === 1;
-
-        html += '<div class="user-card" data-id="' + id + '">';
-        html += '<div class="user-top">';
-        html += '<div><div class="user-name">' + (u.firstname || '') + ' ' + (u.lastname || '') + '</div>';
-        html += '<div style="font-size:13px;opacity:0.8">@' + (u.nickname || '') + '</div></div>';
-        html += '<div>';
-        html += '<span class="badge role-' + role + '">' + role + '</span>';
-        html += '<span class="badge status-' + status + '">' + status + '</span>';
-        html += '<span class="badge ' + (verified ? 'verified' : 'unverified') + '">' + (verified ? 'verified' : 'unverified') + '</span>';
-        html += '</div></div>';
-
-        html += '<div class="user-meta">';
-        html += 'Email: ' + (u.email || '–') + '<br>';
-        html += 'Phone: ' + (u.phone || '–') + '<br>';
-        html += 'Joined: ' + (u.created_at || '–');
-        html += '</div>';
-
-        html += '<div class="actions">';
-        html += '<button type="button" onclick="toggleOrders(\'' + id + '\')">Orders</button>';
-        html += '<button type="button" class="secondary" onclick="toggleMessage(\'' + id + '\')">Message</button>';
-
-        if (status === 'active') {
-          html += '<button type="button" class="secondary" onclick="setStatus(\'' + id + '\',\'suspended\')">Suspend</button>';
-        } else {
-          html += '<button type="button" class="success" onclick="setStatus(\'' + id + '\',\'active\')">Reactivate</button>';
-        }
-
-        if (role === 'customer') {
-          html += '<button type="button" class="secondary" onclick="setRole(\'' + id + '\',\'seller\')">Make Seller</button>';
-        } else if (role === 'seller') {
-          html += '<button type="button" class="secondary" onclick="setRole(\'' + id + '\',\'customer\')">Make Customer</button>';
-        }
-
-        if (role !== 'admin') {
-          html += '<button type="button" class="danger" onclick="deleteUser(\'' + id + '\', \'' + (u.nickname || '').replace(/'/g, '') + '\')">Delete</button>';
-        }
-        html += '</div>';
-
-        // Orders panel
-        html += '<div class="orders-box" id="orders-' + id + '"></div>';
-
-        // Message panel
-        html += '<div class="msg-box" id="msg-' + id + '">';
-        html += '<textarea id="msgText-' + id + '" placeholder="Type message to ' + (u.nickname || 'user') + '..."></textarea>';
-        html += '<button type="button" onclick="sendMessage(\'' + id + '\', \'' + (u.nickname || '') + '\')">Send Message</button>';
-        html += '</div>';
-
-        html += '</div>';
+        var u = users[i], id = safeId(u.id);
+        if (!id) continue;
+        var roleRaw = String(u.role || 'customer'), statusRaw = String(u.status || 'active');
+        var role = escapeHtml(roleRaw), status = escapeHtml(statusRaw);
+        var roleClass = safeToken(roleRaw, 'customer'), statusClass = safeToken(statusRaw, 'active');
+        var nick = escapeHtml(u.nickname || ''), verified = Number(u.verified) === 1;
+        html += '<div class="user-card" data-id="' + id + '"><div class="user-top"><div>';
+        html += '<div class="user-name">' + escapeHtml((u.firstname || '') + ' ' + (u.lastname || '')) + '</div>';
+        html += '<div style="font-size:13px;opacity:0.8">@' + nick + '</div></div><div>';
+        html += '<span class="badge role-' + roleClass + '">' + role + '</span>';
+        html += '<span class="badge status-' + statusClass + '">' + status + '</span>';
+        html += '<span class="badge ' + (verified ? 'verified' : 'unverified') + '">' + (verified ? 'verified' : 'unverified') + '</span></div></div>';
+        html += '<div class="user-meta">Email: ' + escapeHtml(u.email || '–') + '<br>Phone: ' + escapeHtml(u.phone || '–') + '<br>Joined: ' + escapeHtml(u.created_at || '–') + '</div>';
+        html += '<div class="actions"><button type="button" data-action="orders" data-id="' + id + '">Orders</button>';
+        html += '<button type="button" class="secondary" data-action="message" data-id="' + id + '">Message</button>';
+        if (statusRaw === 'active') html += '<button type="button" class="secondary" data-action="suspend" data-id="' + id + '">Suspend</button>';
+        else html += '<button type="button" class="success" data-action="reactivate" data-id="' + id + '">Reactivate</button>';
+        if (roleRaw === 'customer') html += '<button type="button" class="secondary" data-action="to-seller" data-id="' + id + '">Make Seller</button>';
+        else if (roleRaw === 'seller') html += '<button type="button" class="secondary" data-action="to-customer" data-id="' + id + '">Make Customer</button>';
+        if (roleRaw !== 'admin') html += '<button type="button" class="danger" data-action="delete" data-id="' + id + '" data-nick="' + nick + '">Delete</button>';
+        html += '</div><div class="orders-box" id="orders-' + id + '"></div><div class="msg-box" id="msg-' + id + '">';
+        html += '<textarea id="msgText-' + id + '" placeholder="Type message to ' + (nick || 'user') + '..."></textarea>';
+        html += '<button type="button" data-action="send-message" data-id="' + id + '">Send Message</button></div></div>';
       }
       box.innerHTML = html;
+      box.querySelectorAll('button[data-action]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var id = btn.getAttribute('data-id');
+          switch (btn.getAttribute('data-action')) {
+            case 'orders': toggleOrders(id); break;
+            case 'message': toggleMessage(id); break;
+            case 'suspend': setStatus(id, 'suspended'); break;
+            case 'reactivate': setStatus(id, 'active'); break;
+            case 'to-seller': setRole(id, 'seller'); break;
+            case 'to-customer': setRole(id, 'customer'); break;
+            case 'delete': deleteUser(id, btn.getAttribute('data-nick') || ''); break;
+            case 'send-message': sendMessage(id); break;
+          }
+        });
+      });
     }
 
     function toggleOrders(userId) {
@@ -331,10 +319,10 @@ var savedTheme = localStorage.getItem('theme');
         for (var i = 0; i < orders.length; i++) {
           var o = orders[i];
           html += '<div class="order-line">';
-          html += '<strong>' + (o.id || '') + '</strong> · ' + (o.status || 'Pending');
+          html += '<strong>' + escapeHtml(o.id || '') + '</strong> · ' + escapeHtml(o.status || 'Pending');
           html += '<br>₦' + Number(o.total || 0).toLocaleString();
-          html += ' · ' + (o.payment_method || '') + ' · ' + (o.payment_status || 'pending');
-          if (o.payment_reference) html += '<br>Ref: ' + o.payment_reference;
+          html += ' · ' + escapeHtml(o.payment_method || '') + ' · ' + escapeHtml(o.payment_status || 'pending');
+          if (o.payment_reference) html += '<br>Ref: ' + escapeHtml(o.payment_reference);
           html += '</div>';
         }
         html += '<a href="/admin/orders.html" style="color:var(--gold);font-size:13px">Open Orders panel →</a>';
@@ -350,7 +338,8 @@ var savedTheme = localStorage.getItem('theme');
       el.classList.toggle('open');
     }
 
-async function sendMessage(userId, nickname) {
+async function sendMessage(userId) {
+  if (!adminUser || !adminUser.id) { alert('Session not ready, please refresh.'); return; }
   var textEl = document.getElementById('msgText-' + userId);
   var text = (textEl && textEl.value || '').trim();
   if (!text) { alert('Type a message first'); return; }
@@ -449,7 +438,8 @@ async function sendMessage(userId, nickname) {
 
 
 /* ===== js/pages/admin-index.js ===== */
-if (["/admin/","/admin/index.html"].includes(window.location.pathname)) {
+var adminPath = window.location.pathname.replace(/\/+$/, '') || '/';
+if (adminPath === '/admin' || adminPath === '/admin/index.html') {
   (function () {
 /* Extracted script 1 from admin/index.html */
 var savedTheme = localStorage.getItem('theme');
@@ -733,11 +723,8 @@ var savedTheme = localStorage.getItem('theme');
       document.getElementById('navDrawer').classList.toggle('open');
     }
 
-    var adminUser = {};
-    fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
-      .then(function(response) { return response.json(); })
-      .then(function(data) { if (data && data.ok && data.user) adminUser = data.user; })
-      .catch(function() {});
+    // admin.js completes the session gate before page-specific code runs.
+    var adminUser = window.dvlAdminUser || {};
     
     function showToast(text) {
       var t = document.getElementById('toast');
@@ -770,22 +757,32 @@ var savedTheme = localStorage.getItem('theme');
       renderUserList(filtered);
     }
 
+    function escapeHtml(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+      });
+    }
+    function safeId(value) { return String(value == null ? '' : value).replace(/[^A-Za-z0-9_-]/g, ''); }
     function renderUserList(users) {
       var box = document.getElementById('usersSide');
-      if (!users.length) {
-        box.innerHTML = '<p style="opacity:0.7;font-size:13px">No users</p>';
-        return;
-      }
+      if (!users.length) { box.innerHTML = '<p style="opacity:0.7;font-size:13px">No users</p>'; return; }
       var html = '';
       for (var i = 0; i < users.length; i++) {
-        var u = users[i];
-        var active = selectedUser && selectedUser.id === u.id ? ' active' : '';
-        html += '<div class="user-item' + active + '" onclick=\'selectUser(' + JSON.stringify(u).replace(/'/g, "&#39;") + ')\'>';
-        html += '<strong>@' + (u.nickname || '') + '</strong> · ' + (u.role || '');
-        html += '<small>' + (u.firstname || '') + ' ' + (u.lastname || '') + ' · ' + (u.email || '') + '</small>';
-        html += '</div>';
+        var u = users[i], id = safeId(u.id);
+        if (!id) continue;
+        var active = selectedUser && String(selectedUser.id) === String(u.id) ? ' active' : '';
+        html += '<div class="user-item' + active + '" data-uid="' + id + '">';
+        html += '<strong>@' + escapeHtml(u.nickname || '') + '</strong> · ' + escapeHtml(u.role || '');
+        html += '<small>' + escapeHtml(u.firstname || '') + ' ' + escapeHtml(u.lastname || '') + ' · ' + escapeHtml(u.email || '') + '</small></div>';
       }
       box.innerHTML = html;
+      box.querySelectorAll('.user-item[data-uid]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          var id = el.getAttribute('data-uid');
+          var user = allUsers.find(function(item) { return String(item.id) === id; });
+          if (user) selectUser(user);
+        });
+      });
     }
 
     function selectUser(u) {
@@ -815,7 +812,7 @@ var savedTheme = localStorage.getItem('theme');
           var m = msgs[i];
           var isMe = (m.sender_role === 'admin');
           html += '<div class="bubble ' + (isMe ? 'me' : 'them') + '">';
-          html += '<div class="meta">' + (m.sender_name || m.sender_role || '') + ' · ' + (m.created_at || '') + '</div>';
+          html += '<div class="meta">' + escapeHtml(m.sender_name || m.sender_role || '') + ' · ' + escapeHtml(m.created_at || '') + '</div>';
           html += escapeHtml(m.message || '');
           html += '</div>';
         }
@@ -826,14 +823,8 @@ var savedTheme = localStorage.getItem('theme');
       }
     }
 
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    }
-
     async function sendAdminReply() {
+      if (!adminUser || !adminUser.id) { alert('Session not ready, please refresh.'); return; }
       if (!selectedUser) {
         alert('Select a user first');
         return;
@@ -882,7 +873,7 @@ var savedTheme = localStorage.getItem('theme');
           html += '<strong>' + escapeHtml(m.sender_name || m.sender_role || '') + '</strong>';
           html += ' → ' + escapeHtml(m.receiver_role || '');
           html += '<br>' + escapeHtml(m.message || '');
-          html += '<br><span style="opacity:0.6">' + (m.created_at || '') + '</span>';
+          html += '<br><span style="opacity:0.6">' + escapeHtml(m.created_at || '') + '</span>';
           html += '</div>';
         }
         box.innerHTML = html;
