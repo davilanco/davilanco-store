@@ -23,7 +23,7 @@ html.dvl-admin-page body > main > .cards,
 html.dvl-admin-page body > main > .section {
   box-sizing: border-box; width: 100% !important; max-width: none !important; min-width: 0;
 }
-html.dvl-admin-page body > main > .card { padding: clamp(14px, 2vw, 24px); }
+html.dvl-admin-page .card { box-sizing: border-box; width: 100% !important; max-width: none !important; min-width: 0; padding: clamp(14px, 2vw, 24px); }
 html.dvl-admin-page body > main input,
 html.dvl-admin-page body > main select,
 html.dvl-admin-page body > main textarea { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; }
