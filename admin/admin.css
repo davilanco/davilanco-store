@@ -1,50 +1,97 @@
 /* Davilanco Admin layout — scoped so store/customer pages are unaffected. */
+
+/* Auth overlay */
 html.dvl-admin-auth-pending body > main { visibility: hidden !important; }
 html.dvl-admin-auth-pending body::after {
   content: "Checking administrator access…";
   display: block; padding: 48px 16px; text-align: center; color: var(--text, #fff);
 }
-html.dvl-admin-page, html.dvl-admin-page body { width: 100%; max-width: 100%; min-width: 320px; }
-html.dvl-admin-page body { overflow-x: hidden; }
+
+/* Full-width admin layout */
 html.dvl-admin-page body > main {
-  box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr);
-  align-content: start; gap: 16px; width: 100% !important; max-width: 1480px !important;
-  margin: 0 auto; padding: clamp(14px, 2.2vw, 30px);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 16px;
+  width: 100% !important;
+  max-width: 1480px !important;
+  margin: 0 auto;
+  padding: clamp(14px, 2.2vw, 30px);
 }
-html.dvl-admin-page body > main > h1,
-html.dvl-admin-page body > main > .subtitle,
-html.dvl-admin-page body > main > .sub,
-html.dvl-admin-page body > main > .intro { grid-column: 1 / -1; margin: 0; }
-html.dvl-admin-page body > main > .card,
-html.dvl-admin-page body > main > .toolbar,
-html.dvl-admin-page body > main > .layout,
-html.dvl-admin-page body > main > .tools,
-html.dvl-admin-page body > main > .cards,
-html.dvl-admin-page body > main > .section {
+
+/* Admin Home Grid & Tiles */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+@media (min-width: 640px) {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 1024px) {
+  .grid { grid-template-columns: repeat(4, 1fr); }
+}
+.tile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 16px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.2s, transform 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.tile:hover {
+  border-color: var(--gold);
+  transform: translateY(-3px);
+}
+.tile .icon { font-size: 1.6rem; margin-bottom: 8px; }
+.tile h3 { font-size: 1rem; margin-bottom: 4px; color: var(--gold); }
+.tile p { font-size: 0.8rem; opacity: 0.75; line-height: 1.4; margin: 0; }
+
+/* Admin Users / Orders / Products cards */
+.user-card, .order-card, .product-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.user-top, .order-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 10px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.user-name { font-size: 1.05rem; font-weight: 700; }
+.user-meta, .meta { font-size: 13px; opacity: 0.9; line-height: 1.55; }
+.actions { margin-top: 12px; }
+
+/* Admin Tables & Lists */
+.orders-box {
+  margin-top: 12px; padding: 12px; background: var(--grey);
+  border-radius: 10px; font-size: 13px; display: none;
+}
+.orders-box.open { display: block; }
+.order-line { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.order-line:last-child { border-bottom: none; }
+
+/* Admin Badges (override storefront defaults if needed) */
+html.dvl-admin-page .approved { background: #27ae60; color: #fff; }
+html.dvl-admin-page .pending { background: #f39c12; color: #000; }
+html.dvl-admin-page .rejected { background: #e74c3c; color: #fff; }
+
+/* Admin layout specifics */
+html.dvl-admin-page body > main > .card {
   box-sizing: border-box; width: 100% !important; max-width: none !important; min-width: 0;
+  padding: clamp(14px, 2vw, 24px);
 }
-html.dvl-admin-page .card { box-sizing: border-box; width: 100% !important; max-width: none !important; min-width: 0; padding: clamp(14px, 2vw, 24px); }
-html.dvl-admin-page body > main input,
-html.dvl-admin-page body > main select,
-html.dvl-admin-page body > main textarea { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; }
-html.dvl-admin-page body > main button { max-width: 100%; min-height: 40px; cursor: pointer; }
 html.dvl-admin-page .row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-html.dvl-admin-page .products-grid,
-html.dvl-admin-page #productsList { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
-html.dvl-admin-page .product-card { box-sizing: border-box; min-width: 0; width: 100%; }
-html.dvl-admin-page .product-card > div:last-child { display: flex; flex-wrap: wrap; gap: 8px; }
-html.dvl-admin-page .product-card button { flex: 1 1 110px; }
 html.dvl-admin-page .layout { display: grid; grid-template-columns: minmax(220px, .8fr) minmax(0, 1.5fr); gap: 16px; }
 html.dvl-admin-page .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
-html.dvl-admin-page #navDrawer { width: min(320px, 86vw); max-width: 86vw; }
-html.dvl-admin-page img { max-width: 100%; height: auto; }
+
 @media (max-width: 700px) {
   html.dvl-admin-page body > main { padding: 14px 12px 32px; }
   html.dvl-admin-page .layout { grid-template-columns: minmax(0, 1fr); }
   html.dvl-admin-page .row2 { grid-template-columns: minmax(0, 1fr); }
-  html.dvl-admin-page .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-  html.dvl-admin-page .card { min-width: 0; }
-}
-@media (max-width: 380px) {
-  html.dvl-admin-page .cards { grid-template-columns: minmax(0, 1fr); }
-}
+    }
