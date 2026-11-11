@@ -20,13 +20,13 @@
       <a href="/">Home</a>
       <a href="/categories.html">Categories</a>
       <a href="/cart.html">Cart</a>
-      <a href="/dashboard.html">Dashboard</a>
+      <a href="/dashboard.html" hidden>Dashboard</a>
       <a href="/seller/" id="sellerLink" class="hidden">Seller Panel</a>
       <a href="/admin/" id="adminLink" class="hidden">Admin Panel</a>
-      <a href="#" id="logoutBtn">Logout</a>
+      <a href="#" id="logoutBtn" hidden>Logout</a>
     </nav>
   </header>
-  <main>
+  <main id="dashboardPrivateContent" hidden style="display:none!important">
     <h1>Dashboard</h1>
     <p class="welcome">Welcome back, <strong id="nicknameDisplay">User</strong></p>
     <div class="card">
@@ -107,6 +107,7 @@
   </main>
   <footer>Davilanco © 2026 · shop.davilanco.com</footer>
   <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+    <script src="/js/dashboard-auth.js?v=20261111-1"></script>
     <script src="/script.js"></script>
 </body>
 </html>

@@ -1,0 +1,25 @@
+/* Davilanco Seller layout — isolated from customer/admin global cards. */
+html.dvl-seller-auth-pending body > main { visibility: hidden !important; }
+html.dvl-seller-auth-pending body::after { content:"Checking seller access…"; display:block; padding:48px 16px; text-align:center; }
+html.dvl-seller-page, html.dvl-seller-page body { width:100%; max-width:100%; min-width:320px; }
+html.dvl-seller-page body { overflow-x:hidden; }
+html.dvl-seller-page body > main {
+  box-sizing:border-box; display:grid; grid-template-columns:minmax(0,1fr);
+  gap:16px; width:100% !important; max-width:1100px !important; margin:0 auto;
+  padding:clamp(14px,2.2vw,30px);
+}
+html.dvl-seller-page body > main > h1,
+html.dvl-seller-page body > main > .subtitle { grid-column:1/-1; margin:0; }
+html.dvl-seller-page body > main > .card {
+  box-sizing:border-box; width:100% !important; max-width:none !important; min-width:0;
+  padding:clamp(14px,2vw,24px);
+}
+html.dvl-seller-page body > main input,
+html.dvl-seller-page body > main select,
+html.dvl-seller-page body > main textarea { box-sizing:border-box; width:100%; max-width:100%; min-width:0; }
+html.dvl-seller-page body > main button { min-height:42px; max-width:100%; cursor:pointer; }
+html.dvl-seller-page .row2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+@media(max-width:600px) {
+ html.dvl-seller-page body > main { padding:14px 12px 32px; }
+ html.dvl-seller-page .row2 { grid-template-columns:minmax(0,1fr); }
+}
