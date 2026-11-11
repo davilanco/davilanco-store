@@ -4,10 +4,19 @@
   var html = document.documentElement;
   var path = window.location.pathname;
   html.classList.add('dvl-seller-auth-pending');
-  window.toggleNav = function () {
-    var drawer = document.getElementById('navDrawer');
-    if (drawer) drawer.classList.toggle('open');
-  };
+
+window.toggleNav = function () {
+  var drawer = document.getElementById('navDrawer');
+  if (!drawer) return;
+  var open = !drawer.classList.contains('open');
+  drawer.classList.toggle('open', open);
+  document.querySelectorAll('[aria-controls="navDrawer"], [onclick*="toggleNav"]').forEach(function (button) {
+    button.setAttribute('aria-expanded', String(open));
+    button.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    button.classList.toggle('active', open);   // ← add
+  });
+};
+  
   window.toggleTheme = function () {
     var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
