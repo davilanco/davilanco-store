@@ -3,23 +3,6 @@ export async function onRequest(context) {
   const { request, env } = context;
 
   // Ensure table
-  await env.DB.prepare(`
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      firstname TEXT NOT NULL,
-      lastname TEXT NOT NULL,
-      nickname TEXT UNIQUE NOT NULL,
-      phone TEXT UNIQUE NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      role TEXT DEFAULT 'customer',
-      status TEXT DEFAULT 'active',
-      verified INTEGER DEFAULT 0,
-      verify_code TEXT,
-      verify_expires TEXT,
-      created_at TEXT DEFAULT (datetime('now'))
-    )
-  `).run();
 
   // ========== GET all users ==========
   if (request.method === 'GET') {
