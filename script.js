@@ -1,10 +1,5 @@
 /* ============================================================
-   Davilanco storefront bundle — complete and correct.
-   Loaded by: index, cart, categories, category, product, checkout,
-   payment-success, seller-profile, login, signup, verify, oauth,
-   dashboard.
-   Admin and seller pages load /admin/admin.js and /seller/seller.js
-   respectively, so their page blocks are not included here.
+   Davilanco storefront bundle
    ============================================================ */
 
 /* ===== Shared authenticated API transport and admin route guard ===== */
@@ -23,7 +18,7 @@
     document.documentElement.classList.add('davilanco-admin-page');
     document.documentElement.classList.add('davilanco-auth-pending');
     var style = document.createElement('style');
-    style.textContent = '.davilanco-auth-pending body > main{visibility:hidden}.davilanco-auth-pending body:after{content:"Checking your secure session…";display:block;text-align:center;padding:48px 16px;font:16px sans-serif}';
+    style.textContent = '.davilanco-auth-pending body > main{visibility:hidden}.davilanco-auth-pending body:after{content:"Checking your secure session�";display:block;text-align:center;padding:48px 16px;font:16px sans-serif}';
     document.head.appendChild(style);
 
     adminSessionPromise = nativeFetch('/api/session', {
@@ -172,8 +167,7 @@ window.addEventListener('scroll', function () {
     field.type = field.type === 'password' ? 'text' : 'password';
   };
 
-  /* Authoritative login form handler. Runs in capture phase so it wins before
-     any page-level handler and calls stopImmediatePropagation. */
+  /* Authoritative login form handler. */
   document.addEventListener('submit', async function (event) {
     var form = event.target;
     if (!form || form.id !== 'loginForm') return;
@@ -413,8 +407,8 @@ if (["/", "/index.html"].includes(window.location.pathname)) {
         html +=   '</a>';
         html +=   '<div class="product-info">';
         html +=     '<a href="/product.html?id=' + encodeURIComponent(id) + '" class="product-name">' + esc(name) + '</a>';
-        html +=     '<div class="product-price">₦' + price.toLocaleString();
-        if (oldPrice > 0) html += ' <small><s>₦' + oldPrice.toLocaleString() + '</s></small>';
+        html +=     '<div class="product-price">' + price.toLocaleString();
+        if (oldPrice > 0) html += ' <small><s>' + oldPrice.toLocaleString() + '</s></small>';
         html +=     '</div>';
         html +=     '<button type="button" class="add-btn" data-id="' + esc(id) + '" data-name="' + esc(name) + '" data-price="' + price + '" data-image="' + esc(image) + '">Add to Cart</button>';
         html +=   '</div>';
@@ -525,9 +519,9 @@ if (["/cart.html"].includes(window.location.pathname)) {
         html +=   '<img src="' + esc(itemImage) + '" alt="' + esc(itemName) + '" onerror="this.src=\'https://via.placeholder.com/90?text=No+Image\'">';
         html +=   '<div class="cart-info">';
         html +=     '<h3>' + esc(itemName) + '</h3>';
-        html +=     '<div class="cart-price">₦' + price.toLocaleString() + '</div>';
+        html +=     '<div class="cart-price">' + price.toLocaleString() + '</div>';
         html +=     '<div class="qty-controls">';
-        html +=       '<button type="button" data-cart-action="dec" data-index="' + index + '">−</button>';
+        html +=       '<button type="button" data-cart-action="dec" data-index="' + index + '"></button>';
         html +=       '<span>' + qty + '</span>';
         html +=       '<button type="button" data-cart-action="inc" data-index="' + index + '">+</button>';
         html +=     '</div>';
@@ -538,9 +532,9 @@ if (["/cart.html"].includes(window.location.pathname)) {
 
       var itemCount = cart.reduce(function (sum, item) { return sum + (Number(item.quantity) || 0); }, 0);
       html += '<div class="summary">';
-      html +=   '<div class="summary-row"><span>Subtotal (' + itemCount + ' items)</span><span>₦' + total.toLocaleString() + '</span></div>';
+      html +=   '<div class="summary-row"><span>Subtotal (' + itemCount + ' items)</span><span>' + total.toLocaleString() + '</span></div>';
       html +=   '<div class="summary-row"><span>Shipping</span><span>Calculated at checkout</span></div>';
-      html +=   '<div class="summary-row total"><span>Total</span><span>₦' + total.toLocaleString() + '</span></div>';
+      html +=   '<div class="summary-row total"><span>Total</span><span>' + total.toLocaleString() + '</span></div>';
       html +=   '<a href="/checkout.html" class="checkout-btn">Proceed to Checkout</a>';
       html +=   '<a href="/" style="display:inline-block;width:100%;text-align:center;margin-top:10px;padding:12px;border-radius:10px;border:1px solid var(--border);color:var(--text);text-decoration:none;">Continue Shopping</a>';
       html += '</div>';
@@ -622,9 +616,8 @@ if (["/oauth.html"].includes(window.location.pathname)) {
         ts.textContent = 'No code';
         return;
       }
-      ts.textContent = 'Requesting token…';
+      ts.textContent = 'Requesting token�';
       try {
-        // Token exchange lives in /api/import-aliexpress ({action:'ae_token'}).
         var res = await fetch('/api/import-aliexpress', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -648,10 +641,6 @@ if (["/oauth.html"].includes(window.location.pathname)) {
     window.getToken = getToken;
   })();
 }
-
-/* ===== Login page =====
-   The shared capture-phase submit handler at the top of this file already
-   handles /api/login for #loginForm. No page-specific logic is required here. */
 
 /* ===== Verify page ===== */
 if (["/verify.html"].includes(window.location.pathname)) {
@@ -860,7 +849,7 @@ if (["/product.html"].includes(window.location.pathname)) {
           return;
         }
 
-        document.title = (product.name || 'Product') + ' – Davilanco';
+        document.title = (product.name || 'Product') + ' � Davilanco';
 
         var price = Number(product.price || 0).toLocaleString();
         var oldPrice = product.old_price ? Number(product.old_price).toLocaleString() : null;
@@ -874,7 +863,7 @@ if (["/product.html"].includes(window.location.pathname)) {
         var inStock = hasStock ? stockNum > 0 : true;
         var stockLabel = hasStock ? (stockNum > 0 ? stockNum + ' in stock' : 'Out of stock') : 'Available';
 
-        var oldPriceHtml = oldPrice ? '<span class="old-price">₦' + esc(oldPrice) + '</span>' : '';
+        var oldPriceHtml = oldPrice ? '<span class="old-price">' + esc(oldPrice) + '</span>' : '';
 
         var cartButtonHtml = inStock
           ? '<button type="button" class="add-to-cart-btn" data-id="' + esc(product.id) + '">Add to Cart</button>'
@@ -892,7 +881,7 @@ if (["/product.html"].includes(window.location.pathname)) {
             '</div>' +
             '<div class="product-info">' +
               '<h1>' + esc(product.name || 'Unnamed Product') + '</h1>' +
-              '<div class="price">₦' + esc(price) + oldPriceHtml + '</div>' +
+              '<div class="price">' + esc(price) + oldPriceHtml + '</div>' +
               '<div class="meta">Category: ' + safeCategory + '<br>Stock: ' + esc(stockLabel) + '</div>' +
               sellerBadgeHtml +
               '<div class="description">' + safeDesc + '</div>' +
@@ -990,7 +979,7 @@ if (["/checkout.html"].includes(window.location.pathname)) {
 
       var itemsHtml = '';
       cart.forEach(function (item) {
-        itemsHtml += '<div class="summary-row"><span>' + esc(item.name || 'Item') + ' × ' + esc(item.quantity) + '</span><span>₦' + ((Number(item.price) || 0) * (Number(item.quantity) || 0)).toLocaleString() + '</span></div>';
+        itemsHtml += '<div class="summary-row"><span>' + esc(item.name || 'Item') + ' � ' + esc(item.quantity) + '</span><span>' + ((Number(item.price) || 0) * (Number(item.quantity) || 0)).toLocaleString() + '</span></div>';
       });
 
       container.innerHTML =
@@ -1019,7 +1008,7 @@ if (["/checkout.html"].includes(window.location.pathname)) {
           '</div>' +
           '<div class="card"><h3>Order Summary</h3>' +
             itemsHtml +
-            '<div class="summary-row total"><span>Total</span><span>₦' + total.toLocaleString() + '</span></div>' +
+            '<div class="summary-row total"><span>Total</span><span>' + total.toLocaleString() + '</span></div>' +
           '</div>' +
           '<button type="submit" id="submitBtn">Place Order</button>' +
           '<p id="msg"></p>' +
@@ -1149,11 +1138,7 @@ if (["/checkout.html"].includes(window.location.pathname)) {
   })();
 }
 
-/* ===== Dashboard =====
-   dashboard-auth.js runs first and sets window.dvlDashboardSessionUser
-   after verifying /api/session. We wait for that value rather than
-   firing a second session request, which eliminates the flicker and
-   the redundant fetch. */
+/* ===== Dashboard ===== */
 if (["/dashboard.html"].includes(window.location.pathname)) {
   (function () {
     var esc = window.davilancoEsc;
@@ -1164,67 +1149,35 @@ if (["/dashboard.html"].includes(window.location.pathname)) {
       if (el) el.textContent = value;
     }
 
-   function initDashboard(u) {
-  user = u || {};
-  document.documentElement.classList.remove('davilanco-auth-pending');
-  
-  // Force the dashboard to be visible
-  var mainEl = document.getElementById('dashboardPrivateContent');
-  if (mainEl) {
-    mainEl.hidden = false;
-    mainEl.style.removeProperty('display');
-  }
+    function initDashboard(u) {
+      user = u || {};
+      document.documentElement.classList.remove('davilanco-auth-pending');
+      
+      var mainEl = document.getElementById('dashboardPrivateContent');
+      if (mainEl) {
+        mainEl.hidden = false;
+        mainEl.style.removeProperty('display');
+      }
 
-  try { localStorage.setItem('user', JSON.stringify(user)); } catch (_) {}
+      try { localStorage.setItem('user', JSON.stringify(user)); } catch (_) {}
 
-  var sellerLink = document.getElementById('sellerLink');
-  if (sellerLink && (user.role === 'seller' || user.role === 'admin')) sellerLink.classList.remove('hidden');
-  var adminLink = document.getElementById('adminLink');
-  if (adminLink && user.role === 'admin') adminLink.classList.remove('hidden');
+      var sellerLink = document.getElementById('sellerLink');
+      if (sellerLink && (user.role === 'seller' || user.role === 'admin')) sellerLink.classList.remove('hidden');
+      var adminLink = document.getElementById('adminLink');
+      if (adminLink && user.role === 'admin') adminLink.classList.remove('hidden');
 
-  text('nicknameDisplay', user.nickname || 'User');
-  text('fullName', (user.firstname || '') + ' ' + (user.lastname || ''));
-  text('nick', user.nickname || '–');
-  text('phone', user.phone || '–');
-  text('email', user.email || '–');
-  text('role', user.role || 'customer');
+      text('nicknameDisplay', user.nickname || 'User');
+      text('fullName', (user.firstname || '') + ' ' + (user.lastname || ''));
+      text('nick', user.nickname || '�');
+      text('phone', user.phone || '�');
+      text('email', user.email || '�');
+      text('role', user.role || 'customer');
 
-  loadReferralStats();
-  loadCartSummary();
-  loadOrders();
-  loadMessages();
-}
-
-function waitForSession() {
-  // If dashboard-auth.js already finished, use its data immediately
-  if (window.dvlDashboardSessionUser) {
-    initDashboard(window.dvlDashboardSessionUser);
-    return;
-  }
-  
-  var tries = 0;
-  var iv = setInterval(function () {
-    if (window.dvlDashboardSessionUser) {
-      clearInterval(iv);
-      initDashboard(window.dvlDashboardSessionUser);
-      return;
+      loadReferralStats();
+      loadCartSummary();
+      loadOrders();
+      loadMessages();
     }
-    // After 2 seconds, fallback to fetching directly
-    if (++tries > 40) {
-      clearInterval(iv);
-      fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-          if (!d.ok || !d.user || !d.user.id) throw new Error('Not logged in');
-          initDashboard(d.user);
-        })
-        .catch(function () {
-          try { localStorage.removeItem('token'); localStorage.removeItem('user'); } catch (_) {}
-          window.location.replace('/login.html?redirect=' + encodeURIComponent('/dashboard.html'));
-        });
-    }
-  }, 50);
-     }
 
     function toggleEdit() {
       var form = document.getElementById('editForm');
@@ -1285,7 +1238,7 @@ function waitForSession() {
             var ul = document.createElement('ul');
             data.referrals.forEach(function (item) {
               var li = document.createElement('li');
-              li.textContent = (item.nickname || 'Customer') + (item.created_at ? ' — ' + item.created_at : '');
+              li.textContent = (item.nickname || 'Customer') + (item.created_at ? ' � ' + item.created_at : '');
               ul.appendChild(li);
             });
             listEl.innerHTML = '<strong>People who joined:</strong>';
@@ -1339,9 +1292,9 @@ function waitForSession() {
         var qty = Number(item.quantity) || 0;
         var price = Number(item.price) || 0;
         total += price * qty;
-        html += '<div class="order-item">' + esc(item.name || 'Item') + ' × ' + qty + ' — ₦' + (price * qty).toLocaleString() + '</div>';
+        html += '<div class="order-item">' + esc(item.name || 'Item') + ' � ' + qty + ' � ' + (price * qty).toLocaleString() + '</div>';
       });
-      html += '<p style="margin-top:10px"><strong>Total: ₦' + total.toLocaleString() + '</strong></p>';
+      html += '<p style="margin-top:10px"><strong>Total: ' + total.toLocaleString() + '</strong></p>';
       html += '<a href="/cart.html"><button type="button" style="margin-top:8px">View Cart / Checkout</button></a>';
       box.innerHTML = html;
     }
@@ -1368,24 +1321,24 @@ function waitForSession() {
           if (status.indexOf('deliver') !== -1) badge = 'delivered';
           var itemsText = '';
           if (o.items && o.items.length) {
-            itemsText = o.items.map(function (item) { return esc(item.product_name || 'Item') + ' × ' + esc(item.quantity); }).join(', ');
+            itemsText = o.items.map(function (item) { return esc(item.product_name || 'Item') + ' � ' + esc(item.quantity); }).join(', ');
           }
           html += '<div class="order-item"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><strong>' + esc(o.id || '') + '</strong><span class="status ' + badge + '">' + esc(o.status || 'Pending') + '</span></div>';
-          html += '<div style="margin-top:6px;font-size:13px;opacity:0.9">Total: ₦' + Number(o.total || 0).toLocaleString() + '<br>Payment: ' + esc(o.payment_method || '–') + ' · ' + esc(o.payment_status || 'pending') + '<br>Reference: <span style="color:var(--gold)">' + esc(o.payment_reference || o.id) + '</span>';
+          html += '<div style="margin-top:6px;font-size:13px;opacity:0.9">Total: ' + Number(o.total || 0).toLocaleString() + '<br>Payment: ' + esc(o.payment_method || '�') + ' � ' + esc(o.payment_status || 'pending') + '<br>Reference: <span style="color:var(--gold)">' + esc(o.payment_reference || o.id) + '</span>';
           if (itemsText) html += '<br>Items: ' + itemsText;
           if (o.tracking_number) {
             html += '<br>Tracking: ' + esc(o.tracking_number);
             if (o.logistics) html += ' (' + esc(o.logistics) + ')';
-            if (o.eta) html += ' · ETA: ' + esc(o.eta);
+            if (o.eta) html += ' � ETA: ' + esc(o.eta);
             if (!latestTracked) latestTracked = o;
           }
           html += '</div></div>';
         });
         list.innerHTML = html;
         if (latestTracked) {
-          text('courier', latestTracked.logistics || '–');
-          text('trackingNo', latestTracked.tracking_number || '–');
-          text('eta', latestTracked.eta || '–');
+          text('courier', latestTracked.logistics || '�');
+          text('trackingNo', latestTracked.tracking_number || '�');
+          text('eta', latestTracked.eta || '�');
         }
       } catch (_) {
         list.innerHTML = '<p style="opacity:0.7">Could not load orders. Please refresh.</p>';
@@ -1451,7 +1404,6 @@ function waitForSession() {
       msg.textContent = 'Application submitted (API connection coming next).';
     }
 
-    // Wait for dashboard-auth.js to finish. Poll briefly, then fall back.
     function waitForSession() {
       if (window.dvlDashboardSessionUser) {
         initDashboard(window.dvlDashboardSessionUser);
@@ -1464,7 +1416,7 @@ function waitForSession() {
           initDashboard(window.dvlDashboardSessionUser);
           return;
         }
-        if (++tries > 60) { // ~3s
+        if (++tries > 40) {
           clearInterval(iv);
           fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
             .then(function (r) { return r.json(); })
@@ -1538,11 +1490,11 @@ if (["/categories.html"].includes(window.location.pathname)) {
     var esc = window.davilancoEsc;
 
     var categoryItems = [
-      { key: 'fashion', name: 'Fashion', icon: '👕', description: 'Clothing, shoes and accessories' },
-      { key: 'electronics', name: 'Electronics', icon: '📱', description: 'Phones, gadgets and accessories' },
-      { key: 'home', name: 'Home', icon: '🏠', description: 'Home, kitchen and living' },
-      { key: 'beauty', name: 'Beauty', icon: '✨', description: 'Beauty and personal care' },
-      { key: 'others', name: 'Others', icon: '🛍️', description: 'More products to discover' }
+      { key: 'fashion', name: 'Fashion', icon: '', description: 'Clothing, shoes and accessories' },
+      { key: 'electronics', name: 'Electronics', icon: '', description: 'Phones, gadgets and accessories' },
+      { key: 'home', name: 'Home', icon: '', description: 'Home, kitchen and living' },
+      { key: 'beauty', name: 'Beauty', icon: '', description: 'Beauty and personal care' },
+      { key: 'others', name: 'Others', icon: '', description: 'More products to discover' }
     ];
 
     var search = document.getElementById('searchBar');
@@ -1577,7 +1529,7 @@ if (["/categories.html"].includes(window.location.pathname)) {
           return '<a class="category-card" href="/category.html?cat=' + encodeURIComponent(c.key) + '">' +
                    '<span class="category-icon">' + c.icon + '</span>' +
                    '<div><h2>' + esc(c.name) + '</h2><p>' + esc(c.description) + '</p>' +
-                   '<div class="count">Browse category →</div></div>' +
+                   '<div class="count">Browse category </div></div>' +
                  '</a>';
         }).join('');
       }
@@ -1627,7 +1579,7 @@ if (["/category.html"].includes(window.location.pathname)) {
                  '</a>' +
                  '<div class="product-info">' +
                    '<a class="product-name" href="/product.html?id=' + encodeURIComponent(p.id) + '">' + esc(p.name || 'Product') + '</a>' +
-                   '<div class="product-price">₦' + Number(p.price || 0).toLocaleString('en-NG') + '</div>' +
+                   '<div class="product-price">' + Number(p.price || 0).toLocaleString('en-NG') + '</div>' +
                    '<button type="button" class="add-btn" data-id="' + esc(p.id) + '">Add to Cart</button>' +
                  '</div>' +
                '</article>';
@@ -1646,7 +1598,7 @@ if (["/category.html"].includes(window.location.pathname)) {
         if (old) old.quantity = (Number(old.quantity) || 1) + 1;
         else cart.push({ id: p.id, name: p.name, price: Number(p.price) || 0, image: p.image || '', quantity: 1 });
         try { localStorage.setItem('cart', JSON.stringify(cart)); } catch (_) {}
-        b.textContent = 'Added ✓';
+        b.textContent = 'Added ';
         setTimeout(function () { b.textContent = 'Add to Cart'; }, 1200);
       });
     }
@@ -1738,7 +1690,7 @@ if (["/seller-profile.html"].includes(window.location.pathname)) {
           products.forEach(function (p) {
             html += '<a class="p-card" href="/product.html?id=' + encodeURIComponent(p.id) + '">';
             html += '<img src="' + esc(p.image || 'https://via.placeholder.com/200?text=No+Image') + '" alt="">';
-            html += '<div><strong>' + esc(p.name || '') + '</strong><br>₦' + Number(p.price || 0).toLocaleString() + '</div>';
+            html += '<div><strong>' + esc(p.name || '') + '</strong><br>' + Number(p.price || 0).toLocaleString() + '</div>';
             html += '</a>';
           });
           html += '</div>';
@@ -1746,7 +1698,7 @@ if (["/seller-profile.html"].includes(window.location.pathname)) {
         html += '</div>';
 
         box.innerHTML = html;
-        document.title = store + ' – Davilanco';
+        document.title = store + ' � Davilanco';
       } catch (_) {
         box.innerHTML = '<p>Could not load seller.</p><a href="/" style="color:var(--gold)">Back to shop</a>';
       }
@@ -1773,7 +1725,7 @@ if (["/seller-profile.html"].includes(window.location.pathname)) {
           })
         });
         var data = await res.json();
-         if (!data.ok) throw new Error(data.error || 'Failed');
+        if (!data.ok) throw new Error(data.error || 'Failed');
         ta.value = '';
         status.style.color = '#27ae60';
         status.textContent = 'Message sent';
