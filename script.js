@@ -1164,28 +1164,67 @@ if (["/dashboard.html"].includes(window.location.pathname)) {
       if (el) el.textContent = value;
     }
 
-    function initDashboard(u) {
-      user = u || {};
-      document.documentElement.classList.remove('davilanco-auth-pending');
-      try { localStorage.setItem('user', JSON.stringify(user)); } catch (_) {}
+   function initDashboard(u) {
+  user = u || {};
+  document.documentElement.classList.remove('davilanco-auth-pending');
+  
+  // Force the dashboard to be visible
+  var mainEl = document.getElementById('dashboardPrivateContent');
+  if (mainEl) {
+    mainEl.hidden = false;
+    mainEl.style.removeProperty('display');
+  }
 
-      var sellerLink = document.getElementById('sellerLink');
-      if (sellerLink && (user.role === 'seller' || user.role === 'admin')) sellerLink.classList.remove('hidden');
-      var adminLink = document.getElementById('adminLink');
-      if (adminLink && user.role === 'admin') adminLink.classList.remove('hidden');
+  try { localStorage.setItem('user', JSON.stringify(user)); } catch (_) {}
 
-      text('nicknameDisplay', user.nickname || 'User');
-      text('fullName', (user.firstname || '') + ' ' + (user.lastname || ''));
-      text('nick', user.nickname || '–');
-      text('phone', user.phone || '–');
-      text('email', user.email || '–');
-      text('role', user.role || 'customer');
+  var sellerLink = document.getElementById('sellerLink');
+  if (sellerLink && (user.role === 'seller' || user.role === 'admin')) sellerLink.classList.remove('hidden');
+  var adminLink = document.getElementById('adminLink');
+  if (adminLink && user.role === 'admin') adminLink.classList.remove('hidden');
 
-      loadReferralStats();
-      loadCartSummary();
-      loadOrders();
-      loadMessages();
+  text('nicknameDisplay', user.nickname || 'User');
+  text('fullName', (user.firstname || '') + ' ' + (user.lastname || ''));
+  text('nick', user.nickname || '–');
+  text('phone', user.phone || '–');
+  text('email', user.email || '–');
+  text('role', user.role || 'customer');
+
+  loadReferralStats();
+  loadCartSummary();
+  loadOrders();
+  loadMessages();
+}
+
+function waitForSession() {
+  // If dashboard-auth.js already finished, use its data immediately
+  if (window.dvlDashboardSessionUser) {
+    initDashboard(window.dvlDashboardSessionUser);
+    return;
+  }
+  
+  var tries = 0;
+  var iv = setInterval(function () {
+    if (window.dvlDashboardSessionUser) {
+      clearInterval(iv);
+      initDashboard(window.dvlDashboardSessionUser);
+      return;
     }
+    // After 2 seconds, fallback to fetching directly
+    if (++tries > 40) {
+      clearInterval(iv);
+      fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.ok || !d.user || !d.user.id) throw new Error('Not logged in');
+          initDashboard(d.user);
+        })
+        .catch(function () {
+          try { localStorage.removeItem('token'); localStorage.removeItem('user'); } catch (_) {}
+          window.location.replace('/login.html?redirect=' + encodeURIComponent('/dashboard.html'));
+        });
+    }
+  }, 50);
+     }
 
     function toggleEdit() {
       var form = document.getElementById('editForm');
